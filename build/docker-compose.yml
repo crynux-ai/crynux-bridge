@@ -1,0 +1,35 @@
+version: "3.8"
+name: "ig_server"
+services:
+  mysql:
+    image: mysql:8.1.0
+    container_name: ig_mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: yes
+      MYSQL_DATABASE: ig_server
+      MYSQL_USER: ig_server
+      MYSQL_PASSWORD: igserverpass
+      TZ: Asia/Tokyo
+    volumes:
+      - "./data/mysql:/var/lib/mysql"
+
+  wait_db:
+    image: jwilder/dockerize:0.6.1
+    container_name: ig_wait_db
+    depends_on:
+      - mysql
+    command: 'dockerize -wait=tcp://mysql:3306 -timeout 60s'
+
+  ig_server:
+    image: ig_server:dev
+    container_name: ig_server
+    volumes:
+      - "./data/ig_server:/app/data"
+      - "./config:/app/config"
+    ports:
+      - "5028:5028"
+    depends_on:
+      wait_db:
+        condition: service_completed_successfully

@@ -1,0 +1,37 @@
+---
+environment: "release"
+db:
+  driver: "mysql"
+  connection: "ig_server:igserverpass@(mysql:3306)/ig_server?parseTime=true"
+  log:
+    level: "info"
+    output: "/app/data/logs/ig_server_db.log"
+    max_file_size: 100
+    max_days: 30
+    max_file_num: 5
+log:
+  level: "info"
+  output: "/app/data/logs/ig_server.log"
+  max_file_size: 100
+  max_days: 30
+  max_file_num: 5
+http:
+  host: "0.0.0.0"
+  port: "5028"
+data_dir:
+  inference_tasks: "/app/data/inference_tasks"
+  model_images: "/app/data/images/models"
+blockchain:
+  rpc_endpoint: "https://block-node.crynux.ai/rpc"
+  account:
+    address: "0x9229d36c82E4e1d03B086C27d704741D0c78321e"
+  contracts:
+    task: "0x1c8097c4da659a397776200aA35ef7EdB3964807"
+    node: "0xfa8fCFA4AA78b6466D3954adD47C009bf9d67470"
+    crynux_token: "0xB627D84BFB8cC311A318fEf679ee498F822A0C7C"
+  start_block_num: 997723
+  gas_limit: 4294967
+relay:
+  base_url: "https://relay.h.crynux.ai"
+task_schema:
+  stable_diffusion_inference: 'https://raw.githubusercontent.com/crynux-ai/stable-diffusion-task/main/schema/stable-diffusion-inference-task.json'

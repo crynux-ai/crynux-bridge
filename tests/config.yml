@@ -1,0 +1,39 @@
+---
+environment: "test"
+db:
+  driver: "sqlite"
+  connection: "/app/data/test_db.sqlite"
+  log:
+    level: "info"
+    output: "/app/data/logs/ig_server_db.log"
+    max_file_size: 100
+    max_days: 30
+    max_file_num: 5
+log:
+  level: "debug"
+  output: "stdout"
+  max_file_size: 100
+  max_days: 30
+  max_file_num: 5
+http:
+  host: "127.0.0.1"
+  port: "8080"
+data_dir:
+    inference_tasks: "/app/data/inference_tasks"
+    model_images: "/app/data/images/models"
+blockchain:
+  rpc_endpoint: "https://block-node.crynux.ai/rpc"
+  account:
+    address: "0x9229d36c82E4e1d03B086C27d704741D0c78321e"
+  contracts:
+    task: "0x1c8097c4da659a397776200aA35ef7EdB3964807"
+    node: "0xfa8fCFA4AA78b6466D3954adD47C009bf9d67470"
+    crynux_token: "0xB627D84BFB8cC311A318fEf679ee498F822A0C7C"
+  start_block_num: 997723
+  gas_limit: 4294967
+relay:
+  base_url: "https://relay.h.crynux.ai"
+task_schema:
+  stable_diffusion_inference: 'https://raw.githubusercontent.com/crynux-ai/stable-diffusion-task/main/schema/stable-diffusion-inference-task.json'
+test:
+  root_address: "0xd075aB490857256e6fc85d75d8315e7c9914e008"
