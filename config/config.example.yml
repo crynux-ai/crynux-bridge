@@ -25,6 +25,7 @@ blockchain:
   rpc_endpoint: "https://block-node.crynux.ai/rpc"
   account:
     address: ""
+    private_key_file: ""
   contracts:
     task: "0x1c8097c4da659a397776200aA35ef7EdB3964807"
     node: "0xfa8fCFA4AA78b6466D3954adD47C009bf9d67470"
