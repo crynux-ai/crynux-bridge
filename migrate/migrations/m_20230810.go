@@ -17,7 +17,7 @@ func M20230810(db *gorm.DB) *gormigrate.Gormigrate {
 		Client      Client
 		TaskArgs    string
 		Status      int
-		TxHash      string `gorm:"uniqueIndex;size:256"`
+		TxHash      string `gorm:"index;size:256"`
 		TaskId      uint64 `gorm:"index"`
 		ResultNode  string
 		AbortReason string
