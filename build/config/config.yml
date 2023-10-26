@@ -25,6 +25,7 @@ blockchain:
   rpc_endpoint: "https://block-node.crynux.ai/rpc"
   account:
     address: "0x9229d36c82E4e1d03B086C27d704741D0c78321e"
+    private_key_file: "/run/secrets/ig_privkey"
   contracts:
     task: "0x1c8097c4da659a397776200aA35ef7EdB3964807"
     node: "0xfa8fCFA4AA78b6466D3954adD47C009bf9d67470"
