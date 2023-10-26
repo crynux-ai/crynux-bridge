@@ -30,7 +30,7 @@ blockchain:
     task: "0x3f4e524d5Ff53D0e98eE5A37f81f4F21551502B2"
     node: "0x73F8eAD4d29e227958aB5F3A3e38092271500865"
     crynux_token: "0xB627D84BFB8cC311A318fEf679ee498F822A0C7C"
-  start_block_num: 997723
+  start_block_num: 1010761
   gas_limit: 4294967
 relay:
   base_url: "https://relay.h.crynux.ai"
