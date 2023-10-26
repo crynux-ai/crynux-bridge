@@ -43,8 +43,9 @@ type AppConfig struct {
 		RpcEndpoint string `mapstructure:"rpc_endpoint"`
 
 		Account struct {
-			Address    string `mapstructure:"address"`
-			PrivateKey string `mapstructure:"private_key"`
+			Address        string `mapstructure:"address"`
+			PrivateKey     string `mapstructure:"private_key"`
+			PrivateKeyFile string `mapstructure:"private_key_file"`
 		} `mapstructure:"account"`
 
 		Contracts struct {
