@@ -1,13 +1,16 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 func GetPrivateKey(file string) string {
 	b, err := os.ReadFile(file)
 	if err != nil {
 		panic(err)
 	}
-	return string(b)
+	return strings.TrimSpace(string(b))
 }
 
 func GetTestPrivateKey() string {
