@@ -5,6 +5,7 @@ import (
 	"github.com/wI2L/fizz"
 	"ig_server/api/v1/inference_tasks"
 	"ig_server/api/v1/models"
+	"ig_server/api/v1/network"
 	"ig_server/api/v1/response"
 )
 
@@ -43,4 +44,7 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Summary("Get the list of the lora models"),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(models.GetLoraModels, 200))
+
+	networkGroup := v1g.Group("network", "Network", "Network status")
+	networkGroup.GET("nodes", []fizz.OperationOption{}, tonic.Handler(network.GetNodeStats, 200))
 }
