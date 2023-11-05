@@ -43,11 +43,13 @@ type TaskTaskInfo struct {
 	ResultDisclosedRounds []*big.Int
 	ResultNode            common.Address
 	Aborted               bool
+	Timeout               *big.Int
+	Balance               *big.Int
 }
 
 // TaskMetaData contains all meta data concerning the Task contract.
 var TaskMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractNode\",\"name\":\"nodeInstance\",\"type\":\"address\"},{\"internalType\":\"contractIERC20\",\"name\":\"tokenInstance\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"TaskAborted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"selectedNode\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"}],\"name\":\"TaskCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"TaskResultCommitmentsReady\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"resultNode\",\"type\":\"address\"}],\"name\":\"TaskSuccess\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"createTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"}],\"name\":\"getSelectedNode\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"commitment\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"nonce\",\"type\":\"bytes32\"}],\"name\":\"submitTaskResultCommitment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"}],\"name\":\"discloseTaskResult\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"}],\"name\":\"reportResultsUploaded\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"}],\"name\":\"reportTaskError\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"updateTaskFeePerNode\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"updateDistanceThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"getTask\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"bool\",\"name\":\"isSuccess\",\"type\":\"bool\"},{\"internalType\":\"address[]\",\"name\":\"selectedNodes\",\"type\":\"address[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"commitments\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"nonces\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes[]\",\"name\":\"results\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256[]\",\"name\":\"resultDisclosedRounds\",\"type\":\"uint256[]\"},{\"internalType\":\"address\",\"name\":\"resultNode\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"aborted\",\"type\":\"bool\"}],\"internalType\":\"structTask.TaskInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeTask\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSuccessTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalAbortedTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractNode\",\"name\":\"nodeInstance\",\"type\":\"address\"},{\"internalType\":\"contractIERC20\",\"name\":\"tokenInstance\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"TaskAborted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"selectedNode\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"}],\"name\":\"TaskCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"TaskResultCommitmentsReady\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"resultNode\",\"type\":\"address\"}],\"name\":\"TaskSuccess\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"createTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"}],\"name\":\"getSelectedNode\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"commitment\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"nonce\",\"type\":\"bytes32\"}],\"name\":\"submitTaskResultCommitment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"}],\"name\":\"discloseTaskResult\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"}],\"name\":\"reportResultsUploaded\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"}],\"name\":\"reportTaskError\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"cancelTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"updateTaskFeePerNode\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"updateDistanceThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"t\",\"type\":\"uint256\"}],\"name\":\"updateTimeout\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"getTask\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"bool\",\"name\":\"isSuccess\",\"type\":\"bool\"},{\"internalType\":\"address[]\",\"name\":\"selectedNodes\",\"type\":\"address[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"commitments\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"nonces\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes[]\",\"name\":\"results\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256[]\",\"name\":\"resultDisclosedRounds\",\"type\":\"uint256[]\"},{\"internalType\":\"address\",\"name\":\"resultNode\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"aborted\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeout\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"balance\",\"type\":\"uint256\"}],\"internalType\":\"structTask.TaskInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeTask\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSuccessTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalAbortedTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // TaskABI is the input ABI used to generate the binding from.
@@ -260,7 +262,7 @@ func (_Task *TaskCallerSession) GetSelectedNode(taskHash [32]byte, dataHash [32]
 
 // GetTask is a free data retrieval call binding the contract method 0x1d65e77e.
 //
-// Solidity: function getTask(uint256 taskId) view returns((uint256,address,bytes32,bytes32,bool,address[],bytes32[],bytes32[],bytes[],uint256[],address,bool))
+// Solidity: function getTask(uint256 taskId) view returns((uint256,address,bytes32,bytes32,bool,address[],bytes32[],bytes32[],bytes[],uint256[],address,bool,uint256,uint256))
 func (_Task *TaskCaller) GetTask(opts *bind.CallOpts, taskId *big.Int) (TaskTaskInfo, error) {
 	var out []interface{}
 	err := _Task.contract.Call(opts, &out, "getTask", taskId)
@@ -277,14 +279,14 @@ func (_Task *TaskCaller) GetTask(opts *bind.CallOpts, taskId *big.Int) (TaskTask
 
 // GetTask is a free data retrieval call binding the contract method 0x1d65e77e.
 //
-// Solidity: function getTask(uint256 taskId) view returns((uint256,address,bytes32,bytes32,bool,address[],bytes32[],bytes32[],bytes[],uint256[],address,bool))
+// Solidity: function getTask(uint256 taskId) view returns((uint256,address,bytes32,bytes32,bool,address[],bytes32[],bytes32[],bytes[],uint256[],address,bool,uint256,uint256))
 func (_Task *TaskSession) GetTask(taskId *big.Int) (TaskTaskInfo, error) {
 	return _Task.Contract.GetTask(&_Task.CallOpts, taskId)
 }
 
 // GetTask is a free data retrieval call binding the contract method 0x1d65e77e.
 //
-// Solidity: function getTask(uint256 taskId) view returns((uint256,address,bytes32,bytes32,bool,address[],bytes32[],bytes32[],bytes[],uint256[],address,bool))
+// Solidity: function getTask(uint256 taskId) view returns((uint256,address,bytes32,bytes32,bool,address[],bytes32[],bytes32[],bytes[],uint256[],address,bool,uint256,uint256))
 func (_Task *TaskCallerSession) GetTask(taskId *big.Int) (TaskTaskInfo, error) {
 	return _Task.Contract.GetTask(&_Task.CallOpts, taskId)
 }
@@ -411,6 +413,27 @@ func (_Task *TaskSession) TotalTasks() (*big.Int, error) {
 // Solidity: function totalTasks() view returns(uint256)
 func (_Task *TaskCallerSession) TotalTasks() (*big.Int, error) {
 	return _Task.Contract.TotalTasks(&_Task.CallOpts)
+}
+
+// CancelTask is a paid mutator transaction binding the contract method 0x7eec20a8.
+//
+// Solidity: function cancelTask(uint256 taskId) returns()
+func (_Task *TaskTransactor) CancelTask(opts *bind.TransactOpts, taskId *big.Int) (*types.Transaction, error) {
+	return _Task.contract.Transact(opts, "cancelTask", taskId)
+}
+
+// CancelTask is a paid mutator transaction binding the contract method 0x7eec20a8.
+//
+// Solidity: function cancelTask(uint256 taskId) returns()
+func (_Task *TaskSession) CancelTask(taskId *big.Int) (*types.Transaction, error) {
+	return _Task.Contract.CancelTask(&_Task.TransactOpts, taskId)
+}
+
+// CancelTask is a paid mutator transaction binding the contract method 0x7eec20a8.
+//
+// Solidity: function cancelTask(uint256 taskId) returns()
+func (_Task *TaskTransactorSession) CancelTask(taskId *big.Int) (*types.Transaction, error) {
+	return _Task.Contract.CancelTask(&_Task.TransactOpts, taskId)
 }
 
 // CreateTask is a paid mutator transaction binding the contract method 0xd3f32cae.
@@ -600,6 +623,27 @@ func (_Task *TaskSession) UpdateTaskFeePerNode(fee *big.Int) (*types.Transaction
 // Solidity: function updateTaskFeePerNode(uint256 fee) returns()
 func (_Task *TaskTransactorSession) UpdateTaskFeePerNode(fee *big.Int) (*types.Transaction, error) {
 	return _Task.Contract.UpdateTaskFeePerNode(&_Task.TransactOpts, fee)
+}
+
+// UpdateTimeout is a paid mutator transaction binding the contract method 0xa330214e.
+//
+// Solidity: function updateTimeout(uint256 t) returns()
+func (_Task *TaskTransactor) UpdateTimeout(opts *bind.TransactOpts, t *big.Int) (*types.Transaction, error) {
+	return _Task.contract.Transact(opts, "updateTimeout", t)
+}
+
+// UpdateTimeout is a paid mutator transaction binding the contract method 0xa330214e.
+//
+// Solidity: function updateTimeout(uint256 t) returns()
+func (_Task *TaskSession) UpdateTimeout(t *big.Int) (*types.Transaction, error) {
+	return _Task.Contract.UpdateTimeout(&_Task.TransactOpts, t)
+}
+
+// UpdateTimeout is a paid mutator transaction binding the contract method 0xa330214e.
+//
+// Solidity: function updateTimeout(uint256 t) returns()
+func (_Task *TaskTransactorSession) UpdateTimeout(t *big.Int) (*types.Transaction, error) {
+	return _Task.Contract.UpdateTimeout(&_Task.TransactOpts, t)
 }
 
 // TaskOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the Task contract.
@@ -825,12 +869,13 @@ func (it *TaskTaskAbortedIterator) Close() error {
 // TaskTaskAborted represents a TaskAborted event raised by the Task contract.
 type TaskTaskAborted struct {
 	TaskId *big.Int
+	Reason string
 	Raw    types.Log // Blockchain specific contextual infos
 }
 
-// FilterTaskAborted is a free log retrieval operation binding the contract event 0x6a86ed6786db348248f2f2c44beeffca7d9832ff23f5f2d1c7c596a1b82d4baf.
+// FilterTaskAborted is a free log retrieval operation binding the contract event 0x346216bb718ede47b40f85e7caf58cd997eebda879d146a8b49091c106c851d9.
 //
-// Solidity: event TaskAborted(uint256 taskId)
+// Solidity: event TaskAborted(uint256 taskId, string reason)
 func (_Task *TaskFilterer) FilterTaskAborted(opts *bind.FilterOpts) (*TaskTaskAbortedIterator, error) {
 
 	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskAborted")
@@ -840,9 +885,9 @@ func (_Task *TaskFilterer) FilterTaskAborted(opts *bind.FilterOpts) (*TaskTaskAb
 	return &TaskTaskAbortedIterator{contract: _Task.contract, event: "TaskAborted", logs: logs, sub: sub}, nil
 }
 
-// WatchTaskAborted is a free log subscription operation binding the contract event 0x6a86ed6786db348248f2f2c44beeffca7d9832ff23f5f2d1c7c596a1b82d4baf.
+// WatchTaskAborted is a free log subscription operation binding the contract event 0x346216bb718ede47b40f85e7caf58cd997eebda879d146a8b49091c106c851d9.
 //
-// Solidity: event TaskAborted(uint256 taskId)
+// Solidity: event TaskAborted(uint256 taskId, string reason)
 func (_Task *TaskFilterer) WatchTaskAborted(opts *bind.WatchOpts, sink chan<- *TaskTaskAborted) (event.Subscription, error) {
 
 	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskAborted")
@@ -877,9 +922,9 @@ func (_Task *TaskFilterer) WatchTaskAborted(opts *bind.WatchOpts, sink chan<- *T
 	}), nil
 }
 
-// ParseTaskAborted is a log parse operation binding the contract event 0x6a86ed6786db348248f2f2c44beeffca7d9832ff23f5f2d1c7c596a1b82d4baf.
+// ParseTaskAborted is a log parse operation binding the contract event 0x346216bb718ede47b40f85e7caf58cd997eebda879d146a8b49091c106c851d9.
 //
-// Solidity: event TaskAborted(uint256 taskId)
+// Solidity: event TaskAborted(uint256 taskId, string reason)
 func (_Task *TaskFilterer) ParseTaskAborted(log types.Log) (*TaskTaskAborted, error) {
 	event := new(TaskTaskAborted)
 	if err := _Task.contract.UnpackLog(event, "TaskAborted", log); err != nil {
