@@ -244,7 +244,7 @@ func processTaskAborted(startBlockNum, endBlockNum uint64) error {
 			}
 		}
 
-		if err := task.AbortWithReason(taskAborted.Reason, config.GetDB()); err != nil {
+		if err := task.AbortWithReason("Task aborted on the Blockchain: "+taskAborted.Reason, config.GetDB()); err != nil {
 			return err
 		}
 	}
