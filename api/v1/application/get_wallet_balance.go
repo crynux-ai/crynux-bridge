@@ -12,8 +12,9 @@ import (
 )
 
 type WalletBalance struct {
-	ETH *big.Int `json:"eth"`
-	CNX *big.Int `json:"cnx"`
+	Address string   `json:"address"`
+	ETH     *big.Int `json:"eth"`
+	CNX     *big.Int `json:"cnx"`
 }
 
 type GetWalletBalanceResponse struct {
@@ -58,8 +59,9 @@ func GetWalletBalance(_ *gin.Context) (*GetWalletBalanceResponse, error) {
 
 	return &GetWalletBalanceResponse{
 		Data: &WalletBalance{
-			CNX: cnxBalance,
-			ETH: ethBalance,
+			Address: appConfig.Blockchain.Account.Address,
+			CNX:     cnxBalance,
+			ETH:     ethBalance,
 		},
 	}, nil
 }
