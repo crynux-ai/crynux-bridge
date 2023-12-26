@@ -47,13 +47,6 @@ func M20230830(db *gorm.DB) *gormigrate.Gormigrate {
 			Link:        "https://huggingface.co/emilianJR/chilloutmix_NiPrunedFp32Fix",
 			Type:        models.ModelType_SD_1_5,
 		},
-		{
-			Name:        "Anime Style Base Model",
-			Key:         "a1079602570/animefull-final-pruned",
-			Description: "A base model to generate anime style images",
-			Link:        "https://huggingface.co/a1079602570/animefull-final-pruned",
-			Type:        models.ModelType_SD_1_5,
-		},
 	}
 
 	var loraModels = []LoraModel{
