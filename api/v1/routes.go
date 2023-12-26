@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/loopfz/gadgeto/tonic"
 	"github.com/wI2L/fizz"
+	"ig_server/api/v1/application"
 	"ig_server/api/v1/inference_tasks"
 	"ig_server/api/v1/models"
 	"ig_server/api/v1/network"
@@ -47,4 +48,10 @@ func InitRoutes(r *fizz.Fizz) {
 
 	networkGroup := v1g.Group("network", "Network", "Network status")
 	networkGroup.GET("nodes", []fizz.OperationOption{}, tonic.Handler(network.GetNodeStats, 200))
+
+	applicationGroup := v1g.Group("application", "Application", "Application related APIs")
+	applicationGroup.GET("/wallet/balance", []fizz.OperationOption{
+		fizz.Summary("Get the balance of the application wallet"),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(application.GetWalletBalance, 200))
 }

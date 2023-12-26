@@ -183,6 +183,9 @@ func ApproveAllBalanceForTaskCreator() error {
 	}
 
 	appAddress := common.HexToAddress(config.GetConfig().Blockchain.Account.Address)
+
+	log.Infoln("Approve all balance for the application account: " + config.GetConfig().Blockchain.Account.Address)
+
 	currentETHBalance, err := client.BalanceAt(
 		context.Background(),
 		appAddress,
