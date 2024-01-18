@@ -36,5 +36,6 @@ relay:
   base_url: "https://relay.h.crynux.ai"
 task_schema:
   stable_diffusion_inference: 'https://raw.githubusercontent.com/crynux-ai/stable-diffusion-task/main/schema/stable-diffusion-inference-task.json'
+  gpt_inference: "https://raw.githubusercontent.com/crynux-ai/gpt-task/main/schema/gpt-inference-task.json"
 test:
   root_address: ""
