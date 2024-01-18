@@ -1,20 +1,21 @@
 package api
 
 import (
+	v1 "crynux_bridge/api/v1"
+	responseV1 "crynux_bridge/api/v1/response"
+	"crynux_bridge/config"
+	"reflect"
+	"regexp"
+	"strings"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
 	log "github.com/sirupsen/logrus"
-	"github.com/toorop/gin-logrus"
+	ginlogrus "github.com/toorop/gin-logrus"
 	"github.com/wI2L/fizz"
 	"github.com/wI2L/fizz/openapi"
-	"ig_server/api/v1"
-	responseV1 "ig_server/api/v1/response"
-	"ig_server/config"
-	"reflect"
-	"regexp"
-	"strings"
 )
 
 func GetHttpApplication(appConfig *config.AppConfig) *gin.Engine {

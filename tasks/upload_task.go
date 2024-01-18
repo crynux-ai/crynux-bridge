@@ -1,13 +1,14 @@
 package tasks
 
 import (
-	log "github.com/sirupsen/logrus"
-	"ig_server/config"
-	"ig_server/models"
-	"ig_server/relay"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
+	"crynux_bridge/relay"
 	"regexp"
 	"strconv"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func StartUploadTaskParamsWithTerminateChannel(ch <-chan int) {

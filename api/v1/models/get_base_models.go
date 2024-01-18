@@ -1,10 +1,11 @@
 package models
 
 import (
+	"crynux_bridge/api/v1/response"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
+
 	"github.com/gin-gonic/gin"
-	"ig_server/api/v1/response"
-	"ig_server/config"
-	"ig_server/models"
 )
 
 type GetBaseModelsOutput struct {

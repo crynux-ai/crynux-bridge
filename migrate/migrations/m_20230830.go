@@ -1,9 +1,10 @@
 package migrations
 
 import (
+	"crynux_bridge/models"
+
 	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/gorm"
-	"ig_server/models"
 )
 
 func M20230830(db *gorm.DB) *gormigrate.Gormigrate {

@@ -1,12 +1,13 @@
 package inference_tasks
 
 import (
+	"crynux_bridge/api/v1/response"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
 	"errors"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"ig_server/api/v1/response"
-	"ig_server/config"
-	"ig_server/models"
 )
 
 type TaskInput struct {

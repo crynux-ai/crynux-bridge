@@ -1,12 +1,13 @@
 package tests
 
 import (
+	"crynux_bridge/api/v1/response"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
+	"testing"
+
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
-	"ig_server/api/v1/response"
-	"ig_server/config"
-	"ig_server/models"
-	"testing"
 )
 
 const FullTaskArgsJson string = `{

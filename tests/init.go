@@ -1,11 +1,12 @@
 package tests
 
 import (
-	"github.com/gin-gonic/gin"
-	"ig_server/api"
-	"ig_server/config"
-	"ig_server/migrate"
+	"crynux_bridge/api"
+	"crynux_bridge/config"
+	"crynux_bridge/migrate"
 	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
 var Application *gin.Engine = nil

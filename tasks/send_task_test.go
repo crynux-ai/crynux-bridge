@@ -1,13 +1,14 @@
 package tasks_test
 
 import (
-	"github.com/stretchr/testify/assert"
-	"ig_server/models"
-	"ig_server/tasks"
-	"ig_server/tests"
+	"crynux_bridge/models"
+	"crynux_bridge/tasks"
+	"crynux_bridge/tests"
 	"math/big"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNotEnoughNodes(t *testing.T) {

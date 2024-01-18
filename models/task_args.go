@@ -1,11 +1,12 @@
 package models
 
 import (
+	"crynux_bridge/config"
 	"encoding/json"
+	"net/url"
+
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	_ "github.com/santhosh-tekuri/jsonschema/v5/httploader"
-	"ig_server/config"
-	"net/url"
 )
 
 var sdInferenceTaskSchema *jsonschema.Schema

@@ -40,6 +40,6 @@ jobs:
         with:
           context: .
           push: true
-          file: build/ig_server.Dockerfile
+          file: build/crynux_bridge.Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

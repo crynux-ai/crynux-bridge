@@ -2,10 +2,11 @@ package network
 
 import (
 	"context"
+	"crynux_bridge/api/v1/response"
+	"crynux_bridge/blockchain"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/gin-gonic/gin"
-	"ig_server/api/v1/response"
-	"ig_server/blockchain"
 )
 
 type NodeStats struct {

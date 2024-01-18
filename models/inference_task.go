@@ -19,6 +19,14 @@ const (
 	InferenceTaskSuccess
 )
 
+type ChainTaskType int
+
+const (
+	TaskTypeSD ChainTaskType = iota
+	TaskTypeLLM
+)
+
+
 type InferenceTask struct {
 	RootModel
 	ClientID    uint       `json:"client_id"`
@@ -29,6 +37,8 @@ type InferenceTask struct {
 	TaskId      uint64     `json:"task_id"`
 	ResultNode  string     `json:"result_node"`
 	AbortReason string     `json:"abort_reason"`
+	TaskType      ChainTaskType `json:"task_type"`
+	VramLimit     uint64        `json:"vram_limit"`
 }
 
 func (t *InferenceTask) BeforeCreate(*gorm.DB) error {

@@ -2,8 +2,13 @@ package tests
 
 import (
 	"context"
+	"crynux_bridge/blockchain"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
 	"crypto/ecdsa"
 	"errors"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -11,10 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"ig_server/blockchain"
-	"ig_server/config"
-	"ig_server/models"
-	"math/big"
 )
 
 func PrepareAccounts() (addresses []string, privateKeys []string, err error) {

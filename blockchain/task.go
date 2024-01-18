@@ -4,17 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crynux_bridge/blockchain/bindings"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
 	"errors"
-	"github.com/corona10/goimagehash"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/params"
-	log "github.com/sirupsen/logrus"
-	"ig_server/blockchain/bindings"
-	"ig_server/config"
-	"ig_server/models"
 	"image"
 	"image/png"
 	"io"
@@ -22,6 +15,14 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/corona10/goimagehash"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/params"
+	log "github.com/sirupsen/logrus"
 )
 
 var taskContractInstance *bindings.Task
@@ -66,7 +67,7 @@ func CreateTaskOnChain(task *models.InferenceTask) (string, error) {
 	log.Debugln("create task tx: TaskHash " + common.Bytes2Hex(taskHash[:]))
 	log.Debugln("create task tx: DataHash " + common.Bytes2Hex(dataHash[:]))
 
-	tx, err := instance.CreateTask(auth, *taskHash, *dataHash)
+	tx, err := instance.CreateTask(auth, big.NewInt(int64(task.TaskType)), *taskHash, *dataHash, big.NewInt(int64(task.VramLimit)))
 	if err != nil {
 		return "", err
 	}

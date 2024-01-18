@@ -1,7 +1,7 @@
 FROM golang:alpine3.18 AS builder
 RUN apk add --no-cache --update gcc g++
 
-WORKDIR /ig_server
+WORKDIR /crynux_bridge
 
 COPY go.* .
 COPY . .
@@ -15,7 +15,7 @@ ENV TZ=Asia/Tokyo
 
 WORKDIR /app
 
-COPY --from=builder /ig_server/ig_server .
+COPY --from=builder /crynux_bridge/crynux_bridge .
 COPY static ./static
 
-CMD ["/app/ig_server"]
+CMD ["/app/crynux_bridge"]

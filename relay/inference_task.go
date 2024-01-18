@@ -2,11 +2,10 @@ package relay
 
 import (
 	"bytes"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
 	"encoding/json"
 	"errors"
-	log "github.com/sirupsen/logrus"
-	"ig_server/config"
-	"ig_server/models"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -15,6 +14,8 @@ import (
 	"path"
 	"strconv"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type GetTaskResultInput struct {

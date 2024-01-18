@@ -1,15 +1,12 @@
 package tasks_test
 
 import (
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-	"ig_server/blockchain"
-	"ig_server/config"
-	"ig_server/models"
-	"ig_server/relay"
-	"ig_server/tasks"
-	"ig_server/tests"
+	"crynux_bridge/blockchain"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
+	"crynux_bridge/relay"
+	"crynux_bridge/tasks"
+	"crynux_bridge/tests"
 	"image"
 	"image/png"
 	"io"
@@ -19,6 +16,10 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetTaskResult(t *testing.T) {

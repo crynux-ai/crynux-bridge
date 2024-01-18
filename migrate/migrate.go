@@ -1,10 +1,11 @@
 package migrate
 
 import (
+	"crynux_bridge/migrate/migrations"
+
 	"github.com/go-gormigrate/gormigrate/v2"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"ig_server/migrate/migrations"
 )
 
 var migrationScripts []*gormigrate.Gormigrate
@@ -37,4 +38,5 @@ func InitMigration(db *gorm.DB) {
 	// Add new migrations here
 	migrationScripts = append(migrationScripts, migrations.M20230810(db))
 	migrationScripts = append(migrationScripts, migrations.M20230830(db))
+	migrationScripts = append(migrationScripts, migrations.M20240115(db))
 }

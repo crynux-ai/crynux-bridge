@@ -1,4 +1,4 @@
-module ig_server
+module crynux_bridge
 
 go 1.20
 
