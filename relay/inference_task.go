@@ -105,9 +105,15 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 
 	taskIdStr := strconv.FormatUint(task.TaskId, 10)
 
-	numImages, err := models.GetTaskConfigNumImages(task.TaskArgs)
-	if err != nil {
-		return err
+	var numImages int
+	if task.TaskType == models.TaskTypeSD {
+		var err error
+		numImages, err = models.GetTaskConfigNumImages(task.TaskArgs)
+		if err != nil {
+			return err
+		}
+	} else {
+		numImages = 1
 	}
 
 	for i := numImages - 1; i >= 0; i-- {
@@ -119,6 +125,9 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 		}
 
 		timestamp, signature, err := SignData(getResultInput, appConfig.Blockchain.Account.PrivateKey)
+		if err != nil {
+			return err
+		}
 
 		timestampStr := strconv.FormatInt(timestamp, 10)
 

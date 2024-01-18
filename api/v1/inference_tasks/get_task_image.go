@@ -43,11 +43,18 @@ func GetTaskImage(ctx *gin.Context, in *GetTaskImageInput) error {
 		}
 	}
 
+	var fileExt string
+	if task.TaskType == models.TaskTypeSD {
+		fileExt = ".png"
+	} else {
+		fileExt = ".json"
+	}
+
 	appConfig := config.GetConfig()
 	imageFile := filepath.Join(
 		appConfig.DataDir.InferenceTasks,
 		strconv.FormatUint(uint64(task.ID), 10),
-		in.ImageNum+".png",
+		in.ImageNum+fileExt,
 	)
 
 	if _, err := os.Stat(imageFile); err != nil {
@@ -56,7 +63,7 @@ func GetTaskImage(ctx *gin.Context, in *GetTaskImageInput) error {
 
 	ctx.Header("Content-Description", "File Transfer")
 	ctx.Header("Content-Transfer-Encoding", "binary")
-	ctx.Header("Content-Disposition", "attachment; filename="+in.ImageNum+".png")
+	ctx.Header("Content-Disposition", "attachment; filename="+in.ImageNum+fileExt)
 	ctx.Header("Content-Type", "application/octet-stream")
 	ctx.File(imageFile)
 
