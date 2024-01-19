@@ -27,8 +27,8 @@ blockchain:
     address: ""
     private_key_file: ""
   contracts:
-    task: "0xba2489a25A5f542877D3825Ab802651f28878C4a"
-    node: "0xB0E9A451Ce0CC181EA9888C7B42BB8Ad90b73C78"
+    task: "0xe625d0edC6a79cD23Ef4EbB91bE7574bf2451146"
+    node: "0xb6dEcFd5D51A1157f7D6B7668274c6580A128601"
     crynux_token: "0x95E7e7Ed5463Ff482f61585605a0ff278e0E1FFb"
   start_block_num: 1887881
   gas_limit: 42949672
