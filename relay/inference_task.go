@@ -116,6 +116,13 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 		numImages = 1
 	}
 
+	var fileExt string
+	if task.TaskType == models.TaskTypeSD {
+		fileExt = ".png"
+	} else {
+		fileExt = ".json"
+	}
+
 	for i := numImages - 1; i >= 0; i-- {
 		iStr := strconv.Itoa(i)
 
@@ -135,9 +142,9 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 		reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/" + taskIdStr + "/results/" + iStr
 		reqUrl = reqUrl + queryStr
 
-		filename := path.Join(taskFolder, iStr+".png")
+		filename := path.Join(taskFolder, iStr+fileExt)
 
-		log.Debugln("Downloading image: " + reqUrl)
+		log.Debugln("Downloading result: " + reqUrl)
 
 		resp, err := http.Get(reqUrl)
 		if err != nil {
@@ -184,7 +191,7 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 
 	}
 
-	log.Debugln("All images downloaded!")
+	log.Debugln("All results downloaded!")
 
 	return nil
 }
