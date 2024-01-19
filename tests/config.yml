@@ -2,10 +2,10 @@
 environment: "test"
 db:
   driver: "sqlite"
-  connection: "/app/data/test_db.sqlite"
+  connection: "data/test_db.sqlite"
   log:
     level: "info"
-    output: "/app/data/logs/crynux_bridge_db.log"
+    output: "data/logs/crynux_bridge_db.log"
     max_file_size: 100
     max_days: 30
     max_file_num: 5
@@ -17,23 +17,24 @@ log:
   max_file_num: 5
 http:
   host: "127.0.0.1"
-  port: "8080"
+  port: "8081"
 data_dir:
-    inference_tasks: "/app/data/inference_tasks"
-    model_images: "/app/data/images/models"
+    inference_tasks: "data/inference_tasks"
+    model_images: "data/images/models"
 blockchain:
   rpc_endpoint: "https://block-node.crynux.ai/rpc"
   account:
-    address: "0x9229d36c82E4e1d03B086C27d704741D0c78321e"
+    address: "0x906C8eB781cA57F4C223bC2a64028c418060C519"
   contracts:
-    task: "0x3f4e524d5Ff53D0e98eE5A37f81f4F21551502B2"
-    node: "0x73F8eAD4d29e227958aB5F3A3e38092271500865"
-    crynux_token: "0xB627D84BFB8cC311A318fEf679ee498F822A0C7C"
-  start_block_num: 1010761
+    task: "0xd14f963B54Deff1993FF7987954602c9593d36A4"
+    node: "0x719f8f1e106BeF85f2ffC1D23e86C9cbCb7ddB67"
+    crynux_token: "0x95E7e7Ed5463Ff482f61585605a0ff278e0E1FFb"
+  start_block_num: 2229286
   gas_limit: 4294967
 relay:
-  base_url: "https://relay.h.crynux.ai"
+  base_url: "http://127.0.0.1:8080"
 task_schema:
   stable_diffusion_inference: 'https://raw.githubusercontent.com/crynux-ai/stable-diffusion-task/main/schema/stable-diffusion-inference-task.json'
+  gpt_inference: "https://raw.githubusercontent.com/crynux-ai/gpt-task/main/schema/gpt-inference-task.json"
 test:
-  root_address: "0xd075aB490857256e6fc85d75d8315e7c9914e008"
+  root_address: "0x906C8eB781cA57F4C223bC2a64028c418060C519"

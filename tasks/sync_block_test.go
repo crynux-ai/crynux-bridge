@@ -36,26 +36,28 @@ func TestTaskSuccessResult(t *testing.T) {
 	err = tests.PrepareTaskCreatorAccount(addresses[0], privateKeys[0])
 	assert.Equal(t, nil, err, "error preparing task creator account")
 
-	task, err := tests.NewTask()
-	assert.Equal(t, nil, err, "error creating task")
-	log.Debugln("Task created in db with pk: " + strconv.FormatUint(uint64(task.ID), 10))
-
-	time.Sleep(20 * time.Second)
-
-	task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskBlockchainConfirmed)
-
-	assert.NotZero(t, task.TaskId, "TaskId on chain is zero")
-
-	log.Debugln("Task created on chain")
-	log.Debugln("Now lets submit the task results from the nodes")
-
-	err = tests.SuccessTaskOnChain(big.NewInt(int64(task.TaskId)), addresses, privateKeys)
-	assert.Equal(t, nil, err, "error submitting result on chain")
-
-	log.Debugln("Task results submitted")
-
-	time.Sleep(40 * time.Second)
-	tests.AssertTaskStatus(t, task.ID, models.InferenceTaskPendingResult)
+	for _, taskType := range tests.TaskTypes {
+		task, err := tests.NewTask(taskType)
+		assert.Equal(t, nil, err, "error creating task")
+		log.Debugln("Task created in db with pk: " + strconv.FormatUint(uint64(task.ID), 10))
+	
+		time.Sleep(20 * time.Second)
+	
+		task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskBlockchainConfirmed)
+	
+		assert.NotZero(t, task.TaskId, "TaskId on chain is zero")
+	
+		log.Debugln("Task created on chain")
+		log.Debugln("Now lets submit the task results from the nodes")
+	
+		err = tests.SuccessTaskOnChain(big.NewInt(int64(task.TaskId)), addresses, privateKeys)
+		assert.Equal(t, nil, err, "error submitting result on chain")
+	
+		log.Debugln("Task results submitted")
+	
+		time.Sleep(40 * time.Second)
+		tests.AssertTaskStatus(t, task.ID, models.InferenceTaskPendingResult)
+	}
 
 	t.Cleanup(func() {
 		sendTaskChan <- 1
@@ -90,17 +92,19 @@ func TestTaskAbortedResult(t *testing.T) {
 	err = tests.PrepareTaskCreatorAccount(addresses[0], privateKeys[0])
 	assert.Equal(t, nil, err, "error preparing task creator account")
 
-	task, err := tests.NewTask()
-	assert.Equal(t, nil, err, "error creating task")
-
-	time.Sleep(20 * time.Second)
-	task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskBlockchainConfirmed)
-
-	err = tests.AbortTaskOnChain(big.NewInt(int64(task.TaskId)), addresses, privateKeys)
-	assert.Equal(t, nil, err, "error submitting result on chain")
-
-	time.Sleep(40 * time.Second)
-	tests.AssertTaskStatus(t, task.ID, models.InferenceTaskAborted)
+	for _, taskType := range tests.TaskTypes {
+		task, err := tests.NewTask(taskType)
+		assert.Equal(t, nil, err, "error creating task")
+	
+		time.Sleep(20 * time.Second)
+		task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskBlockchainConfirmed)
+	
+		err = tests.AbortTaskOnChain(big.NewInt(int64(task.TaskId)), addresses, privateKeys)
+		assert.Equal(t, nil, err, "error submitting result on chain")
+	
+		time.Sleep(40 * time.Second)
+		tests.AssertTaskStatus(t, task.ID, models.InferenceTaskAborted)
+	}
 
 	t.Cleanup(func() {
 		sendTaskChan <- 1

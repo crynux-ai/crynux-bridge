@@ -7,6 +7,7 @@ import (
 	"crynux_bridge/blockchain/bindings"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
+	"crypto/sha256"
 	"errors"
 	"image"
 	"image/png"
@@ -173,6 +174,12 @@ func GetPHashForImageReader(reader io.Reader) ([]byte, error) {
 		return nil, err
 	}
 	return GetPHashForImage(img)
+}
+
+
+func GetHashForGPTResponse(resp string) []byte {
+	h := sha256.Sum256([]byte(resp))
+	return h[:]
 }
 
 func ApproveAllBalanceForTaskCreator() error {

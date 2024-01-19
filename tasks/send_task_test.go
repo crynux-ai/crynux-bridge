@@ -25,11 +25,13 @@ func TestNotEnoughNodes(t *testing.T) {
 	err = tests.PrepareTaskCreatorAccount(addresses[0], privateKeys[0])
 	assert.Equal(t, nil, err, "error preparing task creator account")
 
-	task, err := tests.NewTask()
-	assert.Equal(t, nil, err, "error creating task")
-
-	time.Sleep(20 * time.Second)
-	tests.AssertTaskStatus(t, task.ID, models.InferenceTaskAborted)
+	for _, taskType := range tests.TaskTypes {
+		task, err := tests.NewTask(taskType)
+		assert.Equal(t, nil, err, "error creating task")
+	
+		time.Sleep(20 * time.Second)
+		tests.AssertTaskStatus(t, task.ID, models.InferenceTaskAborted)
+	}
 
 	t.Cleanup(func() {
 		sendTaskChan <- 1
@@ -52,11 +54,13 @@ func TestNotEnoughToken(t *testing.T) {
 	err = tests.PrepareNetwork(addresses, privateKeys)
 	assert.Equal(t, nil, err, "error preparing network nodes")
 
-	task, err := tests.NewTask()
-	assert.Equal(t, nil, err, "error creating task")
-
-	time.Sleep(20 * time.Second)
-	tests.AssertTaskStatus(t, task.ID, models.InferenceTaskAborted)
+	for _, taskType := range tests.TaskTypes {
+		task, err := tests.NewTask(taskType)
+		assert.Equal(t, nil, err, "error creating task")
+	
+		time.Sleep(20 * time.Second)
+		tests.AssertTaskStatus(t, task.ID, models.InferenceTaskAborted)
+	}
 
 	t.Cleanup(func() {
 		sendTaskChan <- 1
@@ -85,15 +89,17 @@ func TestSuccessCreation(t *testing.T) {
 	err = tests.PrepareTaskCreatorAccount(addresses[0], privateKeys[0])
 	assert.Equal(t, nil, err, "error preparing task creator account")
 
-	task, err := tests.NewTask()
-	assert.Equal(t, nil, err, "error creating task")
-
-	time.Sleep(20 * time.Second)
-	task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskBlockchainConfirmed)
-
-	// The results must be submitted in order to free the 3 nodes from the network
-	err = tests.SuccessTaskOnChain(big.NewInt(int64(task.TaskId)), addresses, privateKeys)
-	assert.Equal(t, nil, err, "error submitting result on chain")
+	for _, taskType := range tests.TaskTypes {
+		task, err := tests.NewTask(taskType)
+		assert.Equal(t, nil, err, "error creating task")
+	
+		time.Sleep(20 * time.Second)
+		task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskBlockchainConfirmed)
+	
+		// The results must be submitted in order to free the 3 nodes from the network
+		err = tests.SuccessTaskOnChain(big.NewInt(int64(task.TaskId)), addresses, privateKeys)
+		assert.Equal(t, nil, err, "error submitting result on chain")
+	}
 
 	t.Cleanup(func() {
 		sendTaskChan <- 1
