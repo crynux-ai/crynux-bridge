@@ -64,6 +64,7 @@ type AppConfig struct {
 
 	TaskSchema struct {
 		StableDiffusionInference string `mapstructure:"stable_diffusion_inference"`
+		GPTInference             string `mapstructure:"gpt_inference"`
 	} `mapstructure:"task_schema"`
 
 	Test struct {

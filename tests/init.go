@@ -1,18 +1,27 @@
 package tests
 
 import (
-	"github.com/gin-gonic/gin"
-	"ig_server/api"
-	"ig_server/config"
-	"ig_server/migrate"
+	"crynux_bridge/api"
+	"crynux_bridge/config"
+	"crynux_bridge/migrate"
 	"os"
+	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 var Application *gin.Engine = nil
 
 func init() {
+	wd, _ := os.Getwd()
+	wd = strings.SplitAfter(wd, "crynux-bridge")[0]
 
-	if err := config.InitConfig(""); err != nil {
+	if err := os.Chdir(wd); err != nil {
+		print(err.Error())
+		os.Exit(1)
+	}
+
+	if err := config.InitConfig("tests"); err != nil {
 		print(err.Error())
 		os.Exit(1)
 	}

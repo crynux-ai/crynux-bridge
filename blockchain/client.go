@@ -3,7 +3,13 @@ package blockchain
 import (
 	"bytes"
 	"context"
+	"crynux_bridge/blockchain/bindings"
+	"crynux_bridge/config"
 	"errors"
+	"math/big"
+	"strconv"
+	"time"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -12,11 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
-	"ig_server/blockchain/bindings"
-	"ig_server/config"
-	"math/big"
-	"strconv"
-	"time"
 )
 
 var ethWSClient *ethclient.Client

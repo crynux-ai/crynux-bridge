@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"ig_server/config"
+	"crynux_bridge/config"
 	"os"
 )
 
@@ -12,10 +12,6 @@ func ClearDataFolders() error {
 
 func removeAllContent(dir string) error {
 	if err := os.RemoveAll(dir); err != nil {
-		return err
-	}
-
-	if err := os.MkdirAll(dir, os.ModeDir); err != nil {
 		return err
 	}
 

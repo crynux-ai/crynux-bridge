@@ -5,13 +5,13 @@ db:
   connection: "user:mypass@(127.0.0.1:3306)/mydb?parseTime=true"
   log:
     level: "info"
-    output: "data/logs/ig_server_db.log"
+    output: "data/logs/crynux_bridge_db.log"
     max_file_size: 100
     max_days: 30
     max_file_num: 5
 log:
   level: "debug"
-  output: "data/logs/ig_server.log"
+  output: "data/logs/crynux_bridge.log"
   max_file_size: 100
   max_days: 30
   max_file_num: 5
@@ -27,8 +27,8 @@ blockchain:
     address: ""
     private_key_file: ""
   contracts:
-    task: "0xba2489a25A5f542877D3825Ab802651f28878C4a"
-    node: "0xB0E9A451Ce0CC181EA9888C7B42BB8Ad90b73C78"
+    task: "0xe625d0edC6a79cD23Ef4EbB91bE7574bf2451146"
+    node: "0xb6dEcFd5D51A1157f7D6B7668274c6580A128601"
     crynux_token: "0x95E7e7Ed5463Ff482f61585605a0ff278e0E1FFb"
   start_block_num: 1887881
   gas_limit: 42949672
@@ -36,5 +36,6 @@ relay:
   base_url: "https://relay.h.crynux.ai"
 task_schema:
   stable_diffusion_inference: 'https://raw.githubusercontent.com/crynux-ai/stable-diffusion-task/main/schema/stable-diffusion-inference-task.json'
+  gpt_inference: "https://raw.githubusercontent.com/crynux-ai/gpt-task/main/schema/gpt-inference-task.json"
 test:
   root_address: ""

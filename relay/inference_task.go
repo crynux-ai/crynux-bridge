@@ -2,11 +2,10 @@ package relay
 
 import (
 	"bytes"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
 	"encoding/json"
 	"errors"
-	log "github.com/sirupsen/logrus"
-	"ig_server/config"
-	"ig_server/models"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -15,6 +14,8 @@ import (
 	"path"
 	"strconv"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type GetTaskResultInput struct {
@@ -98,15 +99,28 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 		appConfig.DataDir.InferenceTasks,
 		strconv.FormatUint(uint64(task.ID), 10))
 
-	if err := os.MkdirAll(taskFolder, os.ModeDir); err != nil {
+	if err := os.MkdirAll(taskFolder, 0700); err != nil {
 		return err
 	}
 
 	taskIdStr := strconv.FormatUint(task.TaskId, 10)
 
-	numImages, err := models.GetTaskConfigNumImages(task.TaskArgs)
-	if err != nil {
-		return err
+	var numImages int
+	if task.TaskType == models.TaskTypeSD {
+		var err error
+		numImages, err = models.GetTaskConfigNumImages(task.TaskArgs)
+		if err != nil {
+			return err
+		}
+	} else {
+		numImages = 1
+	}
+
+	var fileExt string
+	if task.TaskType == models.TaskTypeSD {
+		fileExt = ".png"
+	} else {
+		fileExt = ".json"
 	}
 
 	for i := numImages - 1; i >= 0; i-- {
@@ -118,6 +132,9 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 		}
 
 		timestamp, signature, err := SignData(getResultInput, appConfig.Blockchain.Account.PrivateKey)
+		if err != nil {
+			return err
+		}
 
 		timestampStr := strconv.FormatInt(timestamp, 10)
 
@@ -125,9 +142,9 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 		reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/" + taskIdStr + "/results/" + iStr
 		reqUrl = reqUrl + queryStr
 
-		filename := path.Join(taskFolder, iStr+".png")
+		filename := path.Join(taskFolder, iStr+fileExt)
 
-		log.Debugln("Downloading image: " + reqUrl)
+		log.Debugln("Downloading result: " + reqUrl)
 
 		resp, err := http.Get(reqUrl)
 		if err != nil {
@@ -174,12 +191,12 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 
 	}
 
-	log.Debugln("All images downloaded!")
+	log.Debugln("All results downloaded!")
 
 	return nil
 }
 
-func UploadTaskResult(taskId uint64, imageFiles []io.Reader) error {
+func UploadTaskResult(taskId uint64, taskType models.ChainTaskType, resultFiles []io.Reader) error {
 
 	pr, pw := io.Pipe()
 	writer := multipart.NewWriter(pw)
@@ -198,7 +215,7 @@ func UploadTaskResult(taskId uint64, imageFiles []io.Reader) error {
 	go func() {
 		log.Debugln("writing form fields in go routine...")
 
-		err = prepareUploadResultForm(imageFiles, writer, timestamp, signature)
+		err = prepareUploadResultForm(resultFiles, taskType, writer, timestamp, signature)
 		if err != nil {
 			log.Errorln("error preparing the result uploading form")
 			log.Errorln(err)
@@ -270,7 +287,8 @@ func callUploadResultApi(taskId uint64, writer *multipart.Writer, body io.Reader
 }
 
 func prepareUploadResultForm(
-	imageFiles []io.Reader,
+	resultFiles []io.Reader,
+	taskType models.ChainTaskType,
 	writer *multipart.Writer,
 	timestamp int64,
 	signature string) error {
@@ -285,14 +303,21 @@ func prepareUploadResultForm(
 		return err
 	}
 
-	for i := 0; i < len(imageFiles); i++ {
-		part, err := writer.CreateFormFile("images", "image_"+strconv.Itoa(i)+".png")
+	var fileExt string
+	if taskType == models.TaskTypeSD {
+		fileExt = ".png"
+	} else {
+		fileExt = ".json"
+	}
+
+	for i := 0; i < len(resultFiles); i++ {
+		part, err := writer.CreateFormFile("images", "image_"+strconv.Itoa(i)+fileExt)
 		if err != nil {
 			log.Errorln("error creating form file field " + strconv.Itoa(i))
 			return err
 		}
 
-		if _, err := io.Copy(part, imageFiles[i]); err != nil {
+		if _, err := io.Copy(part, resultFiles[i]); err != nil {
 			log.Errorln("error copying image to the form field " + strconv.Itoa(i))
 			return err
 		}

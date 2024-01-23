@@ -1,12 +1,13 @@
 package tasks
 
 import (
-	log "github.com/sirupsen/logrus"
-	"ig_server/blockchain"
-	"ig_server/config"
-	"ig_server/models"
+	"crynux_bridge/blockchain"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
 	"strconv"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func StartSendTaskOnChainWithTerminateChannel(ch <-chan int) {

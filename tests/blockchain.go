@@ -2,97 +2,40 @@ package tests
 
 import (
 	"context"
-	"crypto/ecdsa"
+	"crynux_bridge/blockchain"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
 	"errors"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"ig_server/blockchain"
-	"ig_server/config"
-	"ig_server/models"
-	"math/big"
+)
+
+const (
+	GPUName string = "NVIDIA GeForce GTX 1070 Ti"
+	GPUVram int    = 8
 )
 
 func PrepareAccounts() (addresses []string, privateKeys []string, err error) {
-
-	// Create 4 accounts
-	// TaskCreator, Node1, Node2, Node3
-	// Transfer tokens to these accounts
-	tokenInstance, err := blockchain.GetCrynuxTokenContractInstance()
-	if err != nil {
-		log.Errorln("error get token contract instance")
-		log.Errorln(err)
-		return nil, nil, err
+	// return account created by ganache cli
+	addresses = []string{
+		"0xe563e647c53ad9d5d28Da50B4e6cc48594117CF1",
+		"0x577887519278199ce8F8D80bAcc70fc32b48daD4",
+		"0x9229d36c82E4e1d03B086C27d704741D0c78321e",
+		"0xEa1A669fd6A705d28239011A074adB3Cfd6cd82B",
 	}
-
-	client, err := blockchain.GetRpcClient()
-	if err != nil {
-		log.Errorln("error connect to the websocket endpoint")
-		log.Errorln(err)
-		return nil, nil, err
+	privateKeys = []string{
+		"bde1aedbe693f34c3c1502e40fe17b18b7f71757523db93a3038a8cadfe43d4d",
+		"a627246a109551432ac5db6535566af34fdddfaa11df17b8afd53eb987e209a2",
+		"b171f296622b98cbdc08dcdcb0696f738c3a22d9d367c657117cd3c8d0b71d42",
+		"8fb2fc9862b93b5b75cda8202f583711201e4cba5459eefe442b8c5dcc4bdab9",
 	}
-
-	rootAddress := common.HexToAddress(config.GetConfig().Test.RootAddress)
-	rootPrivateKey := config.GetConfig().Test.RootPrivateKey
-
-	for i := 0; i <= 3; i++ {
-		privateKey, err := crypto.GenerateKey()
-		if err != nil {
-			return nil, nil, err
-		}
-		privateKeyBytes := crypto.FromECDSA(privateKey)
-		privateKeyStr := hexutil.Encode(privateKeyBytes)[2:]
-		privateKeys = append(privateKeys, privateKeyStr)
-
-		publicKey := privateKey.Public()
-		publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-		if !ok {
-			return nil, nil, errors.New("error casting public key to ECDSA")
-		}
-
-		address := crypto.PubkeyToAddress(*publicKeyECDSA)
-		addresses = append(addresses, address.Hex())
-
-		// Transfer ether to these accounts
-		auth, err := blockchain.GetAuth(client, rootAddress, rootPrivateKey)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		amount := new(big.Int).Mul(big.NewInt(1000), big.NewInt(params.GWei))
-		tx, err := blockchain.SendETH(rootAddress, address, amount, rootPrivateKey)
-
-		_, err = bind.WaitMined(context.Background(), client, tx)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		// Transfer CNX to these accounts
-		auth, err = blockchain.GetAuth(client, rootAddress, rootPrivateKey)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		tx, err = tokenInstance.Transfer(auth, address, new(big.Int).Mul(big.NewInt(1000), big.NewInt(params.Ether)))
-		if err != nil {
-			return nil, nil, err
-		}
-
-		_, err = bind.WaitMined(context.Background(), client, tx)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	appConfig := config.GetConfig()
-	appConfig.Blockchain.Account.Address = addresses[0]
-	appConfig.Blockchain.Account.PrivateKey = privateKeys[0]
-
-	return addresses, privateKeys, nil
+	err = nil
+	return
 }
 
 func PrepareNetwork(addresses []string, privateKeys []string) error {
@@ -148,7 +91,7 @@ func PrepareNetwork(addresses []string, privateKeys []string) error {
 			return err
 		}
 
-		tx, err = nodeInstance.Join(auth)
+		tx, err = nodeInstance.Join(auth, GPUName, big.NewInt(int64(GPUVram)))
 		if err != nil {
 			return err
 		}
@@ -256,18 +199,18 @@ func ClearNetwork(addresses []string, privateKeys []string) error {
 
 func SuccessTaskOnChain(taskId *big.Int, addresses []string, privateKeys []string) error {
 	results := [3][]byte{
-		[]byte("123456789"),
-		[]byte("123456789"),
-		[]byte("123456789"),
+		[]byte("12345678"),
+		[]byte("12345678"),
+		[]byte("12345678"),
 	}
 	return SubmitAndDiscloseResults(taskId, addresses, privateKeys, results)
 }
 
 func AbortTaskOnChain(taskId *big.Int, addresses []string, privateKeys []string) error {
 	results := [3][]byte{
-		[]byte("123456789"),
-		[]byte("555555555"),
-		[]byte("987654321"),
+		[]byte("12345678"),
+		[]byte("55555555"),
+		[]byte("98765432"),
 	}
 	return SubmitAndDiscloseResults(taskId, addresses, privateKeys, results)
 }
@@ -320,6 +263,9 @@ func SubmitAndDiscloseResults(taskId *big.Int, addresses []string, privateKeys [
 		tx, err := taskInstance.SubmitTaskResultCommitment(
 			auth, taskId, big.NewInt(int64(rounds[addresses[i]])),
 			commitment, nonce)
+		if err != nil {
+			return err
+		}
 
 		_, err = bind.WaitMined(context.Background(), client, tx)
 		if err != nil {
@@ -329,6 +275,8 @@ func SubmitAndDiscloseResults(taskId *big.Int, addresses []string, privateKeys [
 
 	log.Debugln("all task commitments submitted")
 
+	var discloseBlockNum uint64 = 0
+
 	for i := 1; i <= 3; i++ {
 		address := common.HexToAddress(addresses[i])
 		auth, err := blockchain.GetAuth(client, address, privateKeys[i])
@@ -337,14 +285,59 @@ func SubmitAndDiscloseResults(taskId *big.Int, addresses []string, privateKeys [
 		}
 
 		tx, err := taskInstance.DiscloseTaskResult(auth, taskId, big.NewInt(int64(rounds[addresses[i]])), results[i-1])
-
-		_, err = bind.WaitMined(context.Background(), client, tx)
 		if err != nil {
 			return err
+		}
+
+		receipt, err := bind.WaitMined(context.Background(), client, tx)
+		if err != nil {
+			return err
+		}
+
+		if discloseBlockNum == 0 {
+			discloseBlockNum = receipt.BlockNumber.Uint64()
 		}
 	}
 
 	log.Debugln("all task results disclosed")
+
+	taskSuccessIterator, err := taskInstance.FilterTaskSuccess(&bind.FilterOpts{
+		Start: discloseBlockNum,
+	}, nil)
+	if err != nil {
+		return err
+	}
+
+	var resultNode string
+	for taskSuccessIterator.Next() {
+		taskSuccess := taskSuccessIterator.Event
+		resultNode = taskSuccess.ResultNode.Hex()
+		break
+	}
+	if err := taskSuccessIterator.Close(); err != nil {
+		return err
+	}
+
+	for i := 1; i <= 3; i++ {
+		if addresses[i] == resultNode {
+			address := common.HexToAddress(addresses[i])
+			auth, err := blockchain.GetAuth(client, address, privateKeys[i])
+			if err != nil {
+				return err
+			}
+
+			tx, err := taskInstance.ReportResultsUploaded(auth, taskId, big.NewInt(int64(rounds[resultNode])))
+			if err != nil {
+				return err
+			}
+
+			_, err = bind.WaitMined(context.Background(), client, tx)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	log.Debugln("report results uploaded")
 
 	return nil
 }

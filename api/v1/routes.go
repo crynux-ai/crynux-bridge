@@ -1,13 +1,14 @@
 package v1
 
 import (
+	"crynux_bridge/api/v1/application"
+	"crynux_bridge/api/v1/inference_tasks"
+	"crynux_bridge/api/v1/models"
+	"crynux_bridge/api/v1/network"
+	"crynux_bridge/api/v1/response"
+
 	"github.com/loopfz/gadgeto/tonic"
 	"github.com/wI2L/fizz"
-	"ig_server/api/v1/application"
-	"ig_server/api/v1/inference_tasks"
-	"ig_server/api/v1/models"
-	"ig_server/api/v1/network"
-	"ig_server/api/v1/response"
 )
 
 func InitRoutes(r *fizz.Fizz) {

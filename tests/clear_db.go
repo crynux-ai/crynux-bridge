@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"ig_server/config"
+	"crynux_bridge/config"
 )
 
 func ClearDB() {

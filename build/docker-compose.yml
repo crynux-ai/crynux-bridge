@@ -1,5 +1,5 @@
 version: "3.8"
-name: "ig_server"
+name: "crynux_bridge"
 services:
   mysql:
     image: mysql:8.1.0
@@ -8,9 +8,9 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: yes
-      MYSQL_DATABASE: ig_server
-      MYSQL_USER: ig_server
-      MYSQL_PASSWORD: igserverpass
+      MYSQL_DATABASE: crynux_bridge
+      MYSQL_USER: crynux_bridge
+      MYSQL_PASSWORD: crynuxbridgepass
       TZ: Asia/Tokyo
     volumes:
       - "./data/mysql:/var/lib/mysql"
@@ -21,11 +21,11 @@ services:
       timeout: 5s
       retries: 55
 
-  ig_server:
+  crynux_bridge:
     image: ig-server:dev
-    container_name: ig_server
+    container_name: crynux_bridge
     volumes:
-      - "./data/ig_server:/app/data"
+      - "./data/crynux_bridge:/app/data"
       - "./config:/app/config"
     ports:
       - "5028:5028"

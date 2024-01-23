@@ -2,13 +2,14 @@ package application
 
 import (
 	"context"
+	"crynux_bridge/api/v1/response"
+	"crynux_bridge/blockchain"
+	"crynux_bridge/config"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
-	"ig_server/api/v1/response"
-	"ig_server/blockchain"
-	"ig_server/config"
-	"math/big"
 )
 
 type WalletBalance struct {

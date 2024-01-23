@@ -34,16 +34,19 @@ func InitConfig(configPath string) error {
 		return err
 	}
 
-	// Load hard-coded private key
-	appConfig.Blockchain.Account.PrivateKey = GetPrivateKey(appConfig.Blockchain.Account.PrivateKeyFile)
-
-	if err := checkBlockchainAccount(); err != nil {
-		return err
-	}
-
 	if appConfig.Environment == EnvTest {
 		appConfig.Test.RootPrivateKey = GetTestPrivateKey()
 		if err := checkTestBlockchainAccount(); err != nil {
+			return err
+		}
+		appConfig.Blockchain.Account.PrivateKey = appConfig.Test.RootPrivateKey
+		if err := checkBlockchainAccount(); err != nil {
+			return err
+		}
+	} else {
+		// Load hard-coded private key
+		appConfig.Blockchain.Account.PrivateKey = GetPrivateKey(appConfig.Blockchain.Account.PrivateKeyFile)
+		if err := checkBlockchainAccount(); err != nil {
 			return err
 		}
 	}

@@ -1,13 +1,14 @@
 package v1
 
 import (
+	"crynux_bridge/api/v1/inference_tasks"
+	"crynux_bridge/api/v1/response"
+	"crynux_bridge/models"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
-	"ig_server/api/v1/inference_tasks"
-	"ig_server/api/v1/response"
-	"ig_server/models"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func AssertValidationErrorResponse(t *testing.T, r *httptest.ResponseRecorder, fieldName, fieldMessage string) {

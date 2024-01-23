@@ -2,15 +2,16 @@ package tasks
 
 import (
 	"context"
+	"crynux_bridge/blockchain"
+	"crynux_bridge/config"
+	"crynux_bridge/models"
 	"errors"
+	"strconv"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"ig_server/blockchain"
-	"ig_server/config"
-	"ig_server/models"
-	"strconv"
-	"time"
 )
 
 func StartSyncBlockWithTerminateChannel(ch <-chan int) {
@@ -227,7 +228,7 @@ func processTaskAborted(startBlockNum, endBlockNum uint64) error {
 		}
 		taskAborted := taskAbortedEventIterator.Event
 
-		log.Debugln("received TaskAborted: " + taskAborted.TaskId.String())
+		log.Debugf("%s TaskAborted, reason: %s", taskAborted.TaskId.String(), taskAborted.Reason)
 
 		task := &models.InferenceTask{
 			TaskId: taskAborted.TaskId.Uint64(),

@@ -1,14 +1,15 @@
 package main
 
 import (
+	"crynux_bridge/api"
+	"crynux_bridge/blockchain"
+	"crynux_bridge/config"
+	"crynux_bridge/migrate"
+	"crynux_bridge/tasks"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"ig_server/api"
-	"ig_server/blockchain"
-	"ig_server/config"
-	"ig_server/migrate"
-	"ig_server/tasks"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
