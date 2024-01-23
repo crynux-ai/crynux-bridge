@@ -99,7 +99,7 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 		appConfig.DataDir.InferenceTasks,
 		strconv.FormatUint(uint64(task.ID), 10))
 
-	if err := os.MkdirAll(taskFolder, os.ModeDir); err != nil {
+	if err := os.MkdirAll(taskFolder, 0700); err != nil {
 		return err
 	}
 
@@ -196,7 +196,7 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 	return nil
 }
 
-func UploadTaskResult(taskId uint64, imageFiles []io.Reader) error {
+func UploadTaskResult(taskId uint64, taskType models.ChainTaskType, resultFiles []io.Reader) error {
 
 	pr, pw := io.Pipe()
 	writer := multipart.NewWriter(pw)
@@ -215,7 +215,7 @@ func UploadTaskResult(taskId uint64, imageFiles []io.Reader) error {
 	go func() {
 		log.Debugln("writing form fields in go routine...")
 
-		err = prepareUploadResultForm(imageFiles, writer, timestamp, signature)
+		err = prepareUploadResultForm(resultFiles, taskType, writer, timestamp, signature)
 		if err != nil {
 			log.Errorln("error preparing the result uploading form")
 			log.Errorln(err)
@@ -287,7 +287,8 @@ func callUploadResultApi(taskId uint64, writer *multipart.Writer, body io.Reader
 }
 
 func prepareUploadResultForm(
-	imageFiles []io.Reader,
+	resultFiles []io.Reader,
+	taskType models.ChainTaskType,
 	writer *multipart.Writer,
 	timestamp int64,
 	signature string) error {
@@ -302,14 +303,21 @@ func prepareUploadResultForm(
 		return err
 	}
 
-	for i := 0; i < len(imageFiles); i++ {
-		part, err := writer.CreateFormFile("images", "image_"+strconv.Itoa(i)+".png")
+	var fileExt string
+	if taskType == models.TaskTypeSD {
+		fileExt = ".png"
+	} else {
+		fileExt = ".json"
+	}
+
+	for i := 0; i < len(resultFiles); i++ {
+		part, err := writer.CreateFormFile("images", "image_"+strconv.Itoa(i)+fileExt)
 		if err != nil {
 			log.Errorln("error creating form file field " + strconv.Itoa(i))
 			return err
 		}
 
-		if _, err := io.Copy(part, imageFiles[i]); err != nil {
+		if _, err := io.Copy(part, resultFiles[i]); err != nil {
 			log.Errorln("error copying image to the form field " + strconv.Itoa(i))
 			return err
 		}
