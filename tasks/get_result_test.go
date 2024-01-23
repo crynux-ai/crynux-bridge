@@ -27,6 +27,9 @@ func TestGetSDTaskResult(t *testing.T) {
 	err := tests.SyncToLatestBlock()
 	assert.Equal(t, nil, err, "catchup error")
 
+	uploadTaskChan := make(chan int)
+	go tasks.StartUploadTaskParamsWithTerminateChannel(uploadTaskChan)
+
 	sendTaskChan := make(chan int)
 	go tasks.StartSendTaskOnChainWithTerminateChannel(sendTaskChan)
 
@@ -49,7 +52,7 @@ func TestGetSDTaskResult(t *testing.T) {
 	assert.Nil(t, err, "error creating task")
 
 	time.Sleep(20 * time.Second)
-	task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskBlockchainConfirmed)
+	task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskParamsUploaded)
 
 	// Prepare the images
 	// Calculate the pHash
@@ -57,7 +60,7 @@ func TestGetSDTaskResult(t *testing.T) {
 	log.Debugln("calculating phash")
 
 	numImages, err := models.GetTaskConfigNumImages(task.TaskArgs)
-	assert.Nil(t, numImages, "error getting num_images in task args")
+	assert.Nil(t, err, "error getting num_images in task args")
 
 	var phash []byte
 	images := make([]image.Image, numImages)
@@ -129,7 +132,7 @@ func TestGetSDTaskResult(t *testing.T) {
 
 	log.Debugln("upload results using address: " + addresses[1])
 
-	err = relay.UploadTaskResult(task.TaskId, imageReaders[:])
+	err = relay.UploadTaskResult(task.TaskId, models.TaskTypeSD, imageReaders[:])
 	assert.Nil(t, err, "error upload task results")
 
 	log.Debugln("task results uploaded")
@@ -175,6 +178,7 @@ func TestGetSDTaskResult(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
+		uploadTaskChan <- 1
 		sendTaskChan <- 1
 		getTaskCreationResultChan <- 1
 		syncBlockChan <- 1
@@ -192,6 +196,9 @@ func TestGetSDTaskResult(t *testing.T) {
 func TestGetLLMTaskResult(t *testing.T) {
 	err := tests.SyncToLatestBlock()
 	assert.Equal(t, nil, err, "catchup error")
+
+	uploadTaskChan := make(chan int)
+	go tasks.StartUploadTaskParamsWithTerminateChannel(uploadTaskChan)
 
 	sendTaskChan := make(chan int)
 	go tasks.StartSendTaskOnChainWithTerminateChannel(sendTaskChan)
@@ -215,7 +222,7 @@ func TestGetLLMTaskResult(t *testing.T) {
 	assert.Nil(t, err, "error creating task")
 
 	time.Sleep(20 * time.Second)
-	task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskBlockchainConfirmed)
+	task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskParamsUploaded)
 
 	// Prepare response
 	// Calculate response hash
@@ -262,7 +269,7 @@ func TestGetLLMTaskResult(t *testing.T) {
 		log.Debugln("encoding response pipe closed")
 	}()
 
-	respReaders = append(respReaders, pr)
+	respReaders[0] = pr
 
 	log.Debugln("uploading task results")
 
@@ -272,7 +279,7 @@ func TestGetLLMTaskResult(t *testing.T) {
 
 	log.Debugln("upload results using address: " + addresses[1])
 
-	err = relay.UploadTaskResult(task.TaskId, respReaders)
+	err = relay.UploadTaskResult(task.TaskId, models.TaskTypeLLM, respReaders)
 	assert.Nil(t, err, "error upload task results")
 
 	log.Debugln("task results uploaded")
@@ -316,6 +323,7 @@ func TestGetLLMTaskResult(t *testing.T) {
 	assert.Equal(t, hexutil.Encode(hash), hexutil.Encode(resultHash), "hash for result mismatch")
 
 	t.Cleanup(func() {
+		uploadTaskChan <- 1
 		sendTaskChan <- 1
 		getTaskCreationResultChan <- 1
 		syncBlockChan <- 1
