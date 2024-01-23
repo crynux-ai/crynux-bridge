@@ -228,7 +228,7 @@ func processTaskAborted(startBlockNum, endBlockNum uint64) error {
 		}
 		taskAborted := taskAbortedEventIterator.Event
 
-		log.Debugln("received TaskAborted: " + taskAborted.TaskId.String())
+		log.Debugf("%s TaskAborted, reason: %s", taskAborted.TaskId.String(), taskAborted.Reason)
 
 		task := &models.InferenceTask{
 			TaskId: taskAborted.TaskId.Uint64(),
