@@ -15,9 +15,5 @@ func removeAllContent(dir string) error {
 		return err
 	}
 
-	if err := os.MkdirAll(dir, os.ModeDir); err != nil {
-		return err
-	}
-
 	return nil
 }
