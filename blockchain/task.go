@@ -1,13 +1,12 @@
 package blockchain
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"crynux_bridge/blockchain/bindings"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"crypto/sha256"
+	"encoding/binary"
 	"errors"
 	"image"
 	"image/png"
@@ -152,20 +151,9 @@ func GetPHashForImage(image image.Image) ([]byte, error) {
 		return nil, err
 	}
 
-	var b bytes.Buffer
-	foo := bufio.NewWriter(&b)
-
-	err = pHash.Dump(foo)
-	if err != nil {
-		return nil, err
-	}
-
-	err = foo.Flush()
-	if err != nil {
-		return nil, err
-	}
-
-	return b.Bytes(), nil
+	bs := make([]byte, pHash.Bits()/8)
+	binary.BigEndian.PutUint64(bs, pHash.GetHash())
+	return bs, nil
 }
 
 func GetPHashForImageReader(reader io.Reader) ([]byte, error) {
