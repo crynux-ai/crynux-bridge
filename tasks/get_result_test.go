@@ -39,6 +39,23 @@ func TestGetSDTaskResult(t *testing.T) {
 	syncBlockChan := make(chan int)
 	go tasks.StartSyncBlockWithTerminateChannel(syncBlockChan)
 
+	t.Cleanup(func() {
+		tests.ClearDB()
+		err := tests.ClearDataFolders()
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Cleanup(func() {
+		uploadTaskChan <- 1
+		sendTaskChan <- 1
+		getTaskCreationResultChan <- 1
+		syncBlockChan <- 1
+
+		tests.ClearDB()
+	})
+
 	addresses, privateKeys, err := tests.PrepareAccounts()
 	assert.Nil(t, err, "error preparing accounts")
 
@@ -47,6 +64,13 @@ func TestGetSDTaskResult(t *testing.T) {
 
 	err = tests.PrepareTaskCreatorAccount(addresses[0], privateKeys[0])
 	assert.Nil(t, err, "error preparing the task creator account")
+
+	t.Cleanup(func() {
+		err := tests.ClearNetwork(addresses, privateKeys)
+		if err != nil {
+			t.Error(err)
+		}
+	})
 
 	task, err := tests.NewTask(models.TaskTypeSD)
 	assert.Nil(t, err, "error creating task")
@@ -145,6 +169,10 @@ func TestGetSDTaskResult(t *testing.T) {
 	getResultChan := make(chan int)
 	go tasks.StartDownloadResultsWithTerminateChannel(getResultChan)
 
+	t.Cleanup(func() {
+		getResultChan <- 1
+	})
+
 	time.Sleep(20 * time.Second)
 
 	// The results should be downloaded
@@ -176,21 +204,6 @@ func TestGetSDTaskResult(t *testing.T) {
 
 		assert.Equal(t, pHashes[i], pHashStr, "pHash for image mismatch")
 	}
-
-	t.Cleanup(func() {
-		uploadTaskChan <- 1
-		sendTaskChan <- 1
-		getTaskCreationResultChan <- 1
-		syncBlockChan <- 1
-		getResultChan <- 1
-
-		err = tests.ClearNetwork(addresses, privateKeys)
-		assert.Equal(t, nil, err, "error clearing blockchain network")
-
-		tests.ClearDB()
-		err := tests.ClearDataFolders()
-		assert.Equal(t, nil, err, "error clearing data folder")
-	})
 }
 
 func TestGetLLMTaskResult(t *testing.T) {
@@ -209,6 +222,23 @@ func TestGetLLMTaskResult(t *testing.T) {
 	syncBlockChan := make(chan int)
 	go tasks.StartSyncBlockWithTerminateChannel(syncBlockChan)
 
+	t.Cleanup(func() {
+		tests.ClearDB()
+		err := tests.ClearDataFolders()
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Cleanup(func() {
+		uploadTaskChan <- 1
+		sendTaskChan <- 1
+		getTaskCreationResultChan <- 1
+		syncBlockChan <- 1
+
+		tests.ClearDB()
+	})
+
 	addresses, privateKeys, err := tests.PrepareAccounts()
 	assert.Nil(t, err, "error preparing accounts")
 
@@ -217,6 +247,13 @@ func TestGetLLMTaskResult(t *testing.T) {
 
 	err = tests.PrepareTaskCreatorAccount(addresses[0], privateKeys[0])
 	assert.Nil(t, err, "error preparing the task creator account")
+
+	t.Cleanup(func() {
+		err := tests.ClearNetwork(addresses, privateKeys)
+		if err != nil {
+			t.Error(err)
+		}
+	})
 
 	task, err := tests.NewTask(models.TaskTypeLLM)
 	assert.Nil(t, err, "error creating task")
@@ -292,6 +329,10 @@ func TestGetLLMTaskResult(t *testing.T) {
 	getResultChan := make(chan int)
 	go tasks.StartDownloadResultsWithTerminateChannel(getResultChan)
 
+	t.Cleanup(func() {
+		getResultChan <- 1
+	})
+
 	time.Sleep(20 * time.Second)
 
 	// The results should be downloaded
@@ -313,6 +354,7 @@ func TestGetLLMTaskResult(t *testing.T) {
 	assert.Nil(t, err, "error opening result file")
 
 	respBytes, err := io.ReadAll(f)
+	assert.Nil(t, err, "error reading result file")
 	resp := string(respBytes)
 
 	err = f.Close()
@@ -322,18 +364,4 @@ func TestGetLLMTaskResult(t *testing.T) {
 
 	assert.Equal(t, hexutil.Encode(hash), hexutil.Encode(resultHash), "hash for result mismatch")
 
-	t.Cleanup(func() {
-		uploadTaskChan <- 1
-		sendTaskChan <- 1
-		getTaskCreationResultChan <- 1
-		syncBlockChan <- 1
-		getResultChan <- 1
-
-		err = tests.ClearNetwork(addresses, privateKeys)
-		assert.Equal(t, nil, err, "error clearing blockchain network")
-
-		tests.ClearDB()
-		err := tests.ClearDataFolders()
-		assert.Equal(t, nil, err, "error clearing data folder")
-	})
 }
