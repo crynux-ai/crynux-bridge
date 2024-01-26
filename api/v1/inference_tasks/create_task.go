@@ -13,7 +13,7 @@ import (
 type TaskInput struct {
 	ClientID  string               `json:"client_id" description:"Client id" validate:"required"`
 	TaskArgs  string               `json:"task_args" description:"Task args" validate:"required"`
-	TaskType  models.ChainTaskType `json:"task_type" description:"Task type. 0 - SD task, 1 - LLM task" validate:"required"`
+	TaskType  *models.ChainTaskType `json:"task_type" description:"Task type. 0 - SD task, 1 - LLM task" validate:"required"`
 	VramLimit *uint64              `jsont:"omitempty,vram_limit" description:"Task minimal vram requirement" validate:"omitempty"`
 }
 
@@ -48,7 +48,7 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 		}
 	}
 
-	result, err := models.ValidateTaskArgsJsonStr(in.TaskArgs, in.TaskType)
+	result, err := models.ValidateTaskArgsJsonStr(in.TaskArgs, *in.TaskType)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
@@ -60,7 +60,7 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	var vramLimit uint64
 
 	if in.VramLimit == nil {
-		vramLimit, err = getDefaultVramLimit(in.TaskType, in.TaskArgs)
+		vramLimit, err = getDefaultVramLimit(*in.TaskType, in.TaskArgs)
 		if err != nil {
 			return nil, response.NewValidationErrorResponse("task_args", result.Error())
 		}
@@ -71,7 +71,7 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	task := &models.InferenceTask{
 		Client:   *client,
 		TaskArgs: in.TaskArgs,
-		TaskType: in.TaskType,
+		TaskType: *in.TaskType,
 		VramLimit: vramLimit,
 	}
 
