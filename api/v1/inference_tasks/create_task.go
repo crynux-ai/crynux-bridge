@@ -11,10 +11,10 @@ import (
 )
 
 type TaskInput struct {
-	ClientID  string               `json:"client_id" description:"Client id" validate:"required"`
-	TaskArgs  string               `json:"task_args" description:"Task args" validate:"required"`
+	ClientID  string                `json:"client_id" description:"Client id" validate:"required"`
+	TaskArgs  string                `json:"task_args" description:"Task args" validate:"required"`
 	TaskType  *models.ChainTaskType `json:"task_type" description:"Task type. 0 - SD task, 1 - LLM task" validate:"required"`
-	VramLimit *uint64              `jsont:"omitempty,vram_limit" description:"Task minimal vram requirement" validate:"omitempty"`
+	VramLimit *uint64               `json:"vram_limit,omitempty" description:"Task minimal vram requirement" validate:"omitempty"`
 }
 
 type TaskResponse struct {
@@ -31,7 +31,7 @@ func getDefaultVramLimit(taskType models.ChainTaskType, taskArgs string) (uint64
 		if baseModel == "runwayml/stable-diffusion-v1-5" {
 			return 8, nil
 		} else {
-			return 12, nil
+			return 10, nil
 		}
 	} else {
 		return 8, nil
@@ -69,9 +69,9 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	}
 
 	task := &models.InferenceTask{
-		Client:   *client,
-		TaskArgs: in.TaskArgs,
-		TaskType: *in.TaskType,
+		Client:    *client,
+		TaskArgs:  in.TaskArgs,
+		TaskType:  *in.TaskType,
 		VramLimit: vramLimit,
 	}
 
