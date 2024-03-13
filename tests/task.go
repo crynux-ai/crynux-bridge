@@ -93,10 +93,13 @@ func NewTask(taskType models.ChainTaskType) (*models.InferenceTask, error) {
 	}
 
 	var taskArgs string
+	var cap uint64
 	if taskType == models.TaskTypeSD {
 		taskArgs = SDTaskArgsJson
+		cap = 9
 	} else {
 		taskArgs = GPTTaskArgsJson
+		cap = 1
 	}
 
 	task := &models.InferenceTask{
@@ -104,6 +107,8 @@ func NewTask(taskType models.ChainTaskType) (*models.InferenceTask, error) {
 		TaskArgs: taskArgs,
 		TaskType: taskType,
 		VramLimit: 8,
+		TaskFee: 30,
+		Cap: cap,
 	}
 
 	if err := config.GetDB().Create(task).Error; err != nil {

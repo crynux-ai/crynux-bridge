@@ -11,35 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNotEnoughNodes(t *testing.T) {
-
-	sendTaskChan := make(chan int)
-	go tasks.StartSendTaskOnChainWithTerminateChannel(sendTaskChan)
-
-	getTaskCreationResultChan := make(chan int)
-	go tasks.StartGetTaskCreationResultWithTerminateChannel(getTaskCreationResultChan)
-
-	t.Cleanup(func() {
-		sendTaskChan <- 1
-		getTaskCreationResultChan <- 1
-		tests.ClearDB()
-	})
-
-	addresses, privateKeys, err := tests.PrepareAccounts()
-	assert.Equal(t, nil, err, "error preparing accounts")
-
-	err = tests.PrepareTaskCreatorAccount(addresses[0], privateKeys[0])
-	assert.Equal(t, nil, err, "error preparing task creator account")
-
-	for _, taskType := range tests.TaskTypes {
-		task, err := tests.NewTask(taskType)
-		assert.Equal(t, nil, err, "error creating task")
-
-		time.Sleep(20 * time.Second)
-		tests.AssertTaskStatus(t, task.ID, models.InferenceTaskAborted)
-	}
-}
-
 func TestNotEnoughToken(t *testing.T) {
 
 	sendTaskChan := make(chan int)

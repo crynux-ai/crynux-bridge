@@ -29,22 +29,23 @@ var (
 	_ = abi.ConvertType
 )
 
-// GPUInfo is an auto generated low-level Go binding around an user-defined struct.
-type GPUInfo struct {
+// NodeGPUInfo is an auto generated low-level Go binding around an user-defined struct.
+type NodeGPUInfo struct {
 	Name string
 	Vram *big.Int
 }
 
-// NodeInfo is an auto generated low-level Go binding around an user-defined struct.
-type NodeInfo struct {
+// NodeNodeInfo is an auto generated low-level Go binding around an user-defined struct.
+type NodeNodeInfo struct {
 	Status *big.Int
 	GpuID  [32]byte
-	Gpu    GPUInfo
+	Gpu    NodeGPUInfo
+	Score  *big.Int
 }
 
 // NodeMetaData contains all meta data concerning the Node contract.
 var NodeMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"tokenInstance\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeInfo\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"status\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"gpuID\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"vram\",\"type\":\"uint256\"}],\"internalType\":\"structNode.GPUInfo\",\"name\":\"gpu\",\"type\":\"tuple\"}],\"internalType\":\"structNode.NodeInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"availableNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllNodeAddresses\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAvailableGPUs\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"vram\",\"type\":\"uint256\"}],\"internalType\":\"structNode.GPUInfo[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAvailableNodes\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeStatus\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"gpuName\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"gpuVram\",\"type\":\"uint256\"}],\"name\":\"join\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"quit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"resume\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"slash\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"startTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"finishTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"taskContract\",\"type\":\"address\"}],\"name\":\"updateTaskContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"countLimit\",\"type\":\"uint256\"}],\"name\":\"filterGPUVram\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"countLimit\",\"type\":\"uint256\"}],\"name\":\"filterGPUID\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"vram\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"selectNodeByGPUVram\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"gpuID\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"selectNodeByGPUID\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"selectNode\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"tokenInstance\",\"type\":\"address\"},{\"internalType\":\"contractQOS\",\"name\":\"qosInstance\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"KickOut\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"Slash\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeInfo\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"status\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"gpuID\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"vram\",\"type\":\"uint256\"}],\"internalType\":\"structNode.GPUInfo\",\"name\":\"gpu\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"}],\"internalType\":\"structNode.NodeInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"availableNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllNodeAddresses\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAvailableGPUs\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"vram\",\"type\":\"uint256\"}],\"internalType\":\"structNode.GPUInfo[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAvailableNodes\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeStatus\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"gpuName\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"gpuVram\",\"type\":\"uint256\"}],\"name\":\"join\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"quit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"resume\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"slash\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"startTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"finishTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"taskContract\",\"type\":\"address\"}],\"name\":\"updateTaskContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"countLimit\",\"type\":\"uint256\"}],\"name\":\"filterGPUID\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"gpuID\",\"type\":\"bytes32\"}],\"name\":\"filterNodesByGPUID\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"root\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"k\",\"type\":\"uint256\"}],\"name\":\"selectNodesWithRoot\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // NodeABI is the input ABI used to generate the binding from.
@@ -256,36 +257,36 @@ func (_Node *NodeCallerSession) FilterGPUID(vramLimit *big.Int, countLimit *big.
 	return _Node.Contract.FilterGPUID(&_Node.CallOpts, vramLimit, countLimit)
 }
 
-// FilterGPUVram is a free data retrieval call binding the contract method 0x3b463967.
+// FilterNodesByGPUID is a free data retrieval call binding the contract method 0x975ac9d9.
 //
-// Solidity: function filterGPUVram(uint256 vramLimit, uint256 countLimit) view returns(uint256[], uint256[])
-func (_Node *NodeCaller) FilterGPUVram(opts *bind.CallOpts, vramLimit *big.Int, countLimit *big.Int) ([]*big.Int, []*big.Int, error) {
+// Solidity: function filterNodesByGPUID(bytes32 gpuID) view returns(address[], uint256[])
+func (_Node *NodeCaller) FilterNodesByGPUID(opts *bind.CallOpts, gpuID [32]byte) ([]common.Address, []*big.Int, error) {
 	var out []interface{}
-	err := _Node.contract.Call(opts, &out, "filterGPUVram", vramLimit, countLimit)
+	err := _Node.contract.Call(opts, &out, "filterNodesByGPUID", gpuID)
 
 	if err != nil {
-		return *new([]*big.Int), *new([]*big.Int), err
+		return *new([]common.Address), *new([]*big.Int), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new([]*big.Int)).(*[]*big.Int)
+	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
 	out1 := *abi.ConvertType(out[1], new([]*big.Int)).(*[]*big.Int)
 
 	return out0, out1, err
 
 }
 
-// FilterGPUVram is a free data retrieval call binding the contract method 0x3b463967.
+// FilterNodesByGPUID is a free data retrieval call binding the contract method 0x975ac9d9.
 //
-// Solidity: function filterGPUVram(uint256 vramLimit, uint256 countLimit) view returns(uint256[], uint256[])
-func (_Node *NodeSession) FilterGPUVram(vramLimit *big.Int, countLimit *big.Int) ([]*big.Int, []*big.Int, error) {
-	return _Node.Contract.FilterGPUVram(&_Node.CallOpts, vramLimit, countLimit)
+// Solidity: function filterNodesByGPUID(bytes32 gpuID) view returns(address[], uint256[])
+func (_Node *NodeSession) FilterNodesByGPUID(gpuID [32]byte) ([]common.Address, []*big.Int, error) {
+	return _Node.Contract.FilterNodesByGPUID(&_Node.CallOpts, gpuID)
 }
 
-// FilterGPUVram is a free data retrieval call binding the contract method 0x3b463967.
+// FilterNodesByGPUID is a free data retrieval call binding the contract method 0x975ac9d9.
 //
-// Solidity: function filterGPUVram(uint256 vramLimit, uint256 countLimit) view returns(uint256[], uint256[])
-func (_Node *NodeCallerSession) FilterGPUVram(vramLimit *big.Int, countLimit *big.Int) ([]*big.Int, []*big.Int, error) {
-	return _Node.Contract.FilterGPUVram(&_Node.CallOpts, vramLimit, countLimit)
+// Solidity: function filterNodesByGPUID(bytes32 gpuID) view returns(address[], uint256[])
+func (_Node *NodeCallerSession) FilterNodesByGPUID(gpuID [32]byte) ([]common.Address, []*big.Int, error) {
+	return _Node.Contract.FilterNodesByGPUID(&_Node.CallOpts, gpuID)
 }
 
 // GetAllNodeAddresses is a free data retrieval call binding the contract method 0xc8fe3a01.
@@ -322,15 +323,15 @@ func (_Node *NodeCallerSession) GetAllNodeAddresses() ([]common.Address, error) 
 // GetAvailableGPUs is a free data retrieval call binding the contract method 0x169eacef.
 //
 // Solidity: function getAvailableGPUs() view returns((string,uint256)[])
-func (_Node *NodeCaller) GetAvailableGPUs(opts *bind.CallOpts) ([]GPUInfo, error) {
+func (_Node *NodeCaller) GetAvailableGPUs(opts *bind.CallOpts) ([]NodeGPUInfo, error) {
 	var out []interface{}
 	err := _Node.contract.Call(opts, &out, "getAvailableGPUs")
 
 	if err != nil {
-		return *new([]GPUInfo), err
+		return *new([]NodeGPUInfo), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new([]GPUInfo)).(*[]GPUInfo)
+	out0 := *abi.ConvertType(out[0], new([]NodeGPUInfo)).(*[]NodeGPUInfo)
 
 	return out0, err
 
@@ -339,14 +340,14 @@ func (_Node *NodeCaller) GetAvailableGPUs(opts *bind.CallOpts) ([]GPUInfo, error
 // GetAvailableGPUs is a free data retrieval call binding the contract method 0x169eacef.
 //
 // Solidity: function getAvailableGPUs() view returns((string,uint256)[])
-func (_Node *NodeSession) GetAvailableGPUs() ([]GPUInfo, error) {
+func (_Node *NodeSession) GetAvailableGPUs() ([]NodeGPUInfo, error) {
 	return _Node.Contract.GetAvailableGPUs(&_Node.CallOpts)
 }
 
 // GetAvailableGPUs is a free data retrieval call binding the contract method 0x169eacef.
 //
 // Solidity: function getAvailableGPUs() view returns((string,uint256)[])
-func (_Node *NodeCallerSession) GetAvailableGPUs() ([]GPUInfo, error) {
+func (_Node *NodeCallerSession) GetAvailableGPUs() ([]NodeGPUInfo, error) {
 	return _Node.Contract.GetAvailableGPUs(&_Node.CallOpts)
 }
 
@@ -383,16 +384,16 @@ func (_Node *NodeCallerSession) GetAvailableNodes() ([]common.Address, error) {
 
 // GetNodeInfo is a free data retrieval call binding the contract method 0x582115fb.
 //
-// Solidity: function getNodeInfo(address nodeAddress) view returns((uint256,bytes32,(string,uint256)))
-func (_Node *NodeCaller) GetNodeInfo(opts *bind.CallOpts, nodeAddress common.Address) (NodeInfo, error) {
+// Solidity: function getNodeInfo(address nodeAddress) view returns((uint256,bytes32,(string,uint256),uint256))
+func (_Node *NodeCaller) GetNodeInfo(opts *bind.CallOpts, nodeAddress common.Address) (NodeNodeInfo, error) {
 	var out []interface{}
 	err := _Node.contract.Call(opts, &out, "getNodeInfo", nodeAddress)
 
 	if err != nil {
-		return *new(NodeInfo), err
+		return *new(NodeNodeInfo), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(NodeInfo)).(*NodeInfo)
+	out0 := *abi.ConvertType(out[0], new(NodeNodeInfo)).(*NodeNodeInfo)
 
 	return out0, err
 
@@ -400,15 +401,15 @@ func (_Node *NodeCaller) GetNodeInfo(opts *bind.CallOpts, nodeAddress common.Add
 
 // GetNodeInfo is a free data retrieval call binding the contract method 0x582115fb.
 //
-// Solidity: function getNodeInfo(address nodeAddress) view returns((uint256,bytes32,(string,uint256)))
-func (_Node *NodeSession) GetNodeInfo(nodeAddress common.Address) (NodeInfo, error) {
+// Solidity: function getNodeInfo(address nodeAddress) view returns((uint256,bytes32,(string,uint256),uint256))
+func (_Node *NodeSession) GetNodeInfo(nodeAddress common.Address) (NodeNodeInfo, error) {
 	return _Node.Contract.GetNodeInfo(&_Node.CallOpts, nodeAddress)
 }
 
 // GetNodeInfo is a free data retrieval call binding the contract method 0x582115fb.
 //
-// Solidity: function getNodeInfo(address nodeAddress) view returns((uint256,bytes32,(string,uint256)))
-func (_Node *NodeCallerSession) GetNodeInfo(nodeAddress common.Address) (NodeInfo, error) {
+// Solidity: function getNodeInfo(address nodeAddress) view returns((uint256,bytes32,(string,uint256),uint256))
+func (_Node *NodeCallerSession) GetNodeInfo(nodeAddress common.Address) (NodeNodeInfo, error) {
 	return _Node.Contract.GetNodeInfo(&_Node.CallOpts, nodeAddress)
 }
 
@@ -474,97 +475,35 @@ func (_Node *NodeCallerSession) Owner() (common.Address, error) {
 	return _Node.Contract.Owner(&_Node.CallOpts)
 }
 
-// SelectNode is a free data retrieval call binding the contract method 0x1fda55d8.
+// SelectNodesWithRoot is a free data retrieval call binding the contract method 0x30f8ada8.
 //
-// Solidity: function selectNode(uint256 index) view returns(address)
-func (_Node *NodeCaller) SelectNode(opts *bind.CallOpts, index *big.Int) (common.Address, error) {
+// Solidity: function selectNodesWithRoot(address root, uint256 k) view returns(address[])
+func (_Node *NodeCaller) SelectNodesWithRoot(opts *bind.CallOpts, root common.Address, k *big.Int) ([]common.Address, error) {
 	var out []interface{}
-	err := _Node.contract.Call(opts, &out, "selectNode", index)
+	err := _Node.contract.Call(opts, &out, "selectNodesWithRoot", root, k)
 
 	if err != nil {
-		return *new(common.Address), err
+		return *new([]common.Address), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
 
 	return out0, err
 
 }
 
-// SelectNode is a free data retrieval call binding the contract method 0x1fda55d8.
+// SelectNodesWithRoot is a free data retrieval call binding the contract method 0x30f8ada8.
 //
-// Solidity: function selectNode(uint256 index) view returns(address)
-func (_Node *NodeSession) SelectNode(index *big.Int) (common.Address, error) {
-	return _Node.Contract.SelectNode(&_Node.CallOpts, index)
+// Solidity: function selectNodesWithRoot(address root, uint256 k) view returns(address[])
+func (_Node *NodeSession) SelectNodesWithRoot(root common.Address, k *big.Int) ([]common.Address, error) {
+	return _Node.Contract.SelectNodesWithRoot(&_Node.CallOpts, root, k)
 }
 
-// SelectNode is a free data retrieval call binding the contract method 0x1fda55d8.
+// SelectNodesWithRoot is a free data retrieval call binding the contract method 0x30f8ada8.
 //
-// Solidity: function selectNode(uint256 index) view returns(address)
-func (_Node *NodeCallerSession) SelectNode(index *big.Int) (common.Address, error) {
-	return _Node.Contract.SelectNode(&_Node.CallOpts, index)
-}
-
-// SelectNodeByGPUID is a free data retrieval call binding the contract method 0x0254d8ef.
-//
-// Solidity: function selectNodeByGPUID(bytes32 gpuID, uint256 index) view returns(address)
-func (_Node *NodeCaller) SelectNodeByGPUID(opts *bind.CallOpts, gpuID [32]byte, index *big.Int) (common.Address, error) {
-	var out []interface{}
-	err := _Node.contract.Call(opts, &out, "selectNodeByGPUID", gpuID, index)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// SelectNodeByGPUID is a free data retrieval call binding the contract method 0x0254d8ef.
-//
-// Solidity: function selectNodeByGPUID(bytes32 gpuID, uint256 index) view returns(address)
-func (_Node *NodeSession) SelectNodeByGPUID(gpuID [32]byte, index *big.Int) (common.Address, error) {
-	return _Node.Contract.SelectNodeByGPUID(&_Node.CallOpts, gpuID, index)
-}
-
-// SelectNodeByGPUID is a free data retrieval call binding the contract method 0x0254d8ef.
-//
-// Solidity: function selectNodeByGPUID(bytes32 gpuID, uint256 index) view returns(address)
-func (_Node *NodeCallerSession) SelectNodeByGPUID(gpuID [32]byte, index *big.Int) (common.Address, error) {
-	return _Node.Contract.SelectNodeByGPUID(&_Node.CallOpts, gpuID, index)
-}
-
-// SelectNodeByGPUVram is a free data retrieval call binding the contract method 0x5d1410e9.
-//
-// Solidity: function selectNodeByGPUVram(uint256 vram, uint256 index) view returns(address)
-func (_Node *NodeCaller) SelectNodeByGPUVram(opts *bind.CallOpts, vram *big.Int, index *big.Int) (common.Address, error) {
-	var out []interface{}
-	err := _Node.contract.Call(opts, &out, "selectNodeByGPUVram", vram, index)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// SelectNodeByGPUVram is a free data retrieval call binding the contract method 0x5d1410e9.
-//
-// Solidity: function selectNodeByGPUVram(uint256 vram, uint256 index) view returns(address)
-func (_Node *NodeSession) SelectNodeByGPUVram(vram *big.Int, index *big.Int) (common.Address, error) {
-	return _Node.Contract.SelectNodeByGPUVram(&_Node.CallOpts, vram, index)
-}
-
-// SelectNodeByGPUVram is a free data retrieval call binding the contract method 0x5d1410e9.
-//
-// Solidity: function selectNodeByGPUVram(uint256 vram, uint256 index) view returns(address)
-func (_Node *NodeCallerSession) SelectNodeByGPUVram(vram *big.Int, index *big.Int) (common.Address, error) {
-	return _Node.Contract.SelectNodeByGPUVram(&_Node.CallOpts, vram, index)
+// Solidity: function selectNodesWithRoot(address root, uint256 k) view returns(address[])
+func (_Node *NodeCallerSession) SelectNodesWithRoot(root common.Address, k *big.Int) ([]common.Address, error) {
+	return _Node.Contract.SelectNodesWithRoot(&_Node.CallOpts, root, k)
 }
 
 // TotalNodes is a free data retrieval call binding the contract method 0x9592d424.
@@ -808,6 +747,140 @@ func (_Node *NodeTransactorSession) UpdateTaskContractAddress(taskContract commo
 	return _Node.Contract.UpdateTaskContractAddress(&_Node.TransactOpts, taskContract)
 }
 
+// NodeKickOutIterator is returned from FilterKickOut and is used to iterate over the raw logs and unpacked data for KickOut events raised by the Node contract.
+type NodeKickOutIterator struct {
+	Event *NodeKickOut // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *NodeKickOutIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(NodeKickOut)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(NodeKickOut)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *NodeKickOutIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *NodeKickOutIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// NodeKickOut represents a KickOut event raised by the Node contract.
+type NodeKickOut struct {
+	NodeAddress common.Address
+	Raw         types.Log // Blockchain specific contextual infos
+}
+
+// FilterKickOut is a free log retrieval operation binding the contract event 0xa1ab0eed874ed8e922d218d77bed5e71dcee880efa4068cfc7d6a216b1cba4b7.
+//
+// Solidity: event KickOut(address nodeAddress)
+func (_Node *NodeFilterer) FilterKickOut(opts *bind.FilterOpts) (*NodeKickOutIterator, error) {
+
+	logs, sub, err := _Node.contract.FilterLogs(opts, "KickOut")
+	if err != nil {
+		return nil, err
+	}
+	return &NodeKickOutIterator{contract: _Node.contract, event: "KickOut", logs: logs, sub: sub}, nil
+}
+
+// WatchKickOut is a free log subscription operation binding the contract event 0xa1ab0eed874ed8e922d218d77bed5e71dcee880efa4068cfc7d6a216b1cba4b7.
+//
+// Solidity: event KickOut(address nodeAddress)
+func (_Node *NodeFilterer) WatchKickOut(opts *bind.WatchOpts, sink chan<- *NodeKickOut) (event.Subscription, error) {
+
+	logs, sub, err := _Node.contract.WatchLogs(opts, "KickOut")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(NodeKickOut)
+				if err := _Node.contract.UnpackLog(event, "KickOut", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseKickOut is a log parse operation binding the contract event 0xa1ab0eed874ed8e922d218d77bed5e71dcee880efa4068cfc7d6a216b1cba4b7.
+//
+// Solidity: event KickOut(address nodeAddress)
+func (_Node *NodeFilterer) ParseKickOut(log types.Log) (*NodeKickOut, error) {
+	event := new(NodeKickOut)
+	if err := _Node.contract.UnpackLog(event, "KickOut", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
 // NodeOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the Node contract.
 type NodeOwnershipTransferredIterator struct {
 	Event *NodeOwnershipTransferred // Event containing the contract specifics and raw log
@@ -955,6 +1028,140 @@ func (_Node *NodeFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink 
 func (_Node *NodeFilterer) ParseOwnershipTransferred(log types.Log) (*NodeOwnershipTransferred, error) {
 	event := new(NodeOwnershipTransferred)
 	if err := _Node.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// NodeSlashIterator is returned from FilterSlash and is used to iterate over the raw logs and unpacked data for Slash events raised by the Node contract.
+type NodeSlashIterator struct {
+	Event *NodeSlash // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *NodeSlashIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(NodeSlash)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(NodeSlash)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *NodeSlashIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *NodeSlashIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// NodeSlash represents a Slash event raised by the Node contract.
+type NodeSlash struct {
+	NodeAddress common.Address
+	Raw         types.Log // Blockchain specific contextual infos
+}
+
+// FilterSlash is a free log retrieval operation binding the contract event 0x0503022103c0daa36b84f76908935c7d0add65ff3c76f363f4f4f073c4535c1f.
+//
+// Solidity: event Slash(address nodeAddress)
+func (_Node *NodeFilterer) FilterSlash(opts *bind.FilterOpts) (*NodeSlashIterator, error) {
+
+	logs, sub, err := _Node.contract.FilterLogs(opts, "Slash")
+	if err != nil {
+		return nil, err
+	}
+	return &NodeSlashIterator{contract: _Node.contract, event: "Slash", logs: logs, sub: sub}, nil
+}
+
+// WatchSlash is a free log subscription operation binding the contract event 0x0503022103c0daa36b84f76908935c7d0add65ff3c76f363f4f4f073c4535c1f.
+//
+// Solidity: event Slash(address nodeAddress)
+func (_Node *NodeFilterer) WatchSlash(opts *bind.WatchOpts, sink chan<- *NodeSlash) (event.Subscription, error) {
+
+	logs, sub, err := _Node.contract.WatchLogs(opts, "Slash")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(NodeSlash)
+				if err := _Node.contract.UnpackLog(event, "Slash", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseSlash is a log parse operation binding the contract event 0x0503022103c0daa36b84f76908935c7d0add65ff3c76f363f4f4f073c4535c1f.
+//
+// Solidity: event Slash(address nodeAddress)
+func (_Node *NodeFilterer) ParseSlash(log types.Log) (*NodeSlash, error) {
+	event := new(NodeSlash)
+	if err := _Node.contract.UnpackLog(event, "Slash", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

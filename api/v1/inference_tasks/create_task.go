@@ -38,6 +38,18 @@ func getDefaultVramLimit(taskType models.ChainTaskType, taskArgs string) (uint64
 	}
 }
 
+func getTaskCap(taskType models.ChainTaskType, taskArgs string) (uint64, error) {
+	if taskType == models.TaskTypeSD {
+		num, err := models.GetTaskConfigNumImages(taskArgs)
+		if err != nil {
+			return 0, err
+		}
+		return uint64(num), nil
+	} else {
+		return 1, nil
+	}
+}
+
 func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 
 	client := &models.Client{ClientId: in.ClientID}
@@ -60,19 +72,22 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	var vramLimit uint64
 
 	if in.VramLimit == nil {
-		vramLimit, err = getDefaultVramLimit(*in.TaskType, in.TaskArgs)
-		if err != nil {
-			return nil, response.NewValidationErrorResponse("task_args", result.Error())
-		}
+		// task args has been validated, so there should be no error
+		vramLimit, _ = getDefaultVramLimit(*in.TaskType, in.TaskArgs)
 	} else {
 		vramLimit = *in.VramLimit
 	}
+
+	// task args has been validated, so there should be no error
+	cap, _ := getTaskCap(*in.TaskType, in.TaskArgs)
 
 	task := &models.InferenceTask{
 		Client:    *client,
 		TaskArgs:  in.TaskArgs,
 		TaskType:  *in.TaskType,
 		VramLimit: vramLimit,
+		TaskFee:   30,
+		Cap:       cap,
 	}
 
 	if err := config.GetDB().Create(task).Error; err != nil {
