@@ -43,7 +43,7 @@ type TaskInQueue struct {
 
 // TaskQueueMetaData contains all meta data concerning the TaskQueue contract.
 var TaskQueueMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"taskContract\",\"type\":\"address\"}],\"name\":\"updateTaskContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"}],\"name\":\"updateSizeLimit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskType\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"pushTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"sameGPU\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"}],\"name\":\"popTask\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskType\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"internalType\":\"structTaskInQueue\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"size\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"taskContract\",\"type\":\"address\"}],\"name\":\"updateTaskContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"}],\"name\":\"updateSizeLimit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"size\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getSizeLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"include\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskType\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"pushTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"sameGPU\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"}],\"name\":\"popTask\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskType\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"internalType\":\"structTaskInQueue\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"removeTask\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskType\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"internalType\":\"structTaskInQueue\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"removeCheapestTask\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskType\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"internalType\":\"structTaskInQueue\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // TaskQueueABI is the input ABI used to generate the binding from.
@@ -192,6 +192,68 @@ func (_TaskQueue *TaskQueueTransactorRaw) Transact(opts *bind.TransactOpts, meth
 	return _TaskQueue.Contract.contract.Transact(opts, method, params...)
 }
 
+// GetSizeLimit is a free data retrieval call binding the contract method 0xf00c6741.
+//
+// Solidity: function getSizeLimit() view returns(uint256)
+func (_TaskQueue *TaskQueueCaller) GetSizeLimit(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _TaskQueue.contract.Call(opts, &out, "getSizeLimit")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetSizeLimit is a free data retrieval call binding the contract method 0xf00c6741.
+//
+// Solidity: function getSizeLimit() view returns(uint256)
+func (_TaskQueue *TaskQueueSession) GetSizeLimit() (*big.Int, error) {
+	return _TaskQueue.Contract.GetSizeLimit(&_TaskQueue.CallOpts)
+}
+
+// GetSizeLimit is a free data retrieval call binding the contract method 0xf00c6741.
+//
+// Solidity: function getSizeLimit() view returns(uint256)
+func (_TaskQueue *TaskQueueCallerSession) GetSizeLimit() (*big.Int, error) {
+	return _TaskQueue.Contract.GetSizeLimit(&_TaskQueue.CallOpts)
+}
+
+// Include is a free data retrieval call binding the contract method 0xa96e8438.
+//
+// Solidity: function include(uint256 taskId) view returns(bool)
+func (_TaskQueue *TaskQueueCaller) Include(opts *bind.CallOpts, taskId *big.Int) (bool, error) {
+	var out []interface{}
+	err := _TaskQueue.contract.Call(opts, &out, "include", taskId)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// Include is a free data retrieval call binding the contract method 0xa96e8438.
+//
+// Solidity: function include(uint256 taskId) view returns(bool)
+func (_TaskQueue *TaskQueueSession) Include(taskId *big.Int) (bool, error) {
+	return _TaskQueue.Contract.Include(&_TaskQueue.CallOpts, taskId)
+}
+
+// Include is a free data retrieval call binding the contract method 0xa96e8438.
+//
+// Solidity: function include(uint256 taskId) view returns(bool)
+func (_TaskQueue *TaskQueueCallerSession) Include(taskId *big.Int) (bool, error) {
+	return _TaskQueue.Contract.Include(&_TaskQueue.CallOpts, taskId)
+}
+
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
 // Solidity: function owner() view returns(address)
@@ -294,6 +356,48 @@ func (_TaskQueue *TaskQueueSession) PushTask(taskId *big.Int, taskType *big.Int,
 // Solidity: function pushTask(uint256 taskId, uint256 taskType, address creator, bytes32 taskHash, bytes32 dataHash, uint256 vramLimit, uint256 taskFee, uint256 price) returns()
 func (_TaskQueue *TaskQueueTransactorSession) PushTask(taskId *big.Int, taskType *big.Int, creator common.Address, taskHash [32]byte, dataHash [32]byte, vramLimit *big.Int, taskFee *big.Int, price *big.Int) (*types.Transaction, error) {
 	return _TaskQueue.Contract.PushTask(&_TaskQueue.TransactOpts, taskId, taskType, creator, taskHash, dataHash, vramLimit, taskFee, price)
+}
+
+// RemoveCheapestTask is a paid mutator transaction binding the contract method 0xedfc5b7c.
+//
+// Solidity: function removeCheapestTask() returns((uint256,uint256,address,bytes32,bytes32,uint256,uint256,uint256))
+func (_TaskQueue *TaskQueueTransactor) RemoveCheapestTask(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _TaskQueue.contract.Transact(opts, "removeCheapestTask")
+}
+
+// RemoveCheapestTask is a paid mutator transaction binding the contract method 0xedfc5b7c.
+//
+// Solidity: function removeCheapestTask() returns((uint256,uint256,address,bytes32,bytes32,uint256,uint256,uint256))
+func (_TaskQueue *TaskQueueSession) RemoveCheapestTask() (*types.Transaction, error) {
+	return _TaskQueue.Contract.RemoveCheapestTask(&_TaskQueue.TransactOpts)
+}
+
+// RemoveCheapestTask is a paid mutator transaction binding the contract method 0xedfc5b7c.
+//
+// Solidity: function removeCheapestTask() returns((uint256,uint256,address,bytes32,bytes32,uint256,uint256,uint256))
+func (_TaskQueue *TaskQueueTransactorSession) RemoveCheapestTask() (*types.Transaction, error) {
+	return _TaskQueue.Contract.RemoveCheapestTask(&_TaskQueue.TransactOpts)
+}
+
+// RemoveTask is a paid mutator transaction binding the contract method 0xc3084117.
+//
+// Solidity: function removeTask(uint256 taskId) returns((uint256,uint256,address,bytes32,bytes32,uint256,uint256,uint256))
+func (_TaskQueue *TaskQueueTransactor) RemoveTask(opts *bind.TransactOpts, taskId *big.Int) (*types.Transaction, error) {
+	return _TaskQueue.contract.Transact(opts, "removeTask", taskId)
+}
+
+// RemoveTask is a paid mutator transaction binding the contract method 0xc3084117.
+//
+// Solidity: function removeTask(uint256 taskId) returns((uint256,uint256,address,bytes32,bytes32,uint256,uint256,uint256))
+func (_TaskQueue *TaskQueueSession) RemoveTask(taskId *big.Int) (*types.Transaction, error) {
+	return _TaskQueue.Contract.RemoveTask(&_TaskQueue.TransactOpts, taskId)
+}
+
+// RemoveTask is a paid mutator transaction binding the contract method 0xc3084117.
+//
+// Solidity: function removeTask(uint256 taskId) returns((uint256,uint256,address,bytes32,bytes32,uint256,uint256,uint256))
+func (_TaskQueue *TaskQueueTransactorSession) RemoveTask(taskId *big.Int) (*types.Transaction, error) {
+	return _TaskQueue.Contract.RemoveTask(&_TaskQueue.TransactOpts, taskId)
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
