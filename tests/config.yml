@@ -26,8 +26,9 @@ blockchain:
   account:
     address: "0xe563e647c53ad9d5d28Da50B4e6cc48594117CF1"
   contracts:
-    task: "0x17dF16b4e8A819236AFBF5b04c6ED37B7689Cf0A"
-    node: "0xb9C8621bb079458e922910afe5625aF2c9eDB291"
+    netstats: "0xb9C8621bb079458e922910afe5625aF2c9eDB291"
+    task: "0x9848d6c354F16fC76B2cfDbbC600e360a7086769"
+    node: "0xbaC0F197adc0545c0768f60B9e2d70937133Eb7e"
     crynux_token: "0x1A89F17f419054C2b3166239AC8f86838c094Ed4"
   start_block_num: 1
   gas_limit: 30000000
