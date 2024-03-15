@@ -10,6 +10,11 @@
           "internalType": "contract QOS",
           "name": "qosInstance",
           "type": "address"
+        },
+        {
+          "internalType": "contract NetworkStats",
+          "name": "netStatsInstance",
+          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
@@ -25,7 +30,20 @@
           "type": "address"
         }
       ],
-      "name": "KickOut",
+      "name": "NodeKickedOut",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "nodeAddress",
+          "type": "address"
+        }
+      ],
+      "name": "NodeSlashed",
       "type": "event"
     },
     {
@@ -45,19 +63,6 @@
         }
       ],
       "name": "OwnershipTransferred",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "nodeAddress",
-          "type": "address"
-        }
-      ],
-      "name": "Slash",
       "type": "event"
     },
     {
@@ -141,45 +146,6 @@
           "internalType": "struct Node.NodeInfo",
           "name": "",
           "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "totalNodes",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "availableNodes",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getAllNodeAddresses",
-      "outputs": [
-        {
-          "internalType": "address[]",
-          "name": "",
-          "type": "address[]"
         }
       ],
       "stateMutability": "view",

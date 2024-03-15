@@ -49,6 +49,7 @@ type AppConfig struct {
 		} `mapstructure:"account"`
 
 		Contracts struct {
+			Netstats    string `mapstructure:"netstats"`
 			Task        string `mapstructure:"task"`
 			Node        string `mapstructure:"node"`
 			CrynuxToken string `mapstructure:"crynux_token"`

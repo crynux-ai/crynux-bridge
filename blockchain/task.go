@@ -25,10 +25,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var taskContractInstance *bindings.Task
-var crynuxTokenContractInstance *bindings.CrynuxToken
-var nodeContractInstance *bindings.Node
-
 func CreateTaskOnChain(task *models.InferenceTask) (string, error) {
 
 	appConfig := config.GetConfig()

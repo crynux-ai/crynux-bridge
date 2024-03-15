@@ -20,6 +20,11 @@
           "internalType": "contract TaskQueue",
           "name": "taskQueueInstance",
           "type": "address"
+        },
+        {
+          "internalType": "contract NetworkStats",
+          "name": "netStatsInstance",
+          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
@@ -492,6 +497,11 @@
               "internalType": "bytes32[]",
               "name": "nonces",
               "type": "bytes32[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "commitmentSubmitRounds",
+              "type": "uint256[]"
             },
             {
               "internalType": "bytes[]",

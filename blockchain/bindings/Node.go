@@ -45,7 +45,7 @@ type NodeNodeInfo struct {
 
 // NodeMetaData contains all meta data concerning the Node contract.
 var NodeMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"tokenInstance\",\"type\":\"address\"},{\"internalType\":\"contractQOS\",\"name\":\"qosInstance\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"KickOut\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"Slash\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeInfo\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"status\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"gpuID\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"vram\",\"type\":\"uint256\"}],\"internalType\":\"structNode.GPUInfo\",\"name\":\"gpu\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"}],\"internalType\":\"structNode.NodeInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"availableNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllNodeAddresses\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAvailableGPUs\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"vram\",\"type\":\"uint256\"}],\"internalType\":\"structNode.GPUInfo[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAvailableNodes\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeStatus\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"gpuName\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"gpuVram\",\"type\":\"uint256\"}],\"name\":\"join\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"quit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"resume\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"slash\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"startTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"finishTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"taskContract\",\"type\":\"address\"}],\"name\":\"updateTaskContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"countLimit\",\"type\":\"uint256\"}],\"name\":\"filterGPUID\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"gpuID\",\"type\":\"bytes32\"}],\"name\":\"filterNodesByGPUID\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"root\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"k\",\"type\":\"uint256\"}],\"name\":\"selectNodesWithRoot\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"tokenInstance\",\"type\":\"address\"},{\"internalType\":\"contractQOS\",\"name\":\"qosInstance\",\"type\":\"address\"},{\"internalType\":\"contractNetworkStats\",\"name\":\"netStatsInstance\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"NodeKickedOut\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"NodeSlashed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeInfo\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"status\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"gpuID\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"vram\",\"type\":\"uint256\"}],\"internalType\":\"structNode.GPUInfo\",\"name\":\"gpu\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"}],\"internalType\":\"structNode.NodeInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAvailableGPUs\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"vram\",\"type\":\"uint256\"}],\"internalType\":\"structNode.GPUInfo[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAvailableNodes\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeStatus\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"gpuName\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"gpuVram\",\"type\":\"uint256\"}],\"name\":\"join\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"quit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"resume\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"slash\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"startTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"finishTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"taskContract\",\"type\":\"address\"}],\"name\":\"updateTaskContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"countLimit\",\"type\":\"uint256\"}],\"name\":\"filterGPUID\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"gpuID\",\"type\":\"bytes32\"}],\"name\":\"filterNodesByGPUID\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"root\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"k\",\"type\":\"uint256\"}],\"name\":\"selectNodesWithRoot\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // NodeABI is the input ABI used to generate the binding from.
@@ -194,37 +194,6 @@ func (_Node *NodeTransactorRaw) Transact(opts *bind.TransactOpts, method string,
 	return _Node.Contract.contract.Transact(opts, method, params...)
 }
 
-// AvailableNodes is a free data retrieval call binding the contract method 0x204401e7.
-//
-// Solidity: function availableNodes() view returns(uint256)
-func (_Node *NodeCaller) AvailableNodes(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Node.contract.Call(opts, &out, "availableNodes")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// AvailableNodes is a free data retrieval call binding the contract method 0x204401e7.
-//
-// Solidity: function availableNodes() view returns(uint256)
-func (_Node *NodeSession) AvailableNodes() (*big.Int, error) {
-	return _Node.Contract.AvailableNodes(&_Node.CallOpts)
-}
-
-// AvailableNodes is a free data retrieval call binding the contract method 0x204401e7.
-//
-// Solidity: function availableNodes() view returns(uint256)
-func (_Node *NodeCallerSession) AvailableNodes() (*big.Int, error) {
-	return _Node.Contract.AvailableNodes(&_Node.CallOpts)
-}
-
 // FilterGPUID is a free data retrieval call binding the contract method 0x9f09870a.
 //
 // Solidity: function filterGPUID(uint256 vramLimit, uint256 countLimit) view returns(bytes32[], uint256[])
@@ -287,37 +256,6 @@ func (_Node *NodeSession) FilterNodesByGPUID(gpuID [32]byte) ([]common.Address, 
 // Solidity: function filterNodesByGPUID(bytes32 gpuID) view returns(address[], uint256[])
 func (_Node *NodeCallerSession) FilterNodesByGPUID(gpuID [32]byte) ([]common.Address, []*big.Int, error) {
 	return _Node.Contract.FilterNodesByGPUID(&_Node.CallOpts, gpuID)
-}
-
-// GetAllNodeAddresses is a free data retrieval call binding the contract method 0xc8fe3a01.
-//
-// Solidity: function getAllNodeAddresses() view returns(address[])
-func (_Node *NodeCaller) GetAllNodeAddresses(opts *bind.CallOpts) ([]common.Address, error) {
-	var out []interface{}
-	err := _Node.contract.Call(opts, &out, "getAllNodeAddresses")
-
-	if err != nil {
-		return *new([]common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
-
-	return out0, err
-
-}
-
-// GetAllNodeAddresses is a free data retrieval call binding the contract method 0xc8fe3a01.
-//
-// Solidity: function getAllNodeAddresses() view returns(address[])
-func (_Node *NodeSession) GetAllNodeAddresses() ([]common.Address, error) {
-	return _Node.Contract.GetAllNodeAddresses(&_Node.CallOpts)
-}
-
-// GetAllNodeAddresses is a free data retrieval call binding the contract method 0xc8fe3a01.
-//
-// Solidity: function getAllNodeAddresses() view returns(address[])
-func (_Node *NodeCallerSession) GetAllNodeAddresses() ([]common.Address, error) {
-	return _Node.Contract.GetAllNodeAddresses(&_Node.CallOpts)
 }
 
 // GetAvailableGPUs is a free data retrieval call binding the contract method 0x169eacef.
@@ -504,37 +442,6 @@ func (_Node *NodeSession) SelectNodesWithRoot(root common.Address, k *big.Int) (
 // Solidity: function selectNodesWithRoot(address root, uint256 k) view returns(address[])
 func (_Node *NodeCallerSession) SelectNodesWithRoot(root common.Address, k *big.Int) ([]common.Address, error) {
 	return _Node.Contract.SelectNodesWithRoot(&_Node.CallOpts, root, k)
-}
-
-// TotalNodes is a free data retrieval call binding the contract method 0x9592d424.
-//
-// Solidity: function totalNodes() view returns(uint256)
-func (_Node *NodeCaller) TotalNodes(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Node.contract.Call(opts, &out, "totalNodes")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// TotalNodes is a free data retrieval call binding the contract method 0x9592d424.
-//
-// Solidity: function totalNodes() view returns(uint256)
-func (_Node *NodeSession) TotalNodes() (*big.Int, error) {
-	return _Node.Contract.TotalNodes(&_Node.CallOpts)
-}
-
-// TotalNodes is a free data retrieval call binding the contract method 0x9592d424.
-//
-// Solidity: function totalNodes() view returns(uint256)
-func (_Node *NodeCallerSession) TotalNodes() (*big.Int, error) {
-	return _Node.Contract.TotalNodes(&_Node.CallOpts)
 }
 
 // FinishTask is a paid mutator transaction binding the contract method 0x3fc0f48b.
@@ -747,9 +654,9 @@ func (_Node *NodeTransactorSession) UpdateTaskContractAddress(taskContract commo
 	return _Node.Contract.UpdateTaskContractAddress(&_Node.TransactOpts, taskContract)
 }
 
-// NodeKickOutIterator is returned from FilterKickOut and is used to iterate over the raw logs and unpacked data for KickOut events raised by the Node contract.
-type NodeKickOutIterator struct {
-	Event *NodeKickOut // Event containing the contract specifics and raw log
+// NodeNodeKickedOutIterator is returned from FilterNodeKickedOut and is used to iterate over the raw logs and unpacked data for NodeKickedOut events raised by the Node contract.
+type NodeNodeKickedOutIterator struct {
+	Event *NodeNodeKickedOut // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -763,7 +670,7 @@ type NodeKickOutIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *NodeKickOutIterator) Next() bool {
+func (it *NodeNodeKickedOutIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -772,7 +679,7 @@ func (it *NodeKickOutIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(NodeKickOut)
+			it.Event = new(NodeNodeKickedOut)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -787,7 +694,7 @@ func (it *NodeKickOutIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(NodeKickOut)
+		it.Event = new(NodeNodeKickedOut)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -803,41 +710,41 @@ func (it *NodeKickOutIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *NodeKickOutIterator) Error() error {
+func (it *NodeNodeKickedOutIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *NodeKickOutIterator) Close() error {
+func (it *NodeNodeKickedOutIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// NodeKickOut represents a KickOut event raised by the Node contract.
-type NodeKickOut struct {
+// NodeNodeKickedOut represents a NodeKickedOut event raised by the Node contract.
+type NodeNodeKickedOut struct {
 	NodeAddress common.Address
 	Raw         types.Log // Blockchain specific contextual infos
 }
 
-// FilterKickOut is a free log retrieval operation binding the contract event 0xa1ab0eed874ed8e922d218d77bed5e71dcee880efa4068cfc7d6a216b1cba4b7.
+// FilterNodeKickedOut is a free log retrieval operation binding the contract event 0xb848d555de967481a57a6f519357b97fabdf06fbd2b63dece8f11876f3ab9323.
 //
-// Solidity: event KickOut(address nodeAddress)
-func (_Node *NodeFilterer) FilterKickOut(opts *bind.FilterOpts) (*NodeKickOutIterator, error) {
+// Solidity: event NodeKickedOut(address nodeAddress)
+func (_Node *NodeFilterer) FilterNodeKickedOut(opts *bind.FilterOpts) (*NodeNodeKickedOutIterator, error) {
 
-	logs, sub, err := _Node.contract.FilterLogs(opts, "KickOut")
+	logs, sub, err := _Node.contract.FilterLogs(opts, "NodeKickedOut")
 	if err != nil {
 		return nil, err
 	}
-	return &NodeKickOutIterator{contract: _Node.contract, event: "KickOut", logs: logs, sub: sub}, nil
+	return &NodeNodeKickedOutIterator{contract: _Node.contract, event: "NodeKickedOut", logs: logs, sub: sub}, nil
 }
 
-// WatchKickOut is a free log subscription operation binding the contract event 0xa1ab0eed874ed8e922d218d77bed5e71dcee880efa4068cfc7d6a216b1cba4b7.
+// WatchNodeKickedOut is a free log subscription operation binding the contract event 0xb848d555de967481a57a6f519357b97fabdf06fbd2b63dece8f11876f3ab9323.
 //
-// Solidity: event KickOut(address nodeAddress)
-func (_Node *NodeFilterer) WatchKickOut(opts *bind.WatchOpts, sink chan<- *NodeKickOut) (event.Subscription, error) {
+// Solidity: event NodeKickedOut(address nodeAddress)
+func (_Node *NodeFilterer) WatchNodeKickedOut(opts *bind.WatchOpts, sink chan<- *NodeNodeKickedOut) (event.Subscription, error) {
 
-	logs, sub, err := _Node.contract.WatchLogs(opts, "KickOut")
+	logs, sub, err := _Node.contract.WatchLogs(opts, "NodeKickedOut")
 	if err != nil {
 		return nil, err
 	}
@@ -847,8 +754,8 @@ func (_Node *NodeFilterer) WatchKickOut(opts *bind.WatchOpts, sink chan<- *NodeK
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(NodeKickOut)
-				if err := _Node.contract.UnpackLog(event, "KickOut", log); err != nil {
+				event := new(NodeNodeKickedOut)
+				if err := _Node.contract.UnpackLog(event, "NodeKickedOut", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -869,12 +776,146 @@ func (_Node *NodeFilterer) WatchKickOut(opts *bind.WatchOpts, sink chan<- *NodeK
 	}), nil
 }
 
-// ParseKickOut is a log parse operation binding the contract event 0xa1ab0eed874ed8e922d218d77bed5e71dcee880efa4068cfc7d6a216b1cba4b7.
+// ParseNodeKickedOut is a log parse operation binding the contract event 0xb848d555de967481a57a6f519357b97fabdf06fbd2b63dece8f11876f3ab9323.
 //
-// Solidity: event KickOut(address nodeAddress)
-func (_Node *NodeFilterer) ParseKickOut(log types.Log) (*NodeKickOut, error) {
-	event := new(NodeKickOut)
-	if err := _Node.contract.UnpackLog(event, "KickOut", log); err != nil {
+// Solidity: event NodeKickedOut(address nodeAddress)
+func (_Node *NodeFilterer) ParseNodeKickedOut(log types.Log) (*NodeNodeKickedOut, error) {
+	event := new(NodeNodeKickedOut)
+	if err := _Node.contract.UnpackLog(event, "NodeKickedOut", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// NodeNodeSlashedIterator is returned from FilterNodeSlashed and is used to iterate over the raw logs and unpacked data for NodeSlashed events raised by the Node contract.
+type NodeNodeSlashedIterator struct {
+	Event *NodeNodeSlashed // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *NodeNodeSlashedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(NodeNodeSlashed)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(NodeNodeSlashed)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *NodeNodeSlashedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *NodeNodeSlashedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// NodeNodeSlashed represents a NodeSlashed event raised by the Node contract.
+type NodeNodeSlashed struct {
+	NodeAddress common.Address
+	Raw         types.Log // Blockchain specific contextual infos
+}
+
+// FilterNodeSlashed is a free log retrieval operation binding the contract event 0x29f3a9a9c7f6d4074ec8817742795e031d525ab8fe33b05ee339002580ef3a64.
+//
+// Solidity: event NodeSlashed(address nodeAddress)
+func (_Node *NodeFilterer) FilterNodeSlashed(opts *bind.FilterOpts) (*NodeNodeSlashedIterator, error) {
+
+	logs, sub, err := _Node.contract.FilterLogs(opts, "NodeSlashed")
+	if err != nil {
+		return nil, err
+	}
+	return &NodeNodeSlashedIterator{contract: _Node.contract, event: "NodeSlashed", logs: logs, sub: sub}, nil
+}
+
+// WatchNodeSlashed is a free log subscription operation binding the contract event 0x29f3a9a9c7f6d4074ec8817742795e031d525ab8fe33b05ee339002580ef3a64.
+//
+// Solidity: event NodeSlashed(address nodeAddress)
+func (_Node *NodeFilterer) WatchNodeSlashed(opts *bind.WatchOpts, sink chan<- *NodeNodeSlashed) (event.Subscription, error) {
+
+	logs, sub, err := _Node.contract.WatchLogs(opts, "NodeSlashed")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(NodeNodeSlashed)
+				if err := _Node.contract.UnpackLog(event, "NodeSlashed", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseNodeSlashed is a log parse operation binding the contract event 0x29f3a9a9c7f6d4074ec8817742795e031d525ab8fe33b05ee339002580ef3a64.
+//
+// Solidity: event NodeSlashed(address nodeAddress)
+func (_Node *NodeFilterer) ParseNodeSlashed(log types.Log) (*NodeNodeSlashed, error) {
+	event := new(NodeNodeSlashed)
+	if err := _Node.contract.UnpackLog(event, "NodeSlashed", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -1028,140 +1069,6 @@ func (_Node *NodeFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink 
 func (_Node *NodeFilterer) ParseOwnershipTransferred(log types.Log) (*NodeOwnershipTransferred, error) {
 	event := new(NodeOwnershipTransferred)
 	if err := _Node.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// NodeSlashIterator is returned from FilterSlash and is used to iterate over the raw logs and unpacked data for Slash events raised by the Node contract.
-type NodeSlashIterator struct {
-	Event *NodeSlash // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *NodeSlashIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(NodeSlash)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(NodeSlash)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *NodeSlashIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *NodeSlashIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// NodeSlash represents a Slash event raised by the Node contract.
-type NodeSlash struct {
-	NodeAddress common.Address
-	Raw         types.Log // Blockchain specific contextual infos
-}
-
-// FilterSlash is a free log retrieval operation binding the contract event 0x0503022103c0daa36b84f76908935c7d0add65ff3c76f363f4f4f073c4535c1f.
-//
-// Solidity: event Slash(address nodeAddress)
-func (_Node *NodeFilterer) FilterSlash(opts *bind.FilterOpts) (*NodeSlashIterator, error) {
-
-	logs, sub, err := _Node.contract.FilterLogs(opts, "Slash")
-	if err != nil {
-		return nil, err
-	}
-	return &NodeSlashIterator{contract: _Node.contract, event: "Slash", logs: logs, sub: sub}, nil
-}
-
-// WatchSlash is a free log subscription operation binding the contract event 0x0503022103c0daa36b84f76908935c7d0add65ff3c76f363f4f4f073c4535c1f.
-//
-// Solidity: event Slash(address nodeAddress)
-func (_Node *NodeFilterer) WatchSlash(opts *bind.WatchOpts, sink chan<- *NodeSlash) (event.Subscription, error) {
-
-	logs, sub, err := _Node.contract.WatchLogs(opts, "Slash")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(NodeSlash)
-				if err := _Node.contract.UnpackLog(event, "Slash", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseSlash is a log parse operation binding the contract event 0x0503022103c0daa36b84f76908935c7d0add65ff3c76f363f4f4f073c4535c1f.
-//
-// Solidity: event Slash(address nodeAddress)
-func (_Node *NodeFilterer) ParseSlash(log types.Log) (*NodeSlash, error) {
-	event := new(NodeSlash)
-	if err := _Node.contract.UnpackLog(event, "Slash", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
