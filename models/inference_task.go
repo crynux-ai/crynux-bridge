@@ -26,19 +26,20 @@ const (
 	TaskTypeLLM
 )
 
-
 type InferenceTask struct {
 	RootModel
-	ClientID    uint       `json:"client_id"`
-	Client      Client     `json:"-"`
-	TaskArgs    string     `json:"task_args"`
-	Status      TaskStatus `json:"status"`
-	TxHash      string     `json:"tx_hash"`
-	TaskId      uint64     `json:"task_id"`
-	ResultNode  string     `json:"result_node"`
-	AbortReason string     `json:"abort_reason"`
-	TaskType      ChainTaskType `json:"task_type"`
-	VramLimit     uint64        `json:"vram_limit"`
+	ClientID    uint          `json:"client_id"`
+	Client      Client        `json:"-"`
+	TaskArgs    string        `json:"task_args"`
+	Status      TaskStatus    `json:"status"`
+	TxHash      string        `json:"tx_hash"`
+	TaskId      uint64        `json:"task_id"`
+	ResultNode  string        `json:"result_node"`
+	AbortReason string        `json:"abort_reason"`
+	TaskType    ChainTaskType `json:"task_type"`
+	VramLimit   uint64        `json:"vram_limit"`
+	TaskFee     uint64        `json:"task_fee"`
+	Cap         uint64        `json:"cap"`
 }
 
 func (t *InferenceTask) BeforeCreate(*gorm.DB) error {

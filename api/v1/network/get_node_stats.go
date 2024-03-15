@@ -21,12 +21,12 @@ type GetNodeStatsOutput struct {
 
 func GetNodeStats(*gin.Context) (*GetNodeStatsOutput, error) {
 
-	nodeContractInstance, err := blockchain.GetNodeContractInstance()
+	netstatsContractInstance, err := blockchain.GetNetstatsContractInstance()
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
 
-	totalNodes, err := nodeContractInstance.TotalNodes(&bind.CallOpts{
+	totalNodes, err := netstatsContractInstance.TotalNodes(&bind.CallOpts{
 		Pending: false,
 		Context: context.Background(),
 	})
@@ -34,10 +34,13 @@ func GetNodeStats(*gin.Context) (*GetNodeStatsOutput, error) {
 		return nil, response.NewExceptionResponse(err)
 	}
 
-	availableNodes, err := nodeContractInstance.AvailableNodes(&bind.CallOpts{
+	availableNodes, err := netstatsContractInstance.AvailableNodes(&bind.CallOpts{
 		Pending: false,
 		Context: context.Background(),
 	})
+	if err != nil {
+		return nil, response.NewExceptionResponse(err)
+	}
 
 	return &GetNodeStatsOutput{
 		Data: NodeStats{

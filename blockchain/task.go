@@ -25,10 +25,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var taskContractInstance *bindings.Task
-var crynuxTokenContractInstance *bindings.CrynuxToken
-var nodeContractInstance *bindings.Node
-
 func CreateTaskOnChain(task *models.InferenceTask) (string, error) {
 
 	appConfig := config.GetConfig()
@@ -67,7 +63,9 @@ func CreateTaskOnChain(task *models.InferenceTask) (string, error) {
 	log.Debugln("create task tx: TaskHash " + common.Bytes2Hex(taskHash[:]))
 	log.Debugln("create task tx: DataHash " + common.Bytes2Hex(dataHash[:]))
 
-	tx, err := instance.CreateTask(auth, big.NewInt(int64(task.TaskType)), *taskHash, *dataHash, big.NewInt(int64(task.VramLimit)))
+	taskFee := new(big.Int).Mul(big.NewInt(int64(task.TaskFee)), big.NewInt(params.Ether))
+	cap := big.NewInt(int64(task.Cap))
+	tx, err := instance.CreateTask(auth, big.NewInt(int64(task.TaskType)), *taskHash, *dataHash, big.NewInt(int64(task.VramLimit)), taskFee, cap)
 	if err != nil {
 		return "", err
 	}
@@ -118,20 +116,20 @@ func GetTaskCreationResult(txHash string) (*big.Int, error) {
 		return nil, err
 	}
 
-	// There are 5 events emitted from the CreateTask method
-	// Approval, Transfer, TaskCreated x 3
-	if len(receipt.Logs) != 5 {
+	// There are 6 events emitted from the CreateTask method
+	// Approval, Transfer, TaskPending, TaskCreated x 3
+	if len(receipt.Logs) < 3 {
 		log.Errorln(receipt.Logs)
 		return nil, errors.New("wrong event logs number:" + strconv.Itoa(len(receipt.Logs)))
 	}
 
-	taskCreatedEvent, err := taskContractInstance.ParseTaskCreated(*receipt.Logs[2])
+	taskPendingEvent, err := taskContractInstance.ParseTaskPending(*receipt.Logs[2])
 	if err != nil {
 		log.Errorln("error parse task created event: " + receipt.TxHash.Hex())
 		return nil, err
 	}
 
-	taskId := taskCreatedEvent.TaskId
+	taskId := taskPendingEvent.TaskId
 
 	return taskId, nil
 }
@@ -163,7 +161,6 @@ func GetPHashForImageReader(reader io.Reader) ([]byte, error) {
 	}
 	return GetPHashForImage(img)
 }
-
 
 func GetHashForGPTResponse(resp string) []byte {
 	h := sha256.Sum256([]byte(resp))
