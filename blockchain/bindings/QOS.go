@@ -31,7 +31,7 @@ var (
 
 // QOSMetaData contains all meta data concerning the QOS contract.
 var QOSMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeContract\",\"type\":\"address\"}],\"name\":\"updateNodeContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"taskContract\",\"type\":\"address\"}],\"name\":\"updateTaskContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"updateKickoutThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"startTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"finishTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"i\",\"type\":\"uint256\"}],\"name\":\"addTaskScore\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"punish\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getTaskScore\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getRecentTaskScore\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getCurrentTaskScore\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"shouldKickOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTaskScoreLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeContract\",\"type\":\"address\"}],\"name\":\"updateNodeContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"taskContract\",\"type\":\"address\"}],\"name\":\"updateTaskContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"updateKickoutThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"startTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"finishTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"i\",\"type\":\"uint256\"}],\"name\":\"addTaskScore\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"punish\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"kickout\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getTaskScore\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getTaskCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getRecentTaskScore\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getRecentTaskCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getCurrentTaskScore\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"shouldKickOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTaskScoreLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // QOSABI is the input ABI used to generate the binding from.
@@ -211,6 +211,37 @@ func (_QOS *QOSCallerSession) GetCurrentTaskScore(nodeAddress common.Address) (*
 	return _QOS.Contract.GetCurrentTaskScore(&_QOS.CallOpts, nodeAddress)
 }
 
+// GetRecentTaskCount is a free data retrieval call binding the contract method 0x1b0883a3.
+//
+// Solidity: function getRecentTaskCount(address nodeAddress) view returns(uint256)
+func (_QOS *QOSCaller) GetRecentTaskCount(opts *bind.CallOpts, nodeAddress common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _QOS.contract.Call(opts, &out, "getRecentTaskCount", nodeAddress)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetRecentTaskCount is a free data retrieval call binding the contract method 0x1b0883a3.
+//
+// Solidity: function getRecentTaskCount(address nodeAddress) view returns(uint256)
+func (_QOS *QOSSession) GetRecentTaskCount(nodeAddress common.Address) (*big.Int, error) {
+	return _QOS.Contract.GetRecentTaskCount(&_QOS.CallOpts, nodeAddress)
+}
+
+// GetRecentTaskCount is a free data retrieval call binding the contract method 0x1b0883a3.
+//
+// Solidity: function getRecentTaskCount(address nodeAddress) view returns(uint256)
+func (_QOS *QOSCallerSession) GetRecentTaskCount(nodeAddress common.Address) (*big.Int, error) {
+	return _QOS.Contract.GetRecentTaskCount(&_QOS.CallOpts, nodeAddress)
+}
+
 // GetRecentTaskScore is a free data retrieval call binding the contract method 0x886673a3.
 //
 // Solidity: function getRecentTaskScore(address nodeAddress) view returns(uint256)
@@ -240,6 +271,37 @@ func (_QOS *QOSSession) GetRecentTaskScore(nodeAddress common.Address) (*big.Int
 // Solidity: function getRecentTaskScore(address nodeAddress) view returns(uint256)
 func (_QOS *QOSCallerSession) GetRecentTaskScore(nodeAddress common.Address) (*big.Int, error) {
 	return _QOS.Contract.GetRecentTaskScore(&_QOS.CallOpts, nodeAddress)
+}
+
+// GetTaskCount is a free data retrieval call binding the contract method 0xc64ecb8f.
+//
+// Solidity: function getTaskCount(address nodeAddress) view returns(uint256)
+func (_QOS *QOSCaller) GetTaskCount(opts *bind.CallOpts, nodeAddress common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _QOS.contract.Call(opts, &out, "getTaskCount", nodeAddress)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetTaskCount is a free data retrieval call binding the contract method 0xc64ecb8f.
+//
+// Solidity: function getTaskCount(address nodeAddress) view returns(uint256)
+func (_QOS *QOSSession) GetTaskCount(nodeAddress common.Address) (*big.Int, error) {
+	return _QOS.Contract.GetTaskCount(&_QOS.CallOpts, nodeAddress)
+}
+
+// GetTaskCount is a free data retrieval call binding the contract method 0xc64ecb8f.
+//
+// Solidity: function getTaskCount(address nodeAddress) view returns(uint256)
+func (_QOS *QOSCallerSession) GetTaskCount(nodeAddress common.Address) (*big.Int, error) {
+	return _QOS.Contract.GetTaskCount(&_QOS.CallOpts, nodeAddress)
 }
 
 // GetTaskScore is a free data retrieval call binding the contract method 0xa903e689.
@@ -406,6 +468,27 @@ func (_QOS *QOSSession) FinishTask(nodeAddress common.Address) (*types.Transacti
 // Solidity: function finishTask(address nodeAddress) returns()
 func (_QOS *QOSTransactorSession) FinishTask(nodeAddress common.Address) (*types.Transaction, error) {
 	return _QOS.Contract.FinishTask(&_QOS.TransactOpts, nodeAddress)
+}
+
+// Kickout is a paid mutator transaction binding the contract method 0xc05a0469.
+//
+// Solidity: function kickout(address nodeAddress) returns()
+func (_QOS *QOSTransactor) Kickout(opts *bind.TransactOpts, nodeAddress common.Address) (*types.Transaction, error) {
+	return _QOS.contract.Transact(opts, "kickout", nodeAddress)
+}
+
+// Kickout is a paid mutator transaction binding the contract method 0xc05a0469.
+//
+// Solidity: function kickout(address nodeAddress) returns()
+func (_QOS *QOSSession) Kickout(nodeAddress common.Address) (*types.Transaction, error) {
+	return _QOS.Contract.Kickout(&_QOS.TransactOpts, nodeAddress)
+}
+
+// Kickout is a paid mutator transaction binding the contract method 0xc05a0469.
+//
+// Solidity: function kickout(address nodeAddress) returns()
+func (_QOS *QOSTransactorSession) Kickout(nodeAddress common.Address) (*types.Transaction, error) {
+	return _QOS.Contract.Kickout(&_QOS.TransactOpts, nodeAddress)
 }
 
 // Punish is a paid mutator transaction binding the contract method 0xea7221a1.
