@@ -53,7 +53,7 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "uint256",
           "name": "taskId",
           "type": "uint256"
@@ -66,6 +66,69 @@
         }
       ],
       "name": "TaskAborted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "taskId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "nodeAddress",
+          "type": "address"
+        }
+      ],
+      "name": "TaskNodeCancelled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "taskId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "nodeAddress",
+          "type": "address"
+        }
+      ],
+      "name": "TaskNodeSlashed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "taskId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "nodeAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "fee",
+          "type": "uint256"
+        }
+      ],
+      "name": "TaskNodeSuccess",
       "type": "event"
     },
     {
@@ -109,13 +172,26 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "uint256",
           "name": "taskId",
           "type": "uint256"
         }
       ],
       "name": "TaskResultCommitmentsReady",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "taskId",
+          "type": "uint256"
+        }
+      ],
+      "name": "TaskResultUploaded",
       "type": "event"
     },
     {
@@ -171,7 +247,7 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "uint256",
           "name": "taskId",
           "type": "uint256"
@@ -260,40 +336,6 @@
       ],
       "name": "createTask",
       "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "k",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "vramLimit",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "useSameGPU",
-          "type": "bool"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "seed",
-          "type": "bytes32"
-        }
-      ],
-      "name": "randomSelectNodes",
-      "outputs": [
-        {
-          "internalType": "address[]",
-          "name": "",
-          "type": "address[]"
-        }
-      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
