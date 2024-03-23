@@ -303,7 +303,7 @@ func SubmitAndDiscloseResults(taskId *big.Int, addresses []string, privateKeys [
 
 	taskSuccessIterator, err := taskInstance.FilterTaskSuccess(&bind.FilterOpts{
 		Start: discloseBlockNum,
-	}, nil)
+	}, nil, nil)
 	if err != nil {
 		return err
 	}
