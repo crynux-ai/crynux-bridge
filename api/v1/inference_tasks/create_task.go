@@ -5,8 +5,10 @@ import (
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"errors"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/time/rate"
 	"gorm.io/gorm"
 )
 
@@ -50,9 +52,27 @@ func getTaskCap(taskType models.ChainTaskType, taskArgs string) (uint64, error) 
 	}
 }
 
+var clientRateLimiters map[string]*rate.Limiter = make(map[string]*rate.Limiter)
+
+func getClientRateLimiter(clientID string) *rate.Limiter {
+	limiter, ok := clientRateLimiters[clientID]
+	if !ok {
+		var interval time.Duration = time.Minute
+		limiter = rate.NewLimiter(rate.Every(interval), 1)
+		clientRateLimiters[clientID] = limiter
+	}
+	return limiter
+}
+
 func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 
 	client := &models.Client{ClientId: in.ClientID}
+
+	limiter := getClientRateLimiter(in.ClientID)
+	if !limiter.Allow() {
+		err := errors.New("CREATE TASK TOO FREQUENTLY")
+		return nil, response.NewExceptionResponse(err)
+	}
 
 	if err := config.GetDB().Where(client).First(&client).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
