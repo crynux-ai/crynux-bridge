@@ -7,14 +7,12 @@ import (
 	"crynux_bridge/config"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 )
 
 type WalletBalance struct {
 	Address string   `json:"address"`
-	ETH     *big.Int `json:"eth"`
 	CNX     *big.Int `json:"cnx"`
 }
 
@@ -32,7 +30,7 @@ func GetWalletBalance(_ *gin.Context) (*GetWalletBalanceResponse, error) {
 		return nil, response.NewExceptionResponse(err)
 	}
 
-	ethBalance, err := client.BalanceAt(
+	balance, err := client.BalanceAt(
 		context.Background(),
 		applicationWalletAddress,
 		nil,
@@ -42,27 +40,10 @@ func GetWalletBalance(_ *gin.Context) (*GetWalletBalanceResponse, error) {
 		return nil, response.NewExceptionResponse(err)
 	}
 
-	cnxTokenInstance, err := blockchain.GetCrynuxTokenContractInstance()
-	if err != nil {
-		return nil, response.NewExceptionResponse(err)
-	}
-
-	cnxBalance, err := cnxTokenInstance.BalanceOf(
-		&bind.CallOpts{
-			Pending: false,
-			Context: context.Background(),
-		},
-		applicationWalletAddress,
-	)
-	if err != nil {
-		return nil, response.NewExceptionResponse(err)
-	}
-
 	return &GetWalletBalanceResponse{
 		Data: &WalletBalance{
 			Address: appConfig.Blockchain.Account.Address,
-			CNX:     cnxBalance,
-			ETH:     ethBalance,
+			CNX:     balance,
 		},
 	}, nil
 }
