@@ -18,7 +18,6 @@ import (
 
 	"github.com/corona10/goimagehash"
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
@@ -65,7 +64,8 @@ func CreateTaskOnChain(task *models.InferenceTask) (string, error) {
 
 	taskFee := new(big.Int).Mul(big.NewInt(int64(task.TaskFee)), big.NewInt(params.Ether))
 	cap := big.NewInt(int64(task.Cap))
-	tx, err := instance.CreateTask(auth, big.NewInt(int64(task.TaskType)), *taskHash, *dataHash, big.NewInt(int64(task.VramLimit)), taskFee, cap)
+	auth.Value = taskFee
+	tx, err := instance.CreateTask(auth, big.NewInt(int64(task.TaskType)), *taskHash, *dataHash, big.NewInt(int64(task.VramLimit)), cap)
 	if err != nil {
 		return "", err
 	}
@@ -191,85 +191,10 @@ func ApproveAllBalanceForTaskCreator() error {
 	currentETHBalanceInEther := new(big.Int).Div(currentETHBalance, big.NewInt(params.Ether))
 	log.Infoln("ETH balance for the application account: " + currentETHBalanceInEther.String())
 
-	ethThreshold := new(big.Int).Mul(big.NewInt(10000000), big.NewInt(params.GWei))
+	ethThreshold := new(big.Int).Mul(big.NewInt(500), big.NewInt(params.Ether))
 
 	if currentETHBalance.Cmp(ethThreshold) != 1 {
 		return errors.New("not enough ETH left")
-	}
-
-	// Check Crynux token balance
-	cnxTokenInstance, err := GetCrynuxTokenContractInstance()
-	if err != nil {
-		return err
-	}
-
-	cnxBalance, err := cnxTokenInstance.BalanceOf(
-		&bind.CallOpts{
-			Pending: false,
-			Context: context.Background(),
-		},
-		appAddress,
-	)
-	if err != nil {
-		return err
-	}
-
-	cnxBalanceInEther := new(big.Int).Div(cnxBalance, big.NewInt(params.Ether))
-	log.Infoln("Crynux token balance for the application account: " + cnxBalanceInEther.String())
-
-	cnxThreshold := new(big.Int).Mul(big.NewInt(100), big.NewInt(params.Ether))
-
-	if cnxBalance.Cmp(cnxThreshold) != 1 {
-		return errors.New("not enough Crynux token left")
-	}
-
-	// Check Crynux token allowance
-	taskContractAddress := common.HexToAddress(config.GetConfig().Blockchain.Contracts.Task)
-
-	cnxAllowance, err := cnxTokenInstance.Allowance(
-		&bind.CallOpts{
-			Pending: false,
-			Context: context.Background(),
-		},
-		appAddress,
-		taskContractAddress,
-	)
-
-	if err != nil {
-		return err
-	}
-
-	cnxAllowanceInEther := new(big.Int).Div(cnxAllowance, big.NewInt(params.Ether))
-	log.Infoln("Crynux token allowance to the task contract for the application account: " + cnxAllowanceInEther.String())
-
-	if cnxBalance.Cmp(cnxAllowance) == 1 {
-
-		log.Infoln("Approve more tokens for the task contract")
-
-		// Let's approve the remaining balance
-		auth, err := GetAuth(
-			client,
-			appAddress,
-			config.GetConfig().Blockchain.Account.PrivateKey)
-
-		if err != nil {
-			return err
-		}
-
-		tx, err := cnxTokenInstance.Approve(
-			auth,
-			taskContractAddress,
-			cnxBalance,
-		)
-
-		if err != nil {
-			return err
-		}
-
-		_, err = bind.WaitMined(context.Background(), client, tx)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
