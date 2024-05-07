@@ -24,6 +24,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	errNoEventSignature       = errors.New("no event signature")
+	errEventSignatureMismatch = errors.New("event signature mismatch")
+)
+
 func CreateTaskOnChain(task *models.InferenceTask) (string, error) {
 
 	appConfig := config.GetConfig()
@@ -123,13 +128,24 @@ func GetTaskCreationResult(txHash string) (*big.Int, error) {
 		return nil, errors.New("wrong event logs number:" + strconv.Itoa(len(receipt.Logs)))
 	}
 
-	taskPendingEvent, err := taskContractInstance.ParseTaskPending(*receipt.Logs[2])
-	if err != nil {
-		log.Errorln("error parse task created event: " + receipt.TxHash.Hex())
-		return nil, err
+	var taskId *big.Int = nil
+
+	for _, eventLog := range receipt.Logs {
+		taskPendingEvent, err := taskContractInstance.ParseTaskPending(*eventLog)
+		if err != nil {
+			if errors.Is(err, errNoEventSignature) || errors.Is(err, errEventSignatureMismatch) {
+				continue
+			}
+			log.Errorln("error parse task pending event: " + receipt.TxHash.Hex())
+			return nil, err
+		}
+		taskId = taskPendingEvent.TaskId
 	}
 
-	taskId := taskPendingEvent.TaskId
+	if taskId == nil {
+		log.Errorln("task pending event not found: " + receipt.TxHash.Hex())
+		return nil, errors.New("task pending event not found: " + receipt.TxHash.Hex())
+	}
 
 	return taskId, nil
 }
