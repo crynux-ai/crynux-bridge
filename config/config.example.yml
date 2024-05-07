@@ -22,19 +22,18 @@ data_dir:
   inference_tasks: "data/inference_tasks"
   model_images: "data/images/models"
 blockchain:
-  rpc_endpoint: "https://block-node.crynux.ai/rpc"
+  rpc_endpoint: "https://json-rpc.crynux.evm.ra.blumbus.noisnemyd.xyz/"
   account:
     address: ""
     private_key_file: ""
   contracts:
-    netstats: "0xaa0F19cb42a19415591003Ed9D99c40cE69B0224"
-    task: "0x9b483dc4D18a35802DD4fB0fE9f02A8b32FaD906"
-    node: "0xc674d7d3599Cb566eC8027767f410dd8cD7Bd36D"
-    crynux_token: "0x95E7e7Ed5463Ff482f61585605a0ff278e0E1FFb"
-  start_block_num: 1887881
-  gas_limit: 42949672
+    netstats: "0xC2c060f8C46640394E0937D75Ea977207E6df130"
+    task: "0x07E149A0e372C2F54Df6358d021d700703D222D1"
+    node: "0x662d296cae3f1Be2ed5803227dAd6435f1ffC438"
+  start_block_num: 69603
+  gas_limit: 5000000
 relay:
-  base_url: "https://relay.h.crynux.ai"
+  base_url: "https://dy.relay.crynux.ai"
 task_schema:
   stable_diffusion_inference: 'https://raw.githubusercontent.com/crynux-ai/stable-diffusion-task/main/schema/stable-diffusion-inference-task.json'
   gpt_inference: "https://raw.githubusercontent.com/crynux-ai/gpt-task/main/schema/gpt-inference-task.json"
