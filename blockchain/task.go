@@ -24,10 +24,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var (
-	errNoEventSignature       = errors.New("no event signature")
-	errEventSignatureMismatch = errors.New("event signature mismatch")
-)
 
 func CreateTaskOnChain(task *models.InferenceTask) (string, error) {
 
@@ -133,7 +129,8 @@ func GetTaskCreationResult(txHash string) (*big.Int, error) {
 	for _, eventLog := range receipt.Logs {
 		taskPendingEvent, err := taskContractInstance.ParseTaskPending(*eventLog)
 		if err != nil {
-			if errors.Is(err, errNoEventSignature) || errors.Is(err, errEventSignatureMismatch) {
+			errS := err.Error()
+			if errS == "no event signature" || errS == "event signature mismatch" {
 				continue
 			}
 			log.Errorln("error parse task pending event: " + receipt.TxHash.Hex())
