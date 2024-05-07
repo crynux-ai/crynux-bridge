@@ -13,7 +13,7 @@ import (
 
 type WalletBalance struct {
 	Address string   `json:"address"`
-	CNX     *big.Int `json:"cnx"`
+	Balance *big.Int `json:"balance"`
 }
 
 type GetWalletBalanceResponse struct {
@@ -43,7 +43,7 @@ func GetWalletBalance(_ *gin.Context) (*GetWalletBalanceResponse, error) {
 	return &GetWalletBalanceResponse{
 		Data: &WalletBalance{
 			Address: appConfig.Blockchain.Account.Address,
-			CNX:     balance,
+			Balance: balance,
 		},
 	}, nil
 }
