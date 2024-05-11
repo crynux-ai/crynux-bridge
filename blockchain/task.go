@@ -119,11 +119,6 @@ func GetTaskCreationResult(txHash string) (*big.Int, error) {
 
 	// There are 6 events emitted from the CreateTask method
 	// Approval, Transfer, TaskPending, TaskCreated x 3
-	if len(receipt.Logs) < 3 {
-		log.Errorln(receipt.Logs)
-		return nil, errors.New("wrong event logs number:" + strconv.Itoa(len(receipt.Logs)))
-	}
-
 	var taskId *big.Int = nil
 
 	for _, eventLog := range receipt.Logs {
