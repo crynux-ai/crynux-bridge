@@ -106,7 +106,7 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 		TaskArgs:  in.TaskArgs,
 		TaskType:  *in.TaskType,
 		VramLimit: vramLimit,
-		TaskFee:   30,
+		TaskFee:   11,
 		Cap:       cap,
 	}
 
