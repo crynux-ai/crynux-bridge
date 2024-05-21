@@ -63,7 +63,7 @@ func CreateTaskOnChain(task *models.InferenceTask) (string, error) {
 	log.Debugln("create task tx: TaskHash " + common.Bytes2Hex(taskHash[:]))
 	log.Debugln("create task tx: DataHash " + common.Bytes2Hex(dataHash[:]))
 
-	taskFee := new(big.Int).Mul(big.NewInt(int64(task.TaskFee)), big.NewInt(params.Ether))
+	taskFee := new(big.Int).Mul(big.NewInt(int64(task.TaskFee)), big.NewInt(params.GWei))
 	cap := big.NewInt(int64(task.Cap))
 	auth.Value = taskFee
 	tx, err := instance.CreateTask(auth, big.NewInt(int64(task.TaskType)), *taskHash, *dataHash, big.NewInt(int64(task.VramLimit)), cap)

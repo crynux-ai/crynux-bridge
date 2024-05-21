@@ -52,6 +52,14 @@ func getTaskCap(taskType models.ChainTaskType, taskArgs string) (uint64, error) 
 	}
 }
 
+func getTaskFee(taskType models.ChainTaskType) uint64 {
+	if taskType == models.TaskTypeSD {
+		return 5100000000
+	} else {
+		return 5200000000
+	}
+}
+
 var clientRateLimiters map[string]*rate.Limiter = make(map[string]*rate.Limiter)
 
 func getClientRateLimiter(clientID string) *rate.Limiter {
@@ -100,13 +108,14 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 
 	// task args has been validated, so there should be no error
 	cap, _ := getTaskCap(*in.TaskType, in.TaskArgs)
+	taskFee := getTaskFee(*in.TaskType) // unit: GWei
 
 	task := &models.InferenceTask{
 		Client:    *client,
 		TaskArgs:  in.TaskArgs,
 		TaskType:  *in.TaskType,
 		VramLimit: vramLimit,
-		TaskFee:   11,
+		TaskFee:   taskFee,
 		Cap:       cap,
 	}
 
