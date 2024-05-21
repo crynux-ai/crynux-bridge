@@ -46,6 +46,8 @@ func processGetTaskResults() {
 		return
 	}
 
+	errPattern := regexp.MustCompile("VM Exception while processing transaction: revert")
+
 	for _, task := range tasks {
 
 		taskId, err := blockchain.GetTaskCreationResult(task.TxHash)
@@ -54,12 +56,7 @@ func processGetTaskResults() {
 
 			errMsg := err.Error()
 
-			match, errM := regexp.MatchString("VM Exception while processing transaction: revert", errMsg)
-
-			if errM != nil {
-				log.Errorln("error parsing error message from relay server")
-				continue
-			}
+			match := errPattern.MatchString(errMsg)
 
 			if match {
 				log.Infoln("Transaction has been reverted")
@@ -84,6 +81,16 @@ func processGetTaskResults() {
 		if taskId == nil {
 			// Not ready yet
 			log.Debugln("transaction not confirmed: " + task.TxHash)
+
+			waitTime := time.Since(task.UpdatedAt)
+			if waitTime > 120 {
+				log.Debugln("transaction not confirmed after 120 seconds: " + task.TxHash)
+				if err := clearTaskTxHash(&task); err != nil {
+					log.Errorln("error clearing tx hash")
+					log.Errorln(err)
+				}
+			}
+
 			continue
 		}
 
@@ -106,4 +113,11 @@ func updateTaskIdAndStatus(task *models.InferenceTask, taskId uint64, status mod
 
 	tx := config.GetDB().Model(task).Select("Status", "TaskId")
 	return tx.Updates(&task).Error
+}
+
+func clearTaskTxHash(task *models.InferenceTask) error {
+	return config.GetDB().Model(task).Select("TxHash", "Status").Updates(models.InferenceTask{
+		TxHash: "",
+		Status: models.InferenceTaskPending,
+	}).Error
 }
