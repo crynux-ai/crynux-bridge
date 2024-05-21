@@ -85,8 +85,8 @@ func processGetTaskResults() {
 			waitTime := time.Since(task.UpdatedAt)
 			if waitTime > 120 {
 				log.Debugln("transaction not confirmed after 120 seconds: " + task.TxHash)
-				if err := clearTaskTxHash(&task); err != nil {
-					log.Errorln("error clearing tx hash")
+				if err := task.AbortWithReason("create task tx not confirmed after 120 seconds", config.GetDB()); err != nil {
+					log.Errorln("error updating task status")
 					log.Errorln(err)
 				}
 			}
@@ -113,11 +113,4 @@ func updateTaskIdAndStatus(task *models.InferenceTask, taskId uint64, status mod
 
 	tx := config.GetDB().Model(task).Select("Status", "TaskId")
 	return tx.Updates(&task).Error
-}
-
-func clearTaskTxHash(task *models.InferenceTask) error {
-	return config.GetDB().Model(task).Select("TxHash", "Status").Updates(models.InferenceTask{
-		TxHash: "",
-		Status: models.InferenceTaskPending,
-	}).Error
 }
