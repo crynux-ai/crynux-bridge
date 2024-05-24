@@ -52,11 +52,11 @@ func getTaskCap(taskType models.ChainTaskType, taskArgs string) (uint64, error) 
 	}
 }
 
-func getTaskFee(taskType models.ChainTaskType) uint64 {
+func getTaskFee(taskType models.ChainTaskType, cap uint64) uint64 {
 	if taskType == models.TaskTypeSD {
-		return 5100000000
+		return 5100000000 * cap
 	} else {
-		return 5200000000
+		return 5200000000 * cap
 	}
 }
 
@@ -108,7 +108,7 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 
 	// task args has been validated, so there should be no error
 	cap, _ := getTaskCap(*in.TaskType, in.TaskArgs)
-	taskFee := getTaskFee(*in.TaskType) // unit: GWei
+	taskFee := getTaskFee(*in.TaskType, cap) // unit: GWei
 
 	task := &models.InferenceTask{
 		Client:    *client,
