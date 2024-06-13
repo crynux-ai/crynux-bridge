@@ -54,9 +54,9 @@ func getTaskCap(taskType models.ChainTaskType, taskArgs string) (uint64, error) 
 
 func getTaskFee(taskType models.ChainTaskType, cap uint64) uint64 {
 	if taskType == models.TaskTypeSD {
-		return 7000000000 * cap
+		return 6100000000 * cap
 	} else {
-		return 7000000000 * cap
+		return 6100000000 * cap
 	}
 }
 
