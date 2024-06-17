@@ -66,7 +66,7 @@ func getClientRateLimiter(clientID string) *rate.Limiter {
 	limiter, ok := clientRateLimiters[clientID]
 	if !ok {
 		var interval time.Duration = time.Minute
-		limiter = rate.NewLimiter(rate.Every(interval), 1)
+		limiter = rate.NewLimiter(rate.Every(interval), 20)
 		clientRateLimiters[clientID] = limiter
 	}
 	return limiter
