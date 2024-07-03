@@ -63,6 +63,10 @@ type AppConfig struct {
 		BaseURL string `mapstructure:"base_url"`
 	} `mapstructure:"relay"`
 
+	Task struct {
+		TaskFee uint64 `mapstructure:"task_fee"`
+	} `mapstructure:"task"`
+
 	TaskSchema struct {
 		StableDiffusionInference string `mapstructure:"stable_diffusion_inference"`
 		GPTInference             string `mapstructure:"gpt_inference"`
