@@ -52,11 +52,11 @@ func getTaskCap(taskType models.ChainTaskType, taskArgs string) (uint64, error) 
 	}
 }
 
-func getTaskFee(taskType models.ChainTaskType, cap uint64) uint64 {
+func getTaskFee(taskType models.ChainTaskType, baseTaskFee, cap uint64) uint64 {
 	if taskType == models.TaskTypeSD {
-		return 4100000000 * cap
+		return baseTaskFee * cap
 	} else {
-		return 4100000000 * cap
+		return baseTaskFee * cap
 	}
 }
 
@@ -73,7 +73,7 @@ func getClientRateLimiter(clientID string) *rate.Limiter {
 }
 
 func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
-
+	appConfig := config.GetConfig()
 	client := &models.Client{ClientId: in.ClientID}
 
 	limiter := getClientRateLimiter(in.ClientID)
@@ -108,7 +108,7 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 
 	// task args has been validated, so there should be no error
 	cap, _ := getTaskCap(*in.TaskType, in.TaskArgs)
-	taskFee := getTaskFee(*in.TaskType, cap) // unit: GWei
+	taskFee := getTaskFee(*in.TaskType, appConfig.Task.TaskFee, cap) // unit: GWei
 
 	task := &models.InferenceTask{
 		Client:    *client,
