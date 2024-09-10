@@ -30,7 +30,7 @@ func getDefaultVramLimit(taskType models.ChainTaskType, taskArgs string) (uint64
 		if err != nil {
 			return 0, err
 		}
-		if baseModel == "runwayml/stable-diffusion-v1-5" {
+		if baseModel == "crynux-ai/stable-diffusion-v1-5" {
 			return 8, nil
 		} else {
 			return 10, nil
