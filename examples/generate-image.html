@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Image Generator</title>
+<script>
+const CRYNUX_BRIDGE_ENDPOINT = "https://api_ig.crynux.ai"
+const CLIENT_ID = "ead13024-085a-4f01-99cf-833a8c5acc9e"
+
+const InferenceTaskStatus = {
+  Pending: 0,
+  TransactionSent: 1,
+  BlockchainConfirmed: 2,
+  ParamsUploaded: 3,
+  PendingResult: 4,
+  Aborted: 5,
+  Success: 6
+};
+
+async function generate_image(prompt) {
+    const task_id = await create_task({
+      "version": "2.0.0",
+      "base_model": {
+          "name": "crynux-ai/stable-diffusion-xl-base-1.0"
+      },
+      "prompt": prompt,
+      "negative_prompt": "",
+      "task_config": {
+          "num_images": 1,
+          "steps": 40
+      }
+  });
+
+  let status = await get_task_status(task_id);
+  while (status !== InferenceTaskStatus.Success) {
+
+    console.log("task status: " + status);
+
+    if (status === InferenceTaskStatus.Aborted) {
+      throw new Error("Task was aborted.");
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    status = await get_task_status(task_id);
+  }
+
+  return await get_image(task_id);
+}
+
+async function create_task(args) {
+    const response = await fetch(CRYNUX_BRIDGE_ENDPOINT + '/v1/inference_tasks', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "client_id": CLIENT_ID,
+          "task_args": JSON.stringify(args),
+          "task_type": 0,
+          "vram_limit": 10
+        }),
+    });
+    const data = await response.json();
+    const task_id = data.data.id;
+
+    console.log("task created: " + task_id);
+
+    return task_id;
+}
+
+async function get_task_status(task_id) {
+  const response = await fetch(CRYNUX_BRIDGE_ENDPOINT + '/v1/inference_tasks/' + CLIENT_ID + '/' + task_id, {
+    method: 'GET',
+    headers: {},
+  });
+
+  const data = await response.json();
+
+  return data.data.status;
+}
+
+async function get_image(task_id) {
+  return get_image_as_data_url(CRYNUX_BRIDGE_ENDPOINT + '/v1/inference_tasks/' + CLIENT_ID + '/' + task_id + '/images/0');
+}
+
+async function get_image_as_data_url(image_url) {
+  const res = await fetch(image_url);
+  const data_blob = await res.blob();
+  return read_blob(data_blob);
+}
+
+function read_blob(b) {
+  return new Promise(function(resolve, reject) {
+      const reader = new FileReader();
+      reader.onloadend = function() {
+          resolve(reader.result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(b);
+  });
+}
+
+async function onGenerateButtonClick() {
+    const prompt = document.getElementById('promptInput').value;
+    if (!prompt) {
+        alert('Please enter a prompt');
+        return;
+    }
+    try {
+        const dataURL = await generate_image(prompt);
+        document.getElementById('resultImage').src = dataURL;
+    } catch (error) {
+        alert('Failed to generate image: ' + error.message);
+    }
+}
+</script>
+</head>
+<body>
+<div>
+    <input type="text" id="promptInput" placeholder="Enter prompt here">
+    <button onclick="onGenerateButtonClick()">Generate Image</button>
+</div>
+<div>
+    <img id="resultImage" alt="Generated image will appear here" style="max-width: 100%;">
+</div>
+</body>
+</html>
