@@ -27,7 +27,8 @@ async function generate_image(prompt) {
       "negative_prompt": "",
       "task_config": {
           "num_images": 1,
-          "steps": 40
+          "steps": 40,
+          "safety_checker": false,
       }
   });
 
