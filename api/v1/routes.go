@@ -2,6 +2,7 @@ package v1
 
 import (
 	"crynux_bridge/api/v1/application"
+	"crynux_bridge/api/v1/count"
 	"crynux_bridge/api/v1/inference_tasks"
 	"crynux_bridge/api/v1/models"
 	"crynux_bridge/api/v1/network"
@@ -55,4 +56,10 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Summary("Get the balance of the application wallet"),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(application.GetWalletBalance, 200))
+
+	countGroup := v1g.Group("count", "Count", "Task count related APIs")
+	countGroup.GET("/task", []fizz.OperationOption{
+		fizz.Summary("Count the task in the recent period"),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(count.CountTask, 200))
 }
