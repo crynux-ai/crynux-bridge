@@ -10,6 +10,10 @@ More specifically, the Crynux Bridge:
 
 * Provides simpler APIs to the application to execute tasks using only the task parameters(no blockchain transactions or signatures).
 
+Check out this simple webpage that lets users create images from text prompts. Tasks are sent to the Crynux Bridge API, and the generated image is returned:
+
+[Image Generator Demo on Codepen](https://codepen.io/Luke-Weber/pen/ExBqGrK)
+
 To deploy an instance of the Crynux Bridge and connect your application to it, please follow the tutorial below:
 
 [Deploy Crynux Bridge for Applications](https://docs.crynux.ai/application-development/crynux-bridge)
