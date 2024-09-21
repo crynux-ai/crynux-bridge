@@ -49,20 +49,22 @@ func CountTask(_ *gin.Context, input *CountInput) (*CountResponse, error) {
 	result := CountOutput{}
 	result.TotalTaskCount = len(allTasks)
 
-	totalTaskTime := time.Duration(0)
-
-	for _, task := range allTasks {
-		if task.Status == models.InferenceTaskSuccess {
-			result.SuccessTaskCount += 1
-			totalTaskTime += task.UpdatedAt.Sub(task.CreatedAt)
-		} else if task.Status == models.InferenceTaskAborted {
-			result.AbortedTaskCount += 1
-		} else {
-			result.UnfinishedTaskCount += 1
+	if result.TotalTaskCount > 0 {
+		totalTaskTime := time.Duration(0)
+	
+		for _, task := range allTasks {
+			if task.Status == models.InferenceTaskSuccess {
+				result.SuccessTaskCount += 1
+				totalTaskTime += task.UpdatedAt.Sub(task.CreatedAt)
+			} else if task.Status == models.InferenceTaskAborted {
+				result.AbortedTaskCount += 1
+			} else {
+				result.UnfinishedTaskCount += 1
+			}
 		}
+	
+		result.AvgTaskTime = int(totalTaskTime/time.Second) / result.TotalTaskCount
 	}
-
-	result.AvgTaskTime = int(totalTaskTime/time.Second) / result.TotalTaskCount
 
 	return &CountResponse{Data: &result}, nil
 }
