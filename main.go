@@ -54,6 +54,9 @@ func main() {
 	// Sync block to update task status
 	go tasks.StartSyncBlock()
 
+	// Auto create task every 5 minutes
+	go tasks.StartAutoCreateTask()
+
 	startServer()
 }
 
