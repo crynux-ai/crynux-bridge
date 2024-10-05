@@ -92,6 +92,10 @@ func NewTask(taskType models.ChainTaskType) (*models.InferenceTask, error) {
 		return nil, err
 	}
 
+	clientTask := models.ClientTask{
+		Client: *client,
+	}
+
 	var taskArgs string
 	var cap uint64
 	if taskType == models.TaskTypeSD {
@@ -103,7 +107,7 @@ func NewTask(taskType models.ChainTaskType) (*models.InferenceTask, error) {
 	}
 
 	task := &models.InferenceTask{
-		Client:   *client,
+		ClientTask: clientTask,
 		TaskArgs: taskArgs,
 		TaskType: taskType,
 		VramLimit: 8,

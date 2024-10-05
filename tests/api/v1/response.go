@@ -39,7 +39,7 @@ func AssertExceptionResponse(t *testing.T, r *httptest.ResponseRecorder, message
 func AssertTaskResponse(t *testing.T, r *httptest.ResponseRecorder, task *models.InferenceTask) {
 	assert.Equal(t, r.Code, 200, "wrong http status code")
 
-	taskResponse := &inference_tasks.TaskResponse{}
+	taskResponse := &inference_tasks.GetTaskResponse{}
 
 	responseBytes := r.Body.Bytes()
 
