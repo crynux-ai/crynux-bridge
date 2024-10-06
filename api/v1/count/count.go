@@ -30,33 +30,48 @@ func CountTask(_ *gin.Context, input *CountInput) (*CountResponse, error) {
 	duration := time.Duration(input.Duration) * time.Hour
 
 	startTime := time.Now().Add(-duration)
-	var allTasks []models.InferenceTask
+	var allClientTasks []models.ClientTask
 
 	offset := 0
 	limit := 100
+
 	for {
-		var tasks []models.InferenceTask
-		if err := config.GetDB().Model(&models.InferenceTask{}).Where("created_at >= ?", startTime).Order("id").Offset(offset).Limit(limit).Find(&tasks).Error; err != nil {
+		var clientTasks []models.ClientTask
+		if err := config.GetDB().Model(&models.ClientTask{}).Preload("InferenceTasks").Where("created_at >= ?", startTime).Order("id").Offset(offset).Limit(limit).Find(&clientTasks).Error; err != nil {
 			return nil, response.NewExceptionResponse(err)
 		}
-		allTasks = append(allTasks, tasks...)
-		if len(tasks) < limit {
+		allClientTasks = append(allClientTasks, clientTasks...)
+		if len(clientTasks) < limit {
 			break
 		}
 		offset += limit
 	}
 
 	result := CountOutput{}
-	result.TotalTaskCount = len(allTasks)
+	result.TotalTaskCount = len(allClientTasks)
 
 	if result.TotalTaskCount > 0 {
 		totalTaskTime := time.Duration(0)
 	
-		for _, task := range allTasks {
-			if task.Status == models.InferenceTaskSuccess {
+		for _, clientTask := range allClientTasks {
+			var successCount, abortedCount int
+			var successTaskTime time.Duration
+			for _, task := range clientTask.InferenceTasks {
+				if task.Status == models.InferenceTaskSuccess {
+					successCount += 1
+					t := task.UpdatedAt.Sub(task.CreatedAt)
+					if successTaskTime == 0 || t < successTaskTime {
+						successTaskTime = t
+					}
+				} else if task.Status == models.InferenceTaskAborted {
+					abortedCount += 1
+				}
+			}
+
+			if successCount > 0 {
 				result.SuccessTaskCount += 1
-				totalTaskTime += task.UpdatedAt.Sub(task.CreatedAt)
-			} else if task.Status == models.InferenceTaskAborted {
+				totalTaskTime += successTaskTime
+			} else if abortedCount == len(clientTask.InferenceTasks) {
 				result.AbortedTaskCount += 1
 			} else {
 				result.UnfinishedTaskCount += 1

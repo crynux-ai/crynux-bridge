@@ -17,11 +17,12 @@ type TaskInput struct {
 	TaskArgs  string                `json:"task_args" description:"Task args" validate:"required"`
 	TaskType  *models.ChainTaskType `json:"task_type" description:"Task type. 0 - SD task, 1 - LLM task" validate:"required"`
 	VramLimit *uint64               `json:"vram_limit,omitempty" description:"Task minimal vram requirement" validate:"omitempty"`
+	RepeatNum int                   `json:"repeat_num,omitempty" description:"Task repeat number" default:"2" validate:"omitempty,gt=0"`
 }
 
 type TaskResponse struct {
 	response.Response
-	Data models.InferenceTask `json:"data"`
+	Data *models.ClientTask `json:"data"`
 }
 
 func getDefaultVramLimit(taskType models.ChainTaskType, taskArgs string) (uint64, error) {
@@ -74,7 +75,7 @@ func getClientRateLimiter(clientID string) *rate.Limiter {
 
 func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	appConfig := config.GetConfig()
-	client := &models.Client{ClientId: in.ClientID}
+	client := models.Client{ClientId: in.ClientID}
 
 	limiter := getClientRateLimiter(in.ClientID)
 	if !limiter.Allow() {
@@ -82,7 +83,7 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 		return nil, response.NewExceptionResponse(err)
 	}
 
-	if err := config.GetDB().Where(client).First(&client).Error; err != nil {
+	if err := config.GetDB().Where(&client).First(&client).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, response.NewExceptionResponse(err)
 		}
@@ -106,22 +107,32 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 		vramLimit = *in.VramLimit
 	}
 
+	clientTask := models.ClientTask{
+		Client: client,
+	}
+	if err := config.GetDB().Create(&clientTask).Error; err != nil {
+		return nil, response.NewExceptionResponse(err)
+	}
+
 	// task args has been validated, so there should be no error
 	cap, _ := getTaskCap(*in.TaskType, in.TaskArgs)
 	taskFee := getTaskFee(*in.TaskType, appConfig.Task.TaskFee, cap) // unit: GWei
 
-	task := &models.InferenceTask{
-		Client:    *client,
-		TaskArgs:  in.TaskArgs,
-		TaskType:  *in.TaskType,
-		VramLimit: vramLimit,
-		TaskFee:   taskFee,
-		Cap:       cap,
+	for i := 0; i < in.RepeatNum; i++ {
+		task := &models.InferenceTask{
+			Client:     client,
+			ClientTask: clientTask,
+			TaskArgs:   in.TaskArgs,
+			TaskType:   *in.TaskType,
+			VramLimit:  vramLimit,
+			TaskFee:    taskFee,
+			Cap:        cap,
+		}
+
+		if err := config.GetDB().Create(task).Error; err != nil {
+			return nil, response.NewExceptionResponse(err)
+		}
 	}
 
-	if err := config.GetDB().Create(task).Error; err != nil {
-		return nil, response.NewExceptionResponse(err)
-	}
-
-	return &TaskResponse{Data: *task}, nil
+	return &TaskResponse{Data: &clientTask}, nil
 }
