@@ -17,7 +17,7 @@ type TaskInput struct {
 	TaskArgs  string                `json:"task_args" description:"Task args" validate:"required"`
 	TaskType  *models.ChainTaskType `json:"task_type" description:"Task type. 0 - SD task, 1 - LLM task" validate:"required"`
 	VramLimit *uint64               `json:"vram_limit,omitempty" description:"Task minimal vram requirement" validate:"omitempty"`
-	RepeatNum int                   `json:"repeat_num,omitempty" description:"Task repeat number" default:"2" validate:"omitempty,gt=0"`
+	RepeatNum *int                  `json:"repeat_num,omitempty" description:"Task repeat number" validate:"omitempty"`
 }
 
 type TaskResponse struct {
@@ -118,7 +118,12 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	cap, _ := getTaskCap(*in.TaskType, in.TaskArgs)
 	taskFee := getTaskFee(*in.TaskType, appConfig.Task.TaskFee, cap) // unit: GWei
 
-	for i := 0; i < in.RepeatNum; i++ {
+	repeatNum := 2
+	if in.RepeatNum != nil {
+		repeatNum = *in.RepeatNum
+	}
+
+	for i := 0; i < repeatNum; i++ {
 		task := &models.InferenceTask{
 			Client:     client,
 			ClientTask: clientTask,
