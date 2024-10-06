@@ -24,13 +24,13 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(inference_tasks.CreateTask, 200))
 
-	tasksGroup.GET("/:client_id/:task_id", []fizz.OperationOption{
+	tasksGroup.GET("/:client_id/:client_task_id", []fizz.OperationOption{
 		fizz.Summary("Get task details by task id"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(inference_tasks.GetTaskById, 200))
 
-	tasksGroup.GET("/:client_id/:task_id/images/:image_num", []fizz.OperationOption{
+	tasksGroup.GET("/:client_id/:client_task_id/images/:image_num", []fizz.OperationOption{
 		fizz.Summary("Get task details by task id"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
