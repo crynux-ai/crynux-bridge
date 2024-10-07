@@ -123,6 +123,7 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 		fileExt = ".json"
 	}
 
+	startTime := time.Now()
 	for i := numImages - 1; i >= 0; i-- {
 		iStr := strconv.Itoa(i)
 
@@ -190,6 +191,9 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 		}
 
 	}
+	endTime := time.Now()
+	timeCost := endTime.Sub(startTime).Seconds()
+	log.Infof("RelayGetResult: time cost %s seconds", timeCost)
 
 	log.Debugln("All results downloaded!")
 
