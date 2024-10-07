@@ -28,17 +28,19 @@ func autoCreateTask() {
 	appConfig := config.GetConfig()
 	taskFee := appConfig.Task.TaskFee
 
-	task := models.InferenceTask{
-		Client:     client,
-		ClientTask: clientTask,
-		TaskArgs:   taskArgs,
-		TaskType:   taskType,
-		VramLimit:  vramLimit,
-		TaskFee:    taskFee,
-		Cap:        1,
-	}
-	if err := config.GetDB().Create(&task).Error; err != nil {
-		log.Errorf("AutoTask: auto create task failed: %v", err)
+	for i := 0; i < 2; i++ {
+		task := models.InferenceTask{
+			Client:     client,
+			ClientTask: clientTask,
+			TaskArgs:   taskArgs,
+			TaskType:   taskType,
+			VramLimit:  vramLimit,
+			TaskFee:    taskFee,
+			Cap:        1,
+		}
+		if err := config.GetDB().Create(&task).Error; err != nil {
+			log.Errorf("AutoTask: auto create task failed: %v", err)
+		}
 	}
 	log.Info("AutoTask: auto create task success")
 }
