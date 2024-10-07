@@ -55,7 +55,13 @@ func GetTaskImage(ctx *gin.Context, in *GetTaskImageInput) error {
 			} else if task.UpdatedAt.Sub(t.UpdatedAt) > 0 {
 				task = t
 			}
+		} else if task.Status == models.InferenceTaskAborted && t.Status != models.InferenceTaskAborted {
+			task = t
 		}
+	}
+
+	if task.Status != models.InferenceTaskSuccess {
+		return response.NewValidationErrorResponse("client_task_id", "Client task was not successful")
 	}
 
 	var fileExt string

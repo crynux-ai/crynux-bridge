@@ -56,6 +56,8 @@ func GetTaskById(_ *gin.Context, in *GetTaskInput) (*GetTaskResponse, error) {
 			} else if task.UpdatedAt.Sub(t.UpdatedAt) > 0 {
 				task = t
 			}
+		} else if task.Status == models.InferenceTaskAborted && t.Status != models.InferenceTaskAborted {
+			task = t
 		}
 	}
 
