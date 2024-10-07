@@ -118,7 +118,7 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	cap, _ := getTaskCap(*in.TaskType, in.TaskArgs)
 	taskFee := getTaskFee(*in.TaskType, appConfig.Task.TaskFee, cap) // unit: GWei
 
-	repeatNum := 2
+	repeatNum := appConfig.Task.RepeatNum
 	if in.RepeatNum != nil {
 		repeatNum = *in.RepeatNum
 	}

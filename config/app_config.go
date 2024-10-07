@@ -64,7 +64,8 @@ type AppConfig struct {
 	} `mapstructure:"relay"`
 
 	Task struct {
-		TaskFee uint64 `mapstructure:"task_fee"`
+		TaskFee   uint64 `mapstructure:"task_fee"`
+		RepeatNum int    `mapstructure:"repeat_num"`
 	} `mapstructure:"task"`
 
 	TaskSchema struct {

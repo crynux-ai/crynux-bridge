@@ -28,7 +28,7 @@ func autoCreateTask() {
 	appConfig := config.GetConfig()
 	taskFee := appConfig.Task.TaskFee
 
-	for i := 0; i < 2; i++ {
+	for i := 0; i < appConfig.Task.RepeatNum; i++ {
 		task := models.InferenceTask{
 			Client:     client,
 			ClientTask: clientTask,
