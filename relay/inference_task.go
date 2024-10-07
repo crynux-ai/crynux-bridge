@@ -193,7 +193,7 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 	}
 	endTime := time.Now()
 	timeCost := endTime.Sub(startTime).Seconds()
-	log.Infof("RelayGetResult: time cost %s seconds", timeCost)
+	log.Infof("RelayGetResult: time cost %f seconds", timeCost)
 
 	log.Debugln("All results downloaded!")
 
