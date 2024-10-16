@@ -6,12 +6,14 @@ const (
 	ModelType_SD_1_5 ModelType = "sd_1_5"
 	ModelType_SD_2_1 ModelType = "sd_2_1"
 	ModelType_SD_XL  ModelType = "sd_xl"
+	ModelType_SDXL_Turbo ModelType = "sdxl_turbo"
 )
 
 var BaseModelTypes = []ModelType{
 	ModelType_SD_1_5,
 	ModelType_SD_2_1,
 	ModelType_SD_XL,
+	ModelType_SDXL_Turbo,
 }
 
 func IsModelTypeValid(modelType ModelType) bool {
