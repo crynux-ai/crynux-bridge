@@ -21,7 +21,7 @@ func autoCreateTask() {
 
 	prompt := "Self-portrait oil painting,a beautiful cyborg with golden hair,8k"
 	seed := rand.Intn(100000000)
-	taskArgs := fmt.Sprintf(`{"version":"2.0.0","base_model":{"name":"crynux-ai/sdxl-turbo"},"prompt":"%s","negative_prompt":"","task_config":{"num_images":1,"safety_checker":false,"seed":%d,"steps":40}}`, prompt, seed)
+	taskArgs := fmt.Sprintf(`{"version":"2.0.0","base_model":{"name":"crynux-ai/sdxl-turbo"},"prompt":"%s","negative_prompt":"","scheduler":{"method":"EulerAncestralDiscreteScheduler","args":{"timestep_spacing":"trailing"}},"task_config":{"num_images":1,"seed":%d,"steps":1,"cfg":0}}`, prompt, seed)
 	taskType := models.TaskTypeSD
 	var vramLimit uint64 = 10
 
