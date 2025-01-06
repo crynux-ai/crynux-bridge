@@ -83,7 +83,7 @@ func processGetTaskResults() {
 			log.Debugln("transaction not confirmed: " + task.TxHash)
 
 			waitTime := time.Since(task.UpdatedAt)
-			if waitTime > time.Second * 120 {
+			if waitTime > time.Second*120 {
 				log.Debugln("transaction not confirmed after 120 seconds: " + task.TxHash)
 				if err := task.AbortWithReason("create task tx not confirmed after 120 seconds", config.GetDB()); err != nil {
 					log.Errorln("error updating task status")
@@ -108,7 +108,7 @@ func processGetTaskResults() {
 
 func updateTaskIdAndStatus(task *models.InferenceTask, taskId uint64, status models.TaskStatus) error {
 
-	task.TaskId = taskId
+	task.TaskID = taskId
 	task.Status = status
 
 	tx := config.GetDB().Model(task).Select("Status", "TaskId")

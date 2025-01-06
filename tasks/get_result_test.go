@@ -113,7 +113,7 @@ func TestGetSDTaskResult(t *testing.T) {
 	}
 
 	err = tests.SubmitAndDiscloseResults(
-		big.NewInt(int64(task.TaskId)),
+		big.NewInt(int64(task.TaskID)),
 		addresses,
 		privateKeys,
 		results)
@@ -156,7 +156,7 @@ func TestGetSDTaskResult(t *testing.T) {
 
 	log.Debugln("upload results using address: " + addresses[1])
 
-	err = relay.UploadTaskResult(task.TaskId, models.TaskTypeSD, imageReaders[:])
+	err = relay.UploadTaskResult(task.TaskID, models.TaskTypeSD, imageReaders[:])
 	assert.Nil(t, err, "error upload task results")
 
 	log.Debugln("task results uploaded")
@@ -277,7 +277,7 @@ func TestGetLLMTaskResult(t *testing.T) {
 	}
 
 	err = tests.SubmitAndDiscloseResults(
-		big.NewInt(int64(task.TaskId)),
+		big.NewInt(int64(task.TaskID)),
 		addresses,
 		privateKeys,
 		results)
@@ -302,7 +302,7 @@ func TestGetLLMTaskResult(t *testing.T) {
 
 		err = pw.Close()
 		assert.Nil(t, err, "error closing response writer")
-		
+
 		log.Debugln("encoding response pipe closed")
 	}()
 
@@ -316,7 +316,7 @@ func TestGetLLMTaskResult(t *testing.T) {
 
 	log.Debugln("upload results using address: " + addresses[1])
 
-	err = relay.UploadTaskResult(task.TaskId, models.TaskTypeLLM, respReaders)
+	err = relay.UploadTaskResult(task.TaskID, models.TaskTypeLLM, respReaders)
 	assert.Nil(t, err, "error upload task results")
 
 	log.Debugln("task results uploaded")

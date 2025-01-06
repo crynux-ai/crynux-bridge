@@ -13,11 +13,14 @@ import (
 )
 
 type TaskInput struct {
-	ClientID  string                `json:"client_id" description:"Client id" validate:"required"`
-	TaskArgs  string                `json:"task_args" description:"Task args" validate:"required"`
-	TaskType  *models.ChainTaskType `json:"task_type" description:"Task type. 0 - SD task, 1 - LLM task" validate:"required"`
-	VramLimit *uint64               `json:"vram_limit,omitempty" description:"Task minimal vram requirement" validate:"omitempty"`
-	RepeatNum *int                  `json:"repeat_num,omitempty" description:"Task repeat number" validate:"omitempty"`
+	ClientID        string               `json:"client_id" description:"Client id" validate:"required"`
+	TaskArgs        string               `json:"task_args" description:"Task args" validate:"required"`
+	TaskType        models.ChainTaskType `json:"task_type" description:"Task type. 0 - SD task, 1 - LLM task, 2 - SD Finetune task" validate:"required"`
+	TaskVersion     *string              `json:"task_version,omitempty" description:"Task version. Default is 3.0.0" validate:"omitempty"`
+	MinVram         *uint64              `json:"min_vram,omitempty" description:"Task minimal vram requirement" validate:"omitempty"`
+	RequiredGPU     string               `json:"required_gpu,omitempty" description:"Task required GPU name" validate:"omitempty"`
+	RequiredGPUVram uint64               `json:"required_gpu_vram,omitempty" description:"Task required GPU Vram" validate:"omitempty"`
+	RepeatNum       *int                 `json:"repeat_num,omitempty" description:"Task repeat number" validate:"omitempty"`
 }
 
 type TaskResponse struct {
@@ -25,23 +28,25 @@ type TaskResponse struct {
 	Data *models.ClientTask `json:"data"`
 }
 
-func getDefaultVramLimit(taskType models.ChainTaskType, taskArgs string) (uint64, error) {
+func getDefaultMinVram(taskType models.ChainTaskType, taskArgs string) (uint64, error) {
 	if taskType == models.TaskTypeSD {
-		baseModel, err := models.GetTaskConfigBaseModel(taskArgs)
+		baseModel, err := models.GetSDTaskConfigBaseModel(taskArgs)
 		if err != nil {
 			return 0, err
 		}
 		if baseModel == "crynux-ai/stable-diffusion-v1-5" {
 			return 8, nil
-		} else {
+		} else if baseModel == "crynux-ai/sdxl-turbo" || baseModel == "crynux-ai/stable-diffusion-xl-base-1.0" {
 			return 14, nil
+		} else {
+			return 10, nil
 		}
 	} else {
 		return 8, nil
 	}
 }
 
-func getTaskCap(taskType models.ChainTaskType, taskArgs string) (uint64, error) {
+func getTaskSize(taskType models.ChainTaskType, taskArgs string) (uint64, error) {
 	if taskType == models.TaskTypeSD {
 		num, err := models.GetTaskConfigNumImages(taskArgs)
 		if err != nil {
@@ -89,7 +94,7 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 		}
 	}
 
-	result, err := models.ValidateTaskArgsJsonStr(in.TaskArgs, *in.TaskType)
+	result, err := models.ValidateTaskArgsJsonStr(in.TaskArgs, in.TaskType)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
@@ -98,13 +103,18 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 		return nil, response.NewValidationErrorResponse("task_args", result.Error())
 	}
 
-	var vramLimit uint64
+	var minVram uint64
 
-	if in.VramLimit == nil {
+	if in.MinVram == nil {
 		// task args has been validated, so there should be no error
-		vramLimit, _ = getDefaultVramLimit(*in.TaskType, in.TaskArgs)
+		minVram, _ = getDefaultMinVram(in.TaskType, in.TaskArgs)
 	} else {
-		vramLimit = *in.VramLimit
+		minVram = *in.MinVram
+	}
+
+	var taskVersion = "3.0.0"
+	if in.TaskVersion != nil {
+		taskVersion = *in.TaskVersion
 	}
 
 	clientTask := models.ClientTask{
@@ -115,12 +125,17 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	}
 
 	// task args has been validated, so there should be no error
-	cap, _ := getTaskCap(*in.TaskType, in.TaskArgs)
-	taskFee := getTaskFee(*in.TaskType, appConfig.Task.TaskFee, cap) // unit: GWei
+	taskSize, _ := getTaskSize(in.TaskType, in.TaskArgs)
+	taskFee := getTaskFee(in.TaskType, appConfig.Task.TaskFee, taskSize) // unit: GWei
 
 	repeatNum := appConfig.Task.RepeatNum
 	if in.RepeatNum != nil {
 		repeatNum = *in.RepeatNum
+	}
+
+	modelIDs, err := models.GetTaskConfigModelIDs(in.TaskArgs, in.TaskType)
+	if err != nil {
+		return nil, response.NewExceptionResponse(err)
 	}
 
 	for i := 0; i < repeatNum; i++ {
@@ -128,10 +143,14 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 			Client:     client,
 			ClientTask: clientTask,
 			TaskArgs:   in.TaskArgs,
-			TaskType:   *in.TaskType,
-			VramLimit:  vramLimit,
-			TaskFee:    taskFee,
-			Cap:        cap,
+			TaskType:   in.TaskType,
+			TaskModelIDs: modelIDs,
+			TaskVersion: taskVersion,
+			TaskFee: taskFee,
+			MinVram: minVram,
+			RequiredGPU: in.RequiredGPU,
+			RequiredGPUVram: in.RequiredGPUVram,
+			TaskSize: taskSize,
 		}
 
 		if err := config.GetDB().Create(task).Error; err != nil {

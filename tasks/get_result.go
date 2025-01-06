@@ -48,7 +48,7 @@ func processGetResultTasks() {
 
 	for _, task := range tasks {
 
-		log.Debugln("downloading task results for task id: " + strconv.FormatUint(task.TaskId, 10))
+		log.Debugln("downloading task results for task id: " + strconv.FormatUint(task.TaskID, 10))
 
 		if err := relay.DownloadTaskResult(&task); err != nil {
 

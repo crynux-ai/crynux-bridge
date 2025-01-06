@@ -61,21 +61,21 @@ func TestTaskSuccessResult(t *testing.T) {
 		task, err := tests.NewTask(taskType)
 		assert.Equal(t, nil, err, "error creating task")
 		log.Debugln("Task created in db with pk: " + strconv.FormatUint(uint64(task.ID), 10))
-	
+
 		time.Sleep(20 * time.Second)
-	
+
 		task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskParamsUploaded)
-	
-		assert.NotZero(t, task.TaskId, "TaskId on chain is zero")
-	
+
+		assert.NotZero(t, task.TaskID, "TaskId on chain is zero")
+
 		log.Debugln("Task created on chain")
 		log.Debugln("Now lets submit the task results from the nodes")
-	
-		err = tests.SuccessTaskOnChain(big.NewInt(int64(task.TaskId)), addresses, privateKeys)
+
+		err = tests.SuccessTaskOnChain(big.NewInt(int64(task.TaskID)), addresses, privateKeys)
 		assert.Equal(t, nil, err, "error submitting result on chain")
-	
+
 		log.Debugln("Task results submitted")
-	
+
 		time.Sleep(40 * time.Second)
 		tests.AssertTaskStatus(t, task.ID, models.InferenceTaskPendingResult)
 	}
@@ -128,13 +128,13 @@ func TestTaskAbortedResult(t *testing.T) {
 	for _, taskType := range tests.TaskTypes {
 		task, err := tests.NewTask(taskType)
 		assert.Equal(t, nil, err, "error creating task")
-	
+
 		time.Sleep(20 * time.Second)
 		task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskParamsUploaded)
-	
-		err = tests.AbortTaskOnChain(big.NewInt(int64(task.TaskId)), addresses, privateKeys)
+
+		err = tests.AbortTaskOnChain(big.NewInt(int64(task.TaskID)), addresses, privateKeys)
 		assert.Equal(t, nil, err, "error submitting result on chain")
-	
+
 		time.Sleep(40 * time.Second)
 		tests.AssertTaskStatus(t, task.ID, models.InferenceTaskAborted)
 	}

@@ -71,6 +71,7 @@ type AppConfig struct {
 	TaskSchema struct {
 		StableDiffusionInference string `mapstructure:"stable_diffusion_inference"`
 		GPTInference             string `mapstructure:"gpt_inference"`
+		StableDiffusionFinetuneLora string `mapstructure:"stable_diffusion_finetune_lora"`
 	} `mapstructure:"task_schema"`
 
 	Test struct {

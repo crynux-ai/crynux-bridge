@@ -54,12 +54,12 @@ func TestUploadRightTask(t *testing.T) {
 	for _, taskType := range tests.TaskTypes {
 		task, err := tests.NewTask(taskType)
 		assert.Nil(t, err, "error creating task")
-	
+
 		time.Sleep(40 * time.Second)
 		task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskParamsUploaded)
-	
+
 		// Task must be finished before clearing the network
-		err = tests.SuccessTaskOnChain(big.NewInt(int64(task.TaskId)), addresses, privateKeys)
+		err = tests.SuccessTaskOnChain(big.NewInt(int64(task.TaskID)), addresses, privateKeys)
 		assert.Equal(t, nil, err, "error submitting result on chain")
 	}
 }

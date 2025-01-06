@@ -44,7 +44,7 @@ func UploadTask(task *models.InferenceTask) error {
 
 	params := &UploadTaskParamsInput{
 		TaskArgs: task.TaskArgs,
-		TaskId:   task.TaskId,
+		TaskId:   task.TaskID,
 	}
 
 	timestamp, signature, err := SignData(params, appConfig.Blockchain.Account.PrivateKey)
@@ -103,7 +103,7 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 		return err
 	}
 
-	taskIdStr := strconv.FormatUint(task.TaskId, 10)
+	taskIdStr := strconv.FormatUint(task.TaskID, 10)
 
 	var numImages int
 	if task.TaskType == models.TaskTypeSD {
@@ -129,7 +129,7 @@ func DownloadTaskResult(task *models.InferenceTask) error {
 
 		getResultInput := &GetTaskResultInput{
 			ImageNum: strconv.Itoa(i),
-			TaskId:   task.TaskId,
+			TaskId:   task.TaskID,
 		}
 
 		timestamp, signature, err := SignData(getResultInput, appConfig.Blockchain.Account.PrivateKey)

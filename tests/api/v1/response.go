@@ -47,7 +47,7 @@ func AssertTaskResponse(t *testing.T, r *httptest.ResponseRecorder, task *models
 	assert.Equal(t, nil, err, "json unmarshal error")
 
 	assert.Equal(t, "success", taskResponse.GetMessage(), "wrong message: "+string(responseBytes))
-	assert.Equal(t, task.TaskId, taskResponse.Data.TaskId, "wrong task id")
+	assert.Equal(t, task.TaskID, taskResponse.Data.TaskID, "wrong task id")
 	assert.Equal(t, task.TaskArgs, taskResponse.Data.TaskArgs, "wrong task args")
 	assert.Equal(t, false, taskResponse.Data.CreatedAt.IsZero(), "wrong task created at")
 	assert.Equal(t, false, taskResponse.Data.UpdatedAt.IsZero(), "wrong task updated at")

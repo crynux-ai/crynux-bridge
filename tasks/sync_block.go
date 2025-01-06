@@ -168,7 +168,7 @@ func processTaskSuccess(startBlockNum, endBlockNum uint64) error {
 		log.Debugln("result node: " + taskSuccess.ResultNode.Hex())
 
 		task := &models.InferenceTask{
-			TaskId: taskSuccess.TaskId.Uint64(),
+			TaskID: taskSuccess.TaskId.Uint64(),
 			Status: models.InferenceTaskParamsUploaded,
 		}
 
@@ -233,7 +233,7 @@ func processTaskAborted(startBlockNum, endBlockNum uint64) error {
 		log.Debugf("%s TaskAborted, reason: %s", taskAborted.TaskId.String(), taskAborted.Reason)
 
 		task := &models.InferenceTask{
-			TaskId: taskAborted.TaskId.Uint64(),
+			TaskID: taskAborted.TaskId.Uint64(),
 		}
 
 		if err := config.GetDB().Where(task).Select("Status", "ID").First(task).Error; err != nil {

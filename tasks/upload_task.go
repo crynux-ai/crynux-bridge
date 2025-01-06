@@ -94,7 +94,7 @@ func processUploadTasks() {
 			continue
 		}
 
-		log.Debugln("Task uploaded to the relay server:" + strconv.FormatUint(task.TaskId, 10))
+		log.Debugln("Task uploaded to the relay server:" + strconv.FormatUint(task.TaskID, 10))
 	}
 
 	time.Sleep(time.Duration(interval) * time.Second)

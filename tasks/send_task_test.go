@@ -85,7 +85,7 @@ func TestSuccessCreation(t *testing.T) {
 		task = tests.AssertTaskStatus(t, task.ID, models.InferenceTaskBlockchainConfirmed)
 
 		// The results must be submitted in order to free the 3 nodes from the network
-		err = tests.SuccessTaskOnChain(big.NewInt(int64(task.TaskId)), addresses, privateKeys)
+		err = tests.SuccessTaskOnChain(big.NewInt(int64(task.TaskID)), addresses, privateKeys)
 		assert.Equal(t, nil, err, "error submitting result on chain")
 	}
 }
