@@ -40,7 +40,12 @@ type AppConfig struct {
 	} `mapstructure:"data_dir"`
 
 	Blockchain struct {
-		RpcEndpoint string `mapstructure:"rpc_endpoint"`
+		RPS           uint64 `mapstructure:"rps"`
+		RpcEndpoint   string `mapstructure:"rpc_endpoint"`
+		StartBlockNum uint64 `mapstructure:"start_block_num"`
+		GasLimit      uint64 `mapstructure:"gas_limit"`
+		GasPrice      uint64 `mapstructure:"gas_price"`
+		ChainID       uint64 `mapstructure:"chain_id"`
 
 		Account struct {
 			Address        string `mapstructure:"address"`
@@ -54,9 +59,6 @@ type AppConfig struct {
 			Node        string `mapstructure:"node"`
 			CrynuxToken string `mapstructure:"crynux_token"`
 		} `mapstructure:"contracts"`
-
-		GasLimit      uint64 `mapstructure:"gas_limit"`
-		StartBlockNum uint64 `mapstructure:"start_block_num"`
 	} `mapstructure:"blockchain"`
 
 	Relay struct {

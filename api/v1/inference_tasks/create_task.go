@@ -4,9 +4,12 @@ import (
 	"crynux_bridge/api/v1/response"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
+	"crypto/rand"
 	"errors"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 	"gorm.io/gorm"
@@ -138,6 +141,17 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 		return nil, response.NewExceptionResponse(err)
 	}
 
+	taskIDBytes := make([]byte, 32)
+	rand.Read(taskIDBytes)
+	taskID := hexutil.Encode(taskIDBytes)
+
+	nonceBytes := make([]byte, 32)
+	rand.Read(nonceBytes)
+	nonce := hexutil.Encode(nonceBytes)
+
+	taskIDCommitmentBytes := crypto.Keccak256(append(taskIDBytes, nonceBytes...))
+	taskIDCommitment := hexutil.Encode(taskIDCommitmentBytes)
+
 	for i := 0; i < repeatNum; i++ {
 		task := &models.InferenceTask{
 			Client:     client,
@@ -151,6 +165,9 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 			RequiredGPU: in.RequiredGPU,
 			RequiredGPUVram: in.RequiredGPUVram,
 			TaskSize: taskSize,
+			TaskID: taskID,
+			Nonce: nonce,
+			TaskIDCommitment: taskIDCommitment,
 		}
 
 		if err := config.GetDB().Create(task).Error; err != nil {

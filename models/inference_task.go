@@ -118,6 +118,7 @@ type InferenceTask struct {
 	Status           TaskStatus `json:"status"`
 	TaskID           string     `json:"task_id"`
 	TaskIDCommitment string     `json:"task_id_commitment"`
+	Nonce            string     `json:"nonce"`
 	Sequence         uint64     `json:"sequence"`
 	NeedResult       bool       `json:"need_result"`
 

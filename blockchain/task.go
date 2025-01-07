@@ -5,6 +5,7 @@ import (
 	"crynux_bridge/blockchain/bindings"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
+	"crynux_bridge/utils"
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
@@ -14,59 +15,94 @@ import (
 	"math/big"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/corona10/goimagehash"
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
 	log "github.com/sirupsen/logrus"
 )
 
+func GetTaskByCommitment(ctx context.Context, taskIDCommitment [32]byte) (*bindings.VSSTaskTaskInfo, error) {
+	taskInstance, err := GetTaskContractInstance()
+	if err != nil {
+		return nil, err
+	}
 
-func CreateTaskOnChain(task *models.InferenceTask) (string, error) {
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	opts := &bind.CallOpts{
+		Pending: false,
+		Context: callCtx,
+	}
+
+	if err := getLimiter().Wait(callCtx); err != nil {
+		return nil, err
+	}
+	taskInfo, err := taskInstance.GetTask(opts, taskIDCommitment)
+	if err != nil {
+		return nil, err
+	}
+
+	return &taskInfo, nil
+}
+
+func CreateTaskOnChain(ctx context.Context, task *models.InferenceTask) (string, error) {
+	taskInstance, err := GetTaskContractInstance()
+	if err != nil {
+		return "", err
+	}
 
 	appConfig := config.GetConfig()
+	address := common.HexToAddress(appConfig.Blockchain.Account.Address)
+	privkey := appConfig.Blockchain.Account.PrivateKey
 
-	taskHash, err := task.GetTaskHash()
+	auth, err := GetAuth(ctx, address, privkey)
 	if err != nil {
 		return "", err
 	}
 
-	dataHash := &[32]byte{
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-	}
-
-	taskContractAddress := common.HexToAddress(appConfig.Blockchain.Contracts.Task)
-	accountAddress := common.HexToAddress(appConfig.Blockchain.Account.Address)
-	accountPrivateKey := appConfig.Blockchain.Account.PrivateKey
-
-	client, err := GetRpcClient()
-	if err != nil {
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if err := getLimiter().Wait(callCtx); err != nil {
 		return "", err
 	}
+	auth.Context = callCtx
 
-	instance, err := bindings.NewTask(taskContractAddress, client)
-	if err != nil {
-		return "", err
+	taskIDCommitment, _ := utils.HexStrToCommitment(task.TaskIDCommitment)
+	nonce, _ := utils.HexStrToCommitment(task.Nonce)
+
+	versionArr := strings.SplitN(task.TaskVersion, ".", 3)
+	if len(versionArr) != 3 {
+		return "", errors.New("Task version invalid")
+	}
+	var taskVersion [3]*big.Int
+	for i := 0; i < 3; i++ {
+		versionStr := versionArr[i]
+		version, err := strconv.Atoi(versionStr)
+		if err != nil {
+			return "", errors.New("Task version invalid")
+		}
+		taskVersion[i] = big.NewInt(int64(version))
 	}
 
-	auth, err := GetAuth(client, accountAddress, accountPrivateKey)
-	if err != nil {
-		return "", err
-	}
-
-	log.Debugln("create task tx: TaskHash " + common.Bytes2Hex(taskHash[:]))
-	log.Debugln("create task tx: DataHash " + common.Bytes2Hex(dataHash[:]))
-
-	taskFee := new(big.Int).Mul(big.NewInt(int64(task.TaskFee)), big.NewInt(params.GWei))
-	cap := big.NewInt(int64(task.Cap))
-	auth.Value = taskFee
-	tx, err := instance.CreateTask(auth, big.NewInt(int64(task.TaskType)), *taskHash, *dataHash, big.NewInt(int64(task.VramLimit)), cap)
+	tx, err := taskInstance.CreateTask(
+		auth,
+		uint8(task.TaskType),
+		*taskIDCommitment,
+		*nonce,
+		task.TaskModelIDs,
+		big.NewInt(int64(task.MinVram)),
+		task.RequiredGPU,
+		big.NewInt(int64(task.RequiredGPUVram)),
+		taskVersion,
+		big.NewInt(int64(task.TaskSize)),
+	)
 	if err != nil {
 		return "", err
 	}
