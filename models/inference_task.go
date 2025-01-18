@@ -1,11 +1,13 @@
 package models
 
 import (
+	"context"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"gorm.io/gorm"
@@ -33,8 +35,10 @@ type TaskStatus int
 const (
 	InferenceTaskPending TaskStatus = iota
 	InferenceTaskCreated
+	InferenceTaskStarted
 	InferenceTaskParamsUploaded
 	InferenceTaskScoreReady
+	InferenceTaskErrorReported
 	InferenceTaskValidated
 	InferenceTaskEndAborted
 	InferenceTaskEndGroupRefund
@@ -121,6 +125,9 @@ type InferenceTask struct {
 	Nonce            string     `json:"nonce"`
 	Sequence         uint64     `json:"sequence"`
 	NeedResult       bool       `json:"need_result"`
+	SamplingSeed     string     `json:"sampling_seed"`
+	VRFProof         string     `json:"vrf_proof"`
+	VRFNumber        string     `json:"vrf_number"`
 
 	AbortReason TaskAbortReason `json:"abort_reason"`
 	TaskError   TaskError       `json:"task_error"`
@@ -129,6 +136,43 @@ type InferenceTask struct {
 func (t *InferenceTask) BeforeCreate(*gorm.DB) error {
 	t.Status = InferenceTaskPending
 	return nil
+}
+
+func (task *InferenceTask) Update(ctx context.Context, db *gorm.DB, newTask *InferenceTask) error {
+	if task.ID == 0 {
+		return errors.New("InferenceTask.ID cannot be 0 when update")
+	}
+	dbCtx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	if err := db.WithContext(dbCtx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(task).Updates(newTask).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(task).First(task).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SaveTasks(ctx context.Context, db *gorm.DB, tasks []*InferenceTask) error {
+	dbCtx, cancel := context.WithTimeout(ctx, 3 * time.Second)
+	defer cancel()
+	return db.WithContext(dbCtx).Save(tasks).Error
+}
+
+func GetTaskGroup(ctx context.Context, db *gorm.DB, taskID string) ([]InferenceTask, error) {
+	tasks := make([]InferenceTask, 0)
+	dbCtx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	err := db.WithContext(dbCtx).Model(&InferenceTask{}).Where("task_id = ?", taskID).Order("sequence").Find(&tasks).Error
+	if err != nil {
+		return nil, err
+	}
+	return tasks, nil
 }
 
 func (t *InferenceTask) GetTaskHash() (*[32]byte, error) {

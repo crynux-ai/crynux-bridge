@@ -6,6 +6,7 @@ import (
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"crynux_bridge/utils"
+	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
@@ -22,6 +23,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
 	log "github.com/sirupsen/logrus"
@@ -74,8 +76,8 @@ func CreateTaskOnChain(ctx context.Context, task *models.InferenceTask) (string,
 	}
 	auth.Context = callCtx
 
-	taskIDCommitment, _ := utils.HexStrToCommitment(task.TaskIDCommitment)
-	nonce, _ := utils.HexStrToCommitment(task.Nonce)
+	taskIDCommitment, _ := utils.HexStrToBytes32(task.TaskIDCommitment)
+	nonce, _ := utils.HexStrToBytes32(task.Nonce)
 
 	versionArr := strings.SplitN(task.TaskVersion, ".", 3)
 	if len(versionArr) != 3 {
@@ -108,6 +110,112 @@ func CreateTaskOnChain(ctx context.Context, task *models.InferenceTask) (string,
 	}
 
 	return tx.Hash().Hex(), nil
+}
+
+func ValidateSingleTask(ctx context.Context, task *models.InferenceTask) (string, error) {
+	taskInstance, err := GetTaskContractInstance()
+	if err != nil {
+		return "", err
+	}
+
+	appConfig := config.GetConfig()
+	address := common.HexToAddress(appConfig.Blockchain.Account.Address)
+	privkey := appConfig.Blockchain.Account.PrivateKey
+
+	auth, err := GetAuth(ctx, address, privkey)
+	if err != nil {
+		return "", err
+	}
+
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if err := getLimiter().Wait(callCtx); err != nil {
+		return "", err
+	}
+	auth.Context = callCtx
+
+	taskIDCommitment, _ := utils.HexStrToBytes32(task.TaskIDCommitment)
+	vrfProof, _ := hexutil.Decode(task.VRFProof)
+	privateKey, err := crypto.HexToECDSA(privkey)
+	if err != nil {
+		return "", err
+	}
+
+	publicKey := privateKey.Public()
+
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		return "", errors.New("error casting public key to ECDSA")
+	}
+	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
+	if len(publicKeyBytes) != 65 {
+		return "", errors.New("umcompressed public key bytes length is not 65")
+	}
+	publicKeyBytes = publicKeyBytes[1:]
+
+	tx, err := taskInstance.ValidateSingleTask(auth, *taskIDCommitment, vrfProof, publicKeyBytes)
+	if err != nil {
+		return "", err
+	}
+	return tx.Hash().Hex(), nil
+}
+
+func ValidateTaskGroup(ctx context.Context, task1, task2, task3 *models.InferenceTask) (string, error) {
+	taskInstance, err := GetTaskContractInstance()
+	if err != nil {
+		return "", err
+	}
+
+	appConfig := config.GetConfig()
+	address := common.HexToAddress(appConfig.Blockchain.Account.Address)
+	privkey := appConfig.Blockchain.Account.PrivateKey
+
+	auth, err := GetAuth(ctx, address, privkey)
+	if err != nil {
+		return "", err
+	}
+
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if err := getLimiter().Wait(callCtx); err != nil {
+		return "", err
+	}
+	auth.Context = callCtx
+
+	if !(task1.TaskID == task2.TaskID && task1.TaskID == task3.TaskID) {
+		return "", errors.New("taskID of tasks in group is not the same")
+	}
+	if !(task1.Sequence < task2.Sequence && task2.Sequence < task3.Sequence) {
+		return "", errors.New("task order of tasks in group is incorrect")
+	}
+
+	taskIDCommitment1, _ := utils.HexStrToBytes32(task1.TaskIDCommitment)
+	taskIDCommitment2, _ := utils.HexStrToBytes32(task2.TaskIDCommitment)
+	taskIDCommitment3, _ := utils.HexStrToBytes32(task3.TaskIDCommitment)
+	taskID, _ := utils.HexStrToBytes32(task1.TaskID)
+	vrfProof, _ := hexutil.Decode(task1.VRFProof)
+	privateKey, err := crypto.HexToECDSA(privkey)
+	if err != nil {
+		return "", err
+	}
+
+	publicKey := privateKey.Public()
+
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		return "", errors.New("error casting public key to ECDSA")
+	}
+	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
+	if len(publicKeyBytes) != 65 {
+		return "", errors.New("umcompressed public key bytes length is not 65")
+	}
+	publicKeyBytes = publicKeyBytes[1:]
+	tx, err := taskInstance.ValidateTaskGroup(auth, *taskIDCommitment1, *taskIDCommitment2, *taskIDCommitment3, *taskID, vrfProof, publicKeyBytes)
+	if err != nil {
+		return "", err
+	}
+	return tx.Hash().Hex(), nil
+
 }
 
 func GetTaskCreationResult(txHash string) (*big.Int, error) {

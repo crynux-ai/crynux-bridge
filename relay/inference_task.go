@@ -1,50 +1,42 @@
 package relay
 
 import (
-	"bytes"
+	"context"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
-	"encoding/json"
 	"errors"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"os"
-	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type GetTaskResultInput struct {
-	ImageNum string `json:"image_num"`
-	TaskId   uint64 `json:"task_id"`
+	Index            int64  `json:"index"`
+	TaskIDCommitment string `json:"task_id_commitment"`
 }
 
 type UploadTaskParamsInput struct {
-	TaskArgs string `json:"task_args"`
-	TaskId   uint64 `json:"task_id"`
-}
-
-type UploadTaskPramsWithSignature struct {
-	UploadTaskParamsInput
-	Timestamp int64  `json:"timestamp"`
-	Signature string `json:"signature"`
+	TaskArgs         string `json:"task_args"`
+	TaskIDCommitment string `json:"task_id_commitment"`
 }
 
 type UploadResultInput struct {
 	TaskId uint64 `form:"task_id" json:"task_id"`
 }
 
-func UploadTask(task *models.InferenceTask) error {
+func UploadTask(ctx context.Context, task *models.InferenceTask) error {
 
 	appConfig := config.GetConfig()
 
 	params := &UploadTaskParamsInput{
-		TaskArgs: task.TaskArgs,
-		TaskId:   task.TaskID,
+		TaskArgs:         task.TaskArgs,
+		TaskIDCommitment: task.TaskIDCommitment,
 	}
 
 	timestamp, signature, err := SignData(params, appConfig.Blockchain.Account.PrivateKey)
@@ -52,35 +44,29 @@ func UploadTask(task *models.InferenceTask) error {
 		return err
 	}
 
-	paramsWithSig := &UploadTaskPramsWithSignature{
-		UploadTaskParamsInput: *params,
-		Timestamp:             timestamp,
-		Signature:             signature,
-	}
+	form := url.Values{}
+	form.Add("task_id_commitment", task.TaskIDCommitment)
+	form.Add("task_args", task.TaskArgs)
+	form.Add("timestamp", strconv.FormatInt(timestamp, 10))
+	form.Add("signature", signature)
+	body := strings.NewReader(form.Encode())
 
-	postJson, err := json.Marshal(paramsWithSig)
-	if err != nil {
-		return err
-	}
+	reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/" + task.TaskIDCommitment
 
-	body := bytes.NewReader(postJson)
-	reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks"
-
-	r, _ := http.NewRequest("POST", reqUrl, body)
+	r, _ := http.NewRequestWithContext(ctx, "POST", reqUrl, body)
 	r.Header.Add("Content-Type", "application/json")
 	client := &http.Client{
-		Timeout: time.Duration(3) * time.Second,
+		Timeout: time.Duration(30) * time.Second,
 	}
 
-	response, err := client.Do(r)
+	resp, err := client.Do(r)
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
 
-	if response.StatusCode != 200 {
-
-		responseBytes, err := io.ReadAll(response.Body)
-
+		responseBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
@@ -88,114 +74,49 @@ func UploadTask(task *models.InferenceTask) error {
 		return errors.New("upload task params error: " + string(responseBytes))
 	}
 
+	log.Infof("Relay: upload task params of %s", task.TaskIDCommitment)
 	return nil
 }
 
-func DownloadTaskResult(task *models.InferenceTask) error {
-
+func DownloadTaskResult(ctx context.Context, task *models.InferenceTask, index int64, dst io.Writer) error {
 	appConfig := config.GetConfig()
+	getResultInput := &GetTaskResultInput{
+		Index:            index,
+		TaskIDCommitment: task.TaskIDCommitment,
+	}
 
-	taskFolder := path.Join(
-		appConfig.DataDir.InferenceTasks,
-		strconv.FormatUint(uint64(task.ID), 10))
-
-	if err := os.MkdirAll(taskFolder, 0700); err != nil {
+	timestamp, signature, err := SignData(getResultInput, appConfig.Blockchain.Account.PrivateKey)
+	if err != nil {
 		return err
 	}
 
-	taskIdStr := strconv.FormatUint(task.TaskID, 10)
+	query := url.Values{}
+	query.Add("timestamp", strconv.FormatInt(timestamp, 10))
+	query.Add("signature", signature)
+	reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/" + task.TaskIDCommitment + "/results/" + strconv.FormatInt(index, 10)
+	req, _ := http.NewRequestWithContext(ctx, "GET", reqUrl, nil)
+	req.URL.RawQuery = query.Encode()
 
-	var numImages int
-	if task.TaskType == models.TaskTypeSD {
-		var err error
-		numImages, err = models.GetTaskConfigNumImages(task.TaskArgs)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		respBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
-	} else {
-		numImages = 1
+		return errors.New(string(respBytes))
 	}
 
-	var fileExt string
-	if task.TaskType == models.TaskTypeSD {
-		fileExt = ".png"
-	} else {
-		fileExt = ".json"
+	_, err = io.Copy(dst, resp.Body)
+	if err != nil {
+		return err
 	}
-
-	startTime := time.Now()
-	for i := numImages - 1; i >= 0; i-- {
-		iStr := strconv.Itoa(i)
-
-		getResultInput := &GetTaskResultInput{
-			ImageNum: strconv.Itoa(i),
-			TaskId:   task.TaskID,
-		}
-
-		timestamp, signature, err := SignData(getResultInput, appConfig.Blockchain.Account.PrivateKey)
-		if err != nil {
-			return err
-		}
-
-		timestampStr := strconv.FormatInt(timestamp, 10)
-
-		queryStr := "?timestamp=" + timestampStr + "&signature=" + signature
-		reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/" + taskIdStr + "/results/" + iStr
-		reqUrl = reqUrl + queryStr
-
-		filename := path.Join(taskFolder, iStr+fileExt)
-
-		log.Debugln("Downloading result: " + reqUrl)
-
-		resp, err := http.Get(reqUrl)
-		if err != nil {
-			return err
-		}
-
-		if resp.StatusCode != 200 {
-			respBytes, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return err
-			}
-			return errors.New(string(respBytes))
-		}
-
-		file, err := os.Create(filename)
-		if err != nil {
-			if err := resp.Body.Close(); err != nil {
-				return err
-			}
-
-			return err
-		}
-
-		_, err = io.Copy(file, resp.Body)
-		if err != nil {
-			if err := resp.Body.Close(); err != nil {
-				return err
-			}
-
-			if err := file.Close(); err != nil {
-				return err
-			}
-
-			return err
-		}
-
-		if err := resp.Body.Close(); err != nil {
-			return err
-		}
-
-		if err := file.Close(); err != nil {
-			return err
-		}
-
-	}
-	endTime := time.Now()
-	timeCost := endTime.Sub(startTime).Seconds()
-	log.Infof("RelayGetResult: time cost %f seconds", timeCost)
-
-	log.Debugln("All results downloaded!")
+	log.Infof("Relay: get result %d of task %s", index, task.TaskIDCommitment)
 
 	return nil
 }

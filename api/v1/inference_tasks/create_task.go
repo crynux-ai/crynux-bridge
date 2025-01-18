@@ -1,6 +1,7 @@
 package inference_tasks
 
 import (
+	"context"
 	"crynux_bridge/api/v1/response"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
@@ -9,7 +10,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 	"gorm.io/gorm"
@@ -81,7 +81,7 @@ func getClientRateLimiter(clientID string) *rate.Limiter {
 	return limiter
 }
 
-func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
+func CreateTask(c *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	appConfig := config.GetConfig()
 	client := models.Client{ClientId: in.ClientID}
 
@@ -91,7 +91,12 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 		return nil, response.NewExceptionResponse(err)
 	}
 
-	if err := config.GetDB().Where(&client).First(&client).Error; err != nil {
+	err := func () error {
+		dbCtx, cancel := context.WithTimeout(c.Request.Context(), time.Second)
+		defer cancel()
+		return config.GetDB().WithContext(dbCtx).Where(&client).First(&client).Error
+	}()
+	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, response.NewExceptionResponse(err)
 		}
@@ -123,7 +128,12 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	clientTask := models.ClientTask{
 		Client: client,
 	}
-	if err := config.GetDB().Create(&clientTask).Error; err != nil {
+	err = func () error {
+		dbCtx, cancel := context.WithTimeout(c.Request.Context(), time.Second)
+		defer cancel()
+		return config.GetDB().WithContext(dbCtx).Create(&clientTask).Error
+	}()
+	if err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
 
@@ -145,13 +155,7 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	rand.Read(taskIDBytes)
 	taskID := hexutil.Encode(taskIDBytes)
 
-	nonceBytes := make([]byte, 32)
-	rand.Read(nonceBytes)
-	nonce := hexutil.Encode(nonceBytes)
-
-	taskIDCommitmentBytes := crypto.Keccak256(append(taskIDBytes, nonceBytes...))
-	taskIDCommitment := hexutil.Encode(taskIDCommitmentBytes)
-
+	tasks := make([]*models.InferenceTask, 0)
 	for i := 0; i < repeatNum; i++ {
 		task := &models.InferenceTask{
 			Client:     client,
@@ -166,13 +170,13 @@ func CreateTask(_ *gin.Context, in *TaskInput) (*TaskResponse, error) {
 			RequiredGPUVram: in.RequiredGPUVram,
 			TaskSize: taskSize,
 			TaskID: taskID,
-			Nonce: nonce,
-			TaskIDCommitment: taskIDCommitment,
 		}
+		tasks = append(tasks, task)
+	}
 
-		if err := config.GetDB().Create(task).Error; err != nil {
-			return nil, response.NewExceptionResponse(err)
-		}
+	err = models.SaveTasks(c.Request.Context(), config.GetDB(), tasks)
+	if err != nil {
+		return nil, response.NewExceptionResponse(err)
 	}
 
 	return &TaskResponse{Data: &clientTask}, nil
