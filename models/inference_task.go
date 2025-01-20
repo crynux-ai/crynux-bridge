@@ -138,6 +138,15 @@ func (t *InferenceTask) BeforeCreate(*gorm.DB) error {
 	return nil
 }
 
+func (task *InferenceTask) Save(ctx context.Context, db *gorm.DB) error {
+	dbCtx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	if err := db.WithContext(dbCtx).Save(&task).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func (task *InferenceTask) Update(ctx context.Context, db *gorm.DB, newTask *InferenceTask) error {
 	if task.ID == 0 {
 		return errors.New("InferenceTask.ID cannot be 0 when update")

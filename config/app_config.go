@@ -66,13 +66,14 @@ type AppConfig struct {
 	} `mapstructure:"relay"`
 
 	Task struct {
-		TaskFee   uint64 `mapstructure:"task_fee"`
-		RepeatNum int    `mapstructure:"repeat_num"`
+		TaskFee          uint64 `mapstructure:"task_fee"`
+		RepeatNum        int    `mapstructure:"repeat_num"`
+		QueuedTasksLimit uint64    `mapstructure:"queued_tasks_limit"`
 	} `mapstructure:"task"`
 
 	TaskSchema struct {
-		StableDiffusionInference string `mapstructure:"stable_diffusion_inference"`
-		GPTInference             string `mapstructure:"gpt_inference"`
+		StableDiffusionInference    string `mapstructure:"stable_diffusion_inference"`
+		GPTInference                string `mapstructure:"gpt_inference"`
 		StableDiffusionFinetuneLora string `mapstructure:"stable_diffusion_finetune_lora"`
 	} `mapstructure:"task_schema"`
 

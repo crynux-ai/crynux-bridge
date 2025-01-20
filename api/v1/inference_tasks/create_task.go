@@ -120,7 +120,7 @@ func CreateTask(c *gin.Context, in *TaskInput) (*TaskResponse, error) {
 		minVram = *in.MinVram
 	}
 
-	var taskVersion = "3.0.0"
+	var taskVersion = "2.5.0"
 	if in.TaskVersion != nil {
 		taskVersion = *in.TaskVersion
 	}

@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/corona10/goimagehash"
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -216,74 +215,6 @@ func ValidateTaskGroup(ctx context.Context, task1, task2, task3 *models.Inferenc
 	}
 	return tx.Hash().Hex(), nil
 
-}
-
-func GetTaskCreationResult(txHash string) (*big.Int, error) {
-
-	client, err := GetRpcClient()
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, cancelFn := context.WithTimeout(context.Background(), time.Duration(3)*time.Second)
-	defer cancelFn()
-
-	receipt, err := client.TransactionReceipt(ctx, common.HexToHash(txHash))
-	if err != nil {
-
-		if errors.Is(err, ethereum.NotFound) {
-			// Transaction pending
-			return nil, nil
-		}
-
-		log.Errorln("error getting tx receipt for: " + txHash)
-		return nil, err
-	}
-
-	if receipt.Status == 0 {
-		// Transaction failed
-		// Get reason
-		reason, err := GetErrorMessageForTxHash(receipt.TxHash, receipt.BlockNumber)
-
-		if err != nil {
-			log.Errorln("error getting error message for: " + txHash)
-			return nil, err
-		}
-
-		return nil, errors.New(reason)
-	}
-
-	// Transaction success
-	// Extract taskId from the logs
-	taskContractInstance, err := GetTaskContractInstance()
-	if err != nil {
-		log.Errorln("error get task contract instance: " + receipt.TxHash.Hex())
-		return nil, err
-	}
-
-	// There are 6 events emitted from the CreateTask method
-	// Approval, Transfer, TaskPending, TaskCreated x 3
-	var taskId *big.Int = nil
-
-	for _, eventLog := range receipt.Logs {
-		taskPendingEvent, err := taskContractInstance.ParseTaskPending(*eventLog)
-		if err != nil {
-			errS := err.Error()
-			if errS == "no event signature" || errS == "event signature mismatch" {
-				continue
-			}
-			log.Errorln("error parse task pending event: " + receipt.TxHash.Hex())
-			return nil, err
-		}
-		taskId = taskPendingEvent.TaskId
-	}
-
-	if taskId == nil {
-		log.Errorln("task pending event not found: " + receipt.TxHash.Hex())
-		return nil, errors.New("task pending event not found: " + receipt.TxHash.Hex())
-	}
-
-	return taskId, nil
 }
 
 func GetTaskResultCommitment(result []byte) (commitment [32]byte, nonce [32]byte) {

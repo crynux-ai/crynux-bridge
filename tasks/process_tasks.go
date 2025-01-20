@@ -10,10 +10,10 @@ import (
 	"crynux_bridge/utils"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"math/big"
 	"os"
 	"path"
-	"strconv"
 	"sync"
 	"time"
 
@@ -225,6 +225,75 @@ func syncTask(ctx context.Context, task *models.InferenceTask) (*bindings.VSSTas
 	return chainTask, nil
 }
 
+func doDownloadTaskResult(ctx context.Context, taskIDCommitment string, index uint64, filename string) error {
+	for {
+		err := func() error {
+			file, err := os.Create(filename)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			if err := relay.DownloadTaskResult(ctx, taskIDCommitment, index, file); err != nil {
+				return err
+			}
+			return nil
+		}()
+		if err != nil {
+			var relayErr relay.RelayError
+			if errors.As(err, &relayErr) && relayErr.StatusCode == 400 {
+				log.Errorf("ProcessTasks: cannot get result of %s:%d, error %v, retry", taskIDCommitment, index, err)
+				time.Sleep(time.Second)
+				continue
+			} else {
+				log.Errorf("ProcessTasks: cannot get result of %s:%d, error %v", taskIDCommitment, index, err)
+				return err
+			}
+		}
+		return nil
+	}
+}
+
+func downloadTaskResult(ctx context.Context, task *models.InferenceTask) error {
+	appConfig := config.GetConfig()
+
+	taskFolder := path.Join(
+		appConfig.DataDir.InferenceTasks,
+		task.TaskIDCommitment,
+	)
+
+	if err := os.MkdirAll(taskFolder, 0700); err != nil {
+		log.Errorf("ProcessTasks: cannot create task result dir of %s", task.TaskIDCommitment)
+		return err
+	}
+
+	ext := "png"
+	if task.TaskType == models.TaskTypeLLM {
+		ext = "json"
+	}
+
+	ctx1, cancel := context.WithCancel(ctx)
+	defer cancel()
+	var wg sync.WaitGroup
+	errCh := make(chan error, int(task.TaskSize))
+	for i := uint64(0); i < task.TaskSize; i++ {
+		filename := path.Join(taskFolder, fmt.Sprintf("%d.%s", i, ext))
+		wg.Add(1)
+		go func (ctx context.Context, taskIDCommitment string, index uint64, filename string)  {
+			defer wg.Done()
+			errCh <- doDownloadTaskResult(ctx, taskIDCommitment, index, filename)
+		}(ctx1, task.TaskIDCommitment, i, filename)
+	}
+	wg.Wait()
+	for i := 0; i < int(task.TaskSize); i++ {
+		err := <- errCh
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 	// sync task from blockchain first
 	_, err := syncTask(ctx, task)
@@ -322,7 +391,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 
 	// upload task params to relay when task starts
 	if task.Status == models.InferenceTaskCreated {
-		if err := relay.UploadTask(ctx, task); err != nil {
+		if err := relay.UploadTask(ctx, task.TaskIDCommitment, task.TaskArgs); err != nil {
 			log.Errorf("ProcessTasks: relay upload task %s error: %v", task.TaskIDCommitment, err)
 			return err
 		}
@@ -413,7 +482,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			if err != nil {
 				return err
 			}
-			if task.Status == models.InferenceTaskValidated || task.Status == models.InferenceTaskValidated || task.Status == models.InferenceTaskEndSuccess || task.Status == models.InferenceTaskEndGroupRefund || task.Status == models.InferenceTaskEndAborted {
+			if task.Status == models.InferenceTaskValidated || task.Status == models.InferenceTaskEndInvalidated || task.Status == models.InferenceTaskEndSuccess || task.Status == models.InferenceTaskEndGroupRefund || task.Status == models.InferenceTaskEndAborted {
 				break
 			}
 			time.Sleep(time.Second)
@@ -423,50 +492,9 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 
 	// download task result
 	if task.Status == models.InferenceTaskValidated || task.Status == models.InferenceTaskEndSuccess {
-		appConfig := config.GetConfig()
-
-		taskFolder := path.Join(
-			appConfig.DataDir.InferenceTasks,
-			task.TaskIDCommitment,
-		)
-
-		if err := os.MkdirAll(taskFolder, 0700); err != nil {
-			log.Errorf("ProcessTasks: cannot create task result dir of %s", task.TaskIDCommitment)
+		err := downloadTaskResult(ctx, task)
+		if err != nil {
 			return err
-		}
-
-		ext := "png"
-		if task.TaskType == models.TaskTypeLLM {
-			ext = "json"
-		}
-
-		var wg sync.WaitGroup
-		errCh := make(chan error)
-		for i := 0; i < int(task.TaskSize); i++ {
-			wg.Add(1)
-			go func(index int64) {
-				defer wg.Done()
-				filename := path.Join(taskFolder, strconv.FormatInt(index, 10)+"."+ext)
-				file, err := os.Create(filename)
-				if err != nil {
-					log.Errorf("ProcessTasks: create task result file %d of %s error: %v", index, task.TaskIDCommitment, err)
-					errCh <- err
-				}
-				defer file.Close()
-				ctx1, cancel := context.WithTimeout(ctx, time.Minute)
-				defer cancel()
-				if err := relay.DownloadTaskResult(ctx1, task, index, file); err != nil {
-					log.Errorf("ProcessTasks: download task result %d of %s error: %v", index, task.TaskIDCommitment, err)
-					errCh <- err
-				}
-				errCh <- nil
-			}(int64(i))
-		}
-		wg.Wait()
-		for err := range errCh {
-			if err != nil {
-				return err
-			}
 		}
 		newTask := &models.InferenceTask{
 			Status: models.InferenceTaskResultDownloaded,
