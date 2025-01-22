@@ -5,6 +5,28 @@
     "type": "constructor"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableInvalidOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableUnauthorizedAccount",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -25,6 +47,19 @@
   },
   {
     "inputs": [],
+    "name": "getCheapestTask",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getSizeLimit",
     "outputs": [
       {
@@ -39,9 +74,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
       }
     ],
     "name": "include",
@@ -71,64 +106,32 @@
   {
     "inputs": [
       {
-        "internalType": "bool",
-        "name": "sameGPU",
-        "type": "bool"
+        "internalType": "string",
+        "name": "gpuName",
+        "type": "string"
       },
       {
         "internalType": "uint256",
-        "name": "vramLimit",
+        "name": "gpuVRAM",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256[3]",
+        "name": "version",
+        "type": "uint256[3]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "lastModelIDs",
+        "type": "string[]"
       }
     ],
     "name": "popTask",
     "outputs": [
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "id",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "taskType",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "creator",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "taskHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "dataHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "vramLimit",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "taskFee",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "price",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct TaskInQueue",
+        "internalType": "bytes32",
         "name": "",
-        "type": "tuple"
+        "type": "bytes32"
       }
     ],
     "stateMutability": "nonpayable",
@@ -137,34 +140,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "taskType",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
-      },
-      {
         "internalType": "bytes32",
-        "name": "taskHash",
+        "name": "taskIDCommitment",
         "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "dataHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "vramLimit",
-        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -173,8 +151,33 @@
       },
       {
         "internalType": "uint256",
-        "name": "price",
+        "name": "taskSize",
         "type": "uint256"
+      },
+      {
+        "internalType": "string[]",
+        "name": "modelIDs",
+        "type": "string[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumVRAM",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "requiredGPU",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "requiredGPUVRAM",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[3]",
+        "name": "taskVersion",
+        "type": "uint256[3]"
       }
     ],
     "name": "pushTask",
@@ -183,118 +186,15 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "removeCheapestTask",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "id",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "taskType",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "creator",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "taskHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "dataHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "vramLimit",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "taskFee",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "price",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct TaskInQueue",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
       }
     ],
     "name": "removeTask",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "id",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "taskType",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "creator",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "taskHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "dataHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "vramLimit",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "taskFee",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "price",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct TaskInQueue",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },

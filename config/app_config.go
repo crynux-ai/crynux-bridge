@@ -40,7 +40,12 @@ type AppConfig struct {
 	} `mapstructure:"data_dir"`
 
 	Blockchain struct {
-		RpcEndpoint string `mapstructure:"rpc_endpoint"`
+		RPS           uint64 `mapstructure:"rps"`
+		RpcEndpoint   string `mapstructure:"rpc_endpoint"`
+		StartBlockNum uint64 `mapstructure:"start_block_num"`
+		GasLimit      uint64 `mapstructure:"gas_limit"`
+		GasPrice      uint64 `mapstructure:"gas_price"`
+		ChainID       uint64 `mapstructure:"chain_id"`
 
 		Account struct {
 			Address        string `mapstructure:"address"`
@@ -52,11 +57,7 @@ type AppConfig struct {
 			Netstats    string `mapstructure:"netstats"`
 			Task        string `mapstructure:"task"`
 			Node        string `mapstructure:"node"`
-			CrynuxToken string `mapstructure:"crynux_token"`
 		} `mapstructure:"contracts"`
-
-		GasLimit      uint64 `mapstructure:"gas_limit"`
-		StartBlockNum uint64 `mapstructure:"start_block_num"`
 	} `mapstructure:"blockchain"`
 
 	Relay struct {
@@ -64,13 +65,16 @@ type AppConfig struct {
 	} `mapstructure:"relay"`
 
 	Task struct {
-		TaskFee   uint64 `mapstructure:"task_fee"`
-		RepeatNum int    `mapstructure:"repeat_num"`
+		TaskFee               uint64 `mapstructure:"task_fee"`
+		RepeatNum             int    `mapstructure:"repeat_num"`
+		PendingAutoTasksLimit uint64 `mapstructure:"pending_auto_tasks_limit"`
+		AutoTasksBatchSize    uint64 `mapstructure:"auto_tasks_batch_size"`
 	} `mapstructure:"task"`
 
 	TaskSchema struct {
-		StableDiffusionInference string `mapstructure:"stable_diffusion_inference"`
-		GPTInference             string `mapstructure:"gpt_inference"`
+		StableDiffusionInference    string `mapstructure:"stable_diffusion_inference"`
+		GPTInference                string `mapstructure:"gpt_inference"`
+		StableDiffusionFinetuneLora string `mapstructure:"stable_diffusion_finetune_lora"`
 	} `mapstructure:"task_schema"`
 
 	Test struct {

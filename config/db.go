@@ -33,6 +33,7 @@ func InitDB(appConfig *AppConfig) error {
 	instance, err := gorm.Open(dial, &gorm.Config{
 		Logger:         NewDBLogger(),
 		TranslateError: true,
+		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 
 	if err != nil {

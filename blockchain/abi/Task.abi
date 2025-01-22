@@ -18,12 +18,59 @@
       },
       {
         "internalType": "contract NetworkStats",
-        "name": "netStatsInstance",
+        "name": "networkStatsInstance",
         "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableInvalidOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableUnauthorizedAccount",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "nodeAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "modelID",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum VSSTask.TaskType",
+        "name": "taskType",
+        "type": "uint8"
+      }
+    ],
+    "name": "DownloadModel",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -48,191 +95,181 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "reason",
-        "type": "string"
-      }
-    ],
-    "name": "TaskAborted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "nodeAddress",
-        "type": "address"
-      }
-    ],
-    "name": "TaskNodeCancelled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "nodeAddress",
-        "type": "address"
-      }
-    ],
-    "name": "TaskNodeSlashed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "nodeAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "fee",
-        "type": "uint256"
-      }
-    ],
-    "name": "TaskNodeSuccess",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "taskType",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
-      },
-      {
         "indexed": false,
         "internalType": "bytes32",
-        "name": "taskHash",
+        "name": "taskIDCommitment",
         "type": "bytes32"
       },
       {
         "indexed": false,
-        "internalType": "bytes32",
-        "name": "dataHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "TaskPending",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      }
-    ],
-    "name": "TaskResultCommitmentsReady",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      }
-    ],
-    "name": "TaskResultUploaded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "taskType",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
         "internalType": "address",
-        "name": "creator",
+        "name": "abortIssuer",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
+        "internalType": "enum VSSTask.TaskStatus",
+        "name": "lastStatus",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum VSSTask.TaskAbortReason",
+        "name": "abortReason",
+        "type": "uint8"
+      }
+    ],
+    "name": "TaskEndAborted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
+      }
+    ],
+    "name": "TaskEndGroupRefund",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
+      }
+    ],
+    "name": "TaskEndGroupSuccess",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
+      }
+    ],
+    "name": "TaskEndInvalidated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
+      }
+    ],
+    "name": "TaskEndSuccess",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "selectedNode",
         "type": "address"
       },
       {
         "indexed": false,
+        "internalType": "enum VSSTask.TaskError",
+        "name": "error",
+        "type": "uint8"
+      }
+    ],
+    "name": "TaskErrorReported",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bytes32",
-        "name": "taskHash",
+        "name": "taskIDCommitment",
         "type": "bytes32"
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "selectedNode",
+        "type": "address"
+      }
+    ],
+    "name": "TaskParametersUploaded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bytes32",
-        "name": "dataHash",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
+      }
+    ],
+    "name": "TaskQueued",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
         "type": "bytes32"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "round",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "selectedNode",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "taskScore",
+        "type": "bytes"
+      }
+    ],
+    "name": "TaskScoreReady",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "selectedNode",
+        "type": "address"
       }
     ],
     "name": "TaskStarted",
@@ -242,36 +279,29 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
         "indexed": false,
-        "internalType": "bytes",
-        "name": "result",
-        "type": "bytes"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "resultNode",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
       }
     ],
-    "name": "TaskSuccess",
+    "name": "TaskValidated",
     "type": "event"
   },
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "enum VSSTask.TaskAbortReason",
+        "name": "abortReason",
+        "type": "uint8"
       }
     ],
-    "name": "cancelTask",
+    "name": "abortTask",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -279,57 +309,54 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
+        "internalType": "enum VSSTask.TaskType",
         "name": "taskType",
-        "type": "uint256"
+        "type": "uint8"
       },
       {
         "internalType": "bytes32",
-        "name": "taskHash",
+        "name": "taskIDCommitment",
         "type": "bytes32"
       },
       {
         "internalType": "bytes32",
-        "name": "dataHash",
+        "name": "nonce",
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
-        "name": "vramLimit",
-        "type": "uint256"
+        "internalType": "string[]",
+        "name": "modelIDs",
+        "type": "string[]"
       },
       {
         "internalType": "uint256",
-        "name": "cap",
+        "name": "minimumVRAM",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "requiredGPU",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "requiredGPUVRAM",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[3]",
+        "name": "taskVersion",
+        "type": "uint256[3]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "taskSize",
         "type": "uint256"
       }
     ],
     "name": "createTask",
     "outputs": [],
     "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "round",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes",
-        "name": "result",
-        "type": "bytes"
-      }
-    ],
-    "name": "discloseTaskResult",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -343,9 +370,9 @@
     "name": "getNodeTask",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bytes32",
         "name": "",
-        "type": "uint256"
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -354,9 +381,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
       }
     ],
     "name": "getTask",
@@ -364,14 +391,9 @@
       {
         "components": [
           {
-            "internalType": "uint256",
-            "name": "id",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
+            "internalType": "enum VSSTask.TaskType",
             "name": "taskType",
-            "type": "uint256"
+            "type": "uint8"
           },
           {
             "internalType": "address",
@@ -380,63 +402,33 @@
           },
           {
             "internalType": "bytes32",
-            "name": "taskHash",
+            "name": "taskIDCommitment",
             "type": "bytes32"
           },
           {
             "internalType": "bytes32",
-            "name": "dataHash",
+            "name": "samplingSeed",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "nonce",
             "type": "bytes32"
           },
           {
             "internalType": "uint256",
-            "name": "vramLimit",
+            "name": "sequence",
             "type": "uint256"
           },
           {
-            "internalType": "bool",
-            "name": "isSuccess",
-            "type": "bool"
-          },
-          {
-            "internalType": "address[]",
-            "name": "selectedNodes",
-            "type": "address[]"
-          },
-          {
-            "internalType": "bytes32[]",
-            "name": "commitments",
-            "type": "bytes32[]"
-          },
-          {
-            "internalType": "bytes32[]",
-            "name": "nonces",
-            "type": "bytes32[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "commitmentSubmitRounds",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "bytes[]",
-            "name": "results",
-            "type": "bytes[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "resultDisclosedRounds",
-            "type": "uint256[]"
+            "internalType": "enum VSSTask.TaskStatus",
+            "name": "status",
+            "type": "uint8"
           },
           {
             "internalType": "address",
-            "name": "resultNode",
+            "name": "selectedNode",
             "type": "address"
-          },
-          {
-            "internalType": "bool",
-            "name": "aborted",
-            "type": "bool"
           },
           {
             "internalType": "uint256",
@@ -444,17 +436,82 @@
             "type": "uint256"
           },
           {
+            "internalType": "bytes",
+            "name": "score",
+            "type": "bytes"
+          },
+          {
             "internalType": "uint256",
-            "name": "balance",
+            "name": "taskFee",
             "type": "uint256"
           },
           {
             "internalType": "uint256",
-            "name": "totalBalance",
+            "name": "taskSize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string[]",
+            "name": "modelIDs",
+            "type": "string[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumVRAM",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "requiredGPU",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "requiredGPUVRAM",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[3]",
+            "name": "taskVersion",
+            "type": "uint256[3]"
+          },
+          {
+            "internalType": "enum VSSTask.TaskAbortReason",
+            "name": "abortReason",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum VSSTask.TaskError",
+            "name": "error",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address[]",
+            "name": "paymentAddresses",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "payments",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createTimestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTimestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "scoreReadyTimestamp",
             "type": "uint256"
           }
         ],
-        "internalType": "struct Task.TaskInfo",
+        "internalType": "struct VSSTask.TaskInfo",
         "name": "",
         "type": "tuple"
       }
@@ -498,32 +555,14 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
       },
       {
-        "internalType": "uint256",
-        "name": "round",
-        "type": "uint256"
-      }
-    ],
-    "name": "reportResultsUploaded",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "round",
-        "type": "uint256"
+        "internalType": "enum VSSTask.TaskError",
+        "name": "error",
+        "type": "uint8"
       }
     ],
     "name": "reportTaskError",
@@ -534,68 +573,58 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "round",
-        "type": "uint256"
-      },
-      {
         "internalType": "bytes32",
-        "name": "commitment",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "nonce",
+        "name": "taskIDCommitment",
         "type": "bytes32"
       }
     ],
-    "name": "submitTaskResultCommitment",
+    "name": "reportTaskParametersUploaded",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "totalAbortedTasks",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
       }
     ],
-    "stateMutability": "view",
+    "name": "reportTaskResultUploaded",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "totalSuccessTasks",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "addr",
+        "type": "address"
       }
     ],
-    "stateMutability": "view",
+    "name": "setRelayAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "totalTasks",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "taskScore",
+        "type": "bytes"
       }
     ],
-    "stateMutability": "view",
+    "name": "submitTaskScore",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -633,6 +662,67 @@
       }
     ],
     "name": "updateTimeout",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "taskIDCommitment",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "vrfProof",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "publicKey",
+        "type": "bytes"
+      }
+    ],
+    "name": "validateSingleTask",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "taskIDCommitment1",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "taskIDCommitment2",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "taskIDCommitment3",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "taskGUID",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "vrfProof",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "publicKey",
+        "type": "bytes"
+      }
+    ],
+    "name": "validateTaskGroup",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

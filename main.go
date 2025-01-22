@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crynux_bridge/api"
 	"crynux_bridge/blockchain"
 	"crynux_bridge/config"
@@ -39,23 +40,8 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	// Send tasks to the Blockchain
-	go tasks.StartSendTaskOnChain()
-
-	// Get the task creation transactions status from the blockchain
-	go tasks.StartGetTaskCreationResult()
-
-	// Download the result images from the relay server
-	go tasks.StartDownloadResults()
-
-	// Upload the task params to the relay server
-	go tasks.StartUploadTaskParams()
-
-	// Sync block to update task status
-	go tasks.StartSyncBlock()
-
-	// Auto create task every 5 minutes
-	go tasks.StartAutoCreateTask()
+	go tasks.ProcessTasks(context.Background())
+	go tasks.AutoCreateTasks(context.Background())
 
 	startServer()
 }

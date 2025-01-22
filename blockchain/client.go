@@ -8,6 +8,7 @@ import (
 	"errors"
 	"math/big"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
@@ -20,11 +21,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var ethWSClient *ethclient.Client
+var txMutex sync.Mutex
+var ethRpcClient *ethclient.Client
 
 func GetRpcClient() (*ethclient.Client, error) {
-
-	if ethWSClient == nil {
+	if ethRpcClient == nil {
 		appConfig := config.GetConfig()
 		client, err := ethclient.Dial(appConfig.Blockchain.RpcEndpoint)
 
@@ -32,43 +33,105 @@ func GetRpcClient() (*ethclient.Client, error) {
 			return nil, err
 		}
 
-		ethWSClient = client
+		ethRpcClient = client
 	}
 
-	return ethWSClient, nil
+	return ethRpcClient, nil
 }
 
-func GetAuth(client *ethclient.Client, address common.Address, privateKeyStr string) (*bind.TransactOpts, error) {
+func getNonce(ctx context.Context, address common.Address) (uint64, error) {
+	client, err := GetRpcClient()
+	if err != nil {
+		return 0, nil
+	}
+
+	if err := getLimiter().Wait(ctx); err != nil {
+		return 0, nil
+	}
+
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	nonce, err := client.PendingNonceAt(callCtx, address)
+	if err != nil {
+		return 0, nil
+	}
+	log.Debugln("Nonce from blockchain: " + strconv.FormatUint(nonce, 10))
+
+	return nonce, nil
+}
+
+func getSuggestGasPrice(ctx context.Context) (*big.Int, error) {
+	client, err := GetRpcClient()
+	if err != nil {
+		return nil, nil
+	}
+
+	if err := getLimiter().Wait(ctx); err != nil {
+		return nil, nil
+	}
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	gasPrice, err := client.SuggestGasPrice(callCtx)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugln("Estimated gas price from blockchain: " + gasPrice.String())
+	return gasPrice, nil
+}
+
+func getChainID(ctx context.Context) (*big.Int, error) {
+	client, err := GetRpcClient()
+	if err != nil {
+		return nil, nil
+	}
+
+	if err := getLimiter().Wait(ctx); err != nil {
+		return nil, nil
+	}
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	chainID, err := client.ChainID(callCtx)
+	if err != nil {
+		return nil, err
+	}
+	return chainID, nil
+}
+
+func GetAuth(ctx context.Context, address common.Address, privateKeyStr string) (*bind.TransactOpts, error) {
 
 	appConfig := config.GetConfig()
 
-	nonce, err := client.PendingNonceAt(context.Background(), address)
+	nonce, err := getNonce(ctx, address)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Debugln("Nonce from blockchain: " + strconv.FormatUint(nonce, 10))
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		return nil, err
+	gasPrice := big.NewInt(0)
+	if appConfig.Blockchain.GasPrice > 0 {
+		gasPrice.SetUint64(appConfig.Blockchain.GasPrice)
+	} else {
+		gasPrice, err = getSuggestGasPrice(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
-
-	log.Debugln("Estimated gas price from blockchain: " + gasPrice.String())
 
 	privateKey, err := crypto.HexToECDSA(privateKeyStr)
 	if err != nil {
 		return nil, err
 	}
 
-	chainId, err := client.ChainID(context.Background())
-	if err != nil {
-		return nil, err
+	chainID := big.NewInt(0)
+	if appConfig.Blockchain.ChainID > 0 {
+		chainID.SetUint64(appConfig.Blockchain.ChainID)
+	} else {
+		chainID, err = getChainID(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	log.Debugln("Chain ID from the blockchain: " + chainId.String())
-
-	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainId)
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +144,29 @@ func GetAuth(client *ethclient.Client, address common.Address, privateKeyStr str
 	auth.GasPrice = gasPrice
 
 	return auth, nil
+}
+
+func WaitTxReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
+	client, err := GetRpcClient()
+	if err != nil {
+		return nil, err
+	}
+
+	for {
+		r, err := func() (*types.Receipt, error) {
+			callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+			defer cancel()
+			return client.TransactionReceipt(callCtx, txHash)
+		}()
+		if err == ethereum.NotFound {
+			time.Sleep(time.Second)
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		return r, nil
+	}
 }
 
 func SendETH(from common.Address, to common.Address, amount *big.Int, privateKeyStr string) (*types.Transaction, error) {
@@ -126,14 +212,20 @@ func SendETH(from common.Address, to common.Address, amount *big.Int, privateKey
 	return signedTx, nil
 }
 
-func GetErrorMessageForTxHash(txHash common.Hash, blockNumber *big.Int) (string, error) {
+func GetErrorMessageFromReceipt(ctx context.Context, receipt *types.Receipt) (string, error) {
 
 	client, err := GetRpcClient()
 	if err != nil {
 		return "", err
 	}
 
-	tx, _, err := client.TransactionByHash(context.Background(), txHash)
+	if err := getLimiter().Wait(ctx); err != nil {
+		return "", err
+	}
+
+	ctx1, cancel1 := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel1()
+	tx, _, err := client.TransactionByHash(ctx1, receipt.TxHash)
 	if err != nil {
 		return "", err
 	}
@@ -147,12 +239,18 @@ func GetErrorMessageForTxHash(txHash common.Hash, blockNumber *big.Int) (string,
 		Data:     tx.Data(),
 	}
 
-	ctx, cancelFn := context.WithTimeout(context.Background(), time.Duration(3)*time.Second)
-	defer cancelFn()
+	if err := getLimiter().Wait(ctx); err != nil {
+		return "", err
+	}
 
-	res, err := client.CallContract(ctx, msg, blockNumber)
+	blockNumber := big.NewInt(0).Sub(receipt.BlockNumber, big.NewInt(1))
+
+	ctx2, cancel2 := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel2()
+
+	res, err := client.CallContract(ctx2, msg, blockNumber)
 	if err != nil {
-		return err.Error(), nil
+		return "", err
 	}
 
 	return unpackError(res)

@@ -57,13 +57,13 @@ func CountTask(_ *gin.Context, input *CountInput) (*CountResponse, error) {
 			var successCount, abortedCount int
 			var successTaskTime time.Duration
 			for _, task := range clientTask.InferenceTasks {
-				if task.Status == models.InferenceTaskSuccess {
+				if task.Status == models.InferenceTaskResultDownloaded {
 					successCount += 1
 					t := task.UpdatedAt.Sub(task.CreatedAt)
 					if successTaskTime == 0 || t < successTaskTime {
 						successTaskTime = t
 					}
-				} else if task.Status == models.InferenceTaskAborted {
+				} else if task.Status == models.InferenceTaskEndAborted {
 					abortedCount += 1
 				}
 			}

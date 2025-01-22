@@ -38,7 +38,7 @@ type NetworkStatsNodeInfo struct {
 
 // NetworkStatsMetaData contains all meta data concerning the NetworkStats contract.
 var NetworkStatsMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"activeNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"availableNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"busyNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"offset\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"getAllNodeInfo\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"GPUModel\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"VRAM\",\"type\":\"uint256\"}],\"internalType\":\"structNetworkStats.NodeInfo[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nodeAvailable\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"gpuModel\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"vRAM\",\"type\":\"uint256\"}],\"name\":\"nodeJoined\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nodeQuit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nodeTaskFinished\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nodeTaskStarted\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nodeUnavailable\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"queuedTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"runningTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"taskFinished\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"taskQueued\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"taskStarted\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeContract\",\"type\":\"address\"}],\"name\":\"updateNodeContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"taskContract\",\"type\":\"address\"}],\"name\":\"updateTaskContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"activeNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"availableNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"busyNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"offset\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"getAllNodeInfo\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"GPUModel\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"VRAM\",\"type\":\"uint256\"}],\"internalType\":\"structNetworkStats.NodeInfo[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nodeAvailable\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"gpuModel\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"vRAM\",\"type\":\"uint256\"}],\"name\":\"nodeJoined\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nodeQuit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nodeTaskFinished\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nodeTaskStarted\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nodeUnavailable\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"queuedTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"runningTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"taskCreated\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"taskDequeue\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"taskEnqueue\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"taskFinished\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"taskStarted\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeContract\",\"type\":\"address\"}],\"name\":\"updateNodeContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"taskContract\",\"type\":\"address\"}],\"name\":\"updateTaskContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // NetworkStatsABI is the input ABI used to generate the binding from.
@@ -613,6 +613,69 @@ func (_NetworkStats *NetworkStatsTransactorSession) RenounceOwnership() (*types.
 	return _NetworkStats.Contract.RenounceOwnership(&_NetworkStats.TransactOpts)
 }
 
+// TaskCreated is a paid mutator transaction binding the contract method 0xd0e08cca.
+//
+// Solidity: function taskCreated() returns()
+func (_NetworkStats *NetworkStatsTransactor) TaskCreated(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _NetworkStats.contract.Transact(opts, "taskCreated")
+}
+
+// TaskCreated is a paid mutator transaction binding the contract method 0xd0e08cca.
+//
+// Solidity: function taskCreated() returns()
+func (_NetworkStats *NetworkStatsSession) TaskCreated() (*types.Transaction, error) {
+	return _NetworkStats.Contract.TaskCreated(&_NetworkStats.TransactOpts)
+}
+
+// TaskCreated is a paid mutator transaction binding the contract method 0xd0e08cca.
+//
+// Solidity: function taskCreated() returns()
+func (_NetworkStats *NetworkStatsTransactorSession) TaskCreated() (*types.Transaction, error) {
+	return _NetworkStats.Contract.TaskCreated(&_NetworkStats.TransactOpts)
+}
+
+// TaskDequeue is a paid mutator transaction binding the contract method 0xd513093c.
+//
+// Solidity: function taskDequeue() returns()
+func (_NetworkStats *NetworkStatsTransactor) TaskDequeue(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _NetworkStats.contract.Transact(opts, "taskDequeue")
+}
+
+// TaskDequeue is a paid mutator transaction binding the contract method 0xd513093c.
+//
+// Solidity: function taskDequeue() returns()
+func (_NetworkStats *NetworkStatsSession) TaskDequeue() (*types.Transaction, error) {
+	return _NetworkStats.Contract.TaskDequeue(&_NetworkStats.TransactOpts)
+}
+
+// TaskDequeue is a paid mutator transaction binding the contract method 0xd513093c.
+//
+// Solidity: function taskDequeue() returns()
+func (_NetworkStats *NetworkStatsTransactorSession) TaskDequeue() (*types.Transaction, error) {
+	return _NetworkStats.Contract.TaskDequeue(&_NetworkStats.TransactOpts)
+}
+
+// TaskEnqueue is a paid mutator transaction binding the contract method 0x7e13650a.
+//
+// Solidity: function taskEnqueue() returns()
+func (_NetworkStats *NetworkStatsTransactor) TaskEnqueue(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _NetworkStats.contract.Transact(opts, "taskEnqueue")
+}
+
+// TaskEnqueue is a paid mutator transaction binding the contract method 0x7e13650a.
+//
+// Solidity: function taskEnqueue() returns()
+func (_NetworkStats *NetworkStatsSession) TaskEnqueue() (*types.Transaction, error) {
+	return _NetworkStats.Contract.TaskEnqueue(&_NetworkStats.TransactOpts)
+}
+
+// TaskEnqueue is a paid mutator transaction binding the contract method 0x7e13650a.
+//
+// Solidity: function taskEnqueue() returns()
+func (_NetworkStats *NetworkStatsTransactorSession) TaskEnqueue() (*types.Transaction, error) {
+	return _NetworkStats.Contract.TaskEnqueue(&_NetworkStats.TransactOpts)
+}
+
 // TaskFinished is a paid mutator transaction binding the contract method 0xb1f7748f.
 //
 // Solidity: function taskFinished() returns()
@@ -632,27 +695,6 @@ func (_NetworkStats *NetworkStatsSession) TaskFinished() (*types.Transaction, er
 // Solidity: function taskFinished() returns()
 func (_NetworkStats *NetworkStatsTransactorSession) TaskFinished() (*types.Transaction, error) {
 	return _NetworkStats.Contract.TaskFinished(&_NetworkStats.TransactOpts)
-}
-
-// TaskQueued is a paid mutator transaction binding the contract method 0x537a71c6.
-//
-// Solidity: function taskQueued() returns()
-func (_NetworkStats *NetworkStatsTransactor) TaskQueued(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _NetworkStats.contract.Transact(opts, "taskQueued")
-}
-
-// TaskQueued is a paid mutator transaction binding the contract method 0x537a71c6.
-//
-// Solidity: function taskQueued() returns()
-func (_NetworkStats *NetworkStatsSession) TaskQueued() (*types.Transaction, error) {
-	return _NetworkStats.Contract.TaskQueued(&_NetworkStats.TransactOpts)
-}
-
-// TaskQueued is a paid mutator transaction binding the contract method 0x537a71c6.
-//
-// Solidity: function taskQueued() returns()
-func (_NetworkStats *NetworkStatsTransactorSession) TaskQueued() (*types.Transaction, error) {
-	return _NetworkStats.Contract.TaskQueued(&_NetworkStats.TransactOpts)
 }
 
 // TaskStarted is a paid mutator transaction binding the contract method 0x1e4a9b0c.

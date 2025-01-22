@@ -29,31 +29,37 @@ var (
 	_ = abi.ConvertType
 )
 
-// TaskTaskInfo is an auto generated low-level Go binding around an user-defined struct.
-type TaskTaskInfo struct {
-	Id                     *big.Int
-	TaskType               *big.Int
-	Creator                common.Address
-	TaskHash               [32]byte
-	DataHash               [32]byte
-	VramLimit              *big.Int
-	IsSuccess              bool
-	SelectedNodes          []common.Address
-	Commitments            [][32]byte
-	Nonces                 [][32]byte
-	CommitmentSubmitRounds []*big.Int
-	Results                [][]byte
-	ResultDisclosedRounds  []*big.Int
-	ResultNode             common.Address
-	Aborted                bool
-	Timeout                *big.Int
-	Balance                *big.Int
-	TotalBalance           *big.Int
+// VSSTaskTaskInfo is an auto generated low-level Go binding around an user-defined struct.
+type VSSTaskTaskInfo struct {
+	TaskType            uint8
+	Creator             common.Address
+	TaskIDCommitment    [32]byte
+	SamplingSeed        [32]byte
+	Nonce               [32]byte
+	Sequence            *big.Int
+	Status              uint8
+	SelectedNode        common.Address
+	Timeout             *big.Int
+	Score               []byte
+	TaskFee             *big.Int
+	TaskSize            *big.Int
+	ModelIDs            []string
+	MinimumVRAM         *big.Int
+	RequiredGPU         string
+	RequiredGPUVRAM     *big.Int
+	TaskVersion         [3]*big.Int
+	AbortReason         uint8
+	Error               uint8
+	PaymentAddresses    []common.Address
+	Payments            []*big.Int
+	CreateTimestamp     *big.Int
+	StartTimestamp      *big.Int
+	ScoreReadyTimestamp *big.Int
 }
 
 // TaskMetaData contains all meta data concerning the Task contract.
 var TaskMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractNode\",\"name\":\"nodeInstance\",\"type\":\"address\"},{\"internalType\":\"contractQOS\",\"name\":\"qosInstance\",\"type\":\"address\"},{\"internalType\":\"contractTaskQueue\",\"name\":\"taskQueueInstance\",\"type\":\"address\"},{\"internalType\":\"contractNetworkStats\",\"name\":\"netStatsInstance\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"TaskAborted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"TaskNodeCancelled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"TaskNodeSlashed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"TaskNodeSuccess\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskType\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"TaskPending\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"TaskResultCommitmentsReady\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"TaskResultUploaded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"taskType\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"selectedNode\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"}],\"name\":\"TaskStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"resultNode\",\"type\":\"address\"}],\"name\":\"TaskSuccess\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"cancelTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskType\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"cap\",\"type\":\"uint256\"}],\"name\":\"createTask\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"result\",\"type\":\"bytes\"}],\"name\":\"discloseTaskResult\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeTask\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"}],\"name\":\"getTask\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskType\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"taskHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"vramLimit\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isSuccess\",\"type\":\"bool\"},{\"internalType\":\"address[]\",\"name\":\"selectedNodes\",\"type\":\"address[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"commitments\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes32[]\",\"name\":\"nonces\",\"type\":\"bytes32[]\"},{\"internalType\":\"uint256[]\",\"name\":\"commitmentSubmitRounds\",\"type\":\"uint256[]\"},{\"internalType\":\"bytes[]\",\"name\":\"results\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256[]\",\"name\":\"resultDisclosedRounds\",\"type\":\"uint256[]\"},{\"internalType\":\"address\",\"name\":\"resultNode\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"aborted\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeout\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"balance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalBalance\",\"type\":\"uint256\"}],\"internalType\":\"structTask.TaskInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"root\",\"type\":\"address\"}],\"name\":\"nodeAvailableCallback\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"}],\"name\":\"reportResultsUploaded\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"}],\"name\":\"reportTaskError\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taskId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"round\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"commitment\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"nonce\",\"type\":\"bytes32\"}],\"name\":\"submitTaskResultCommitment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalAbortedTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSuccessTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalTasks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"updateDistanceThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"t\",\"type\":\"uint256\"}],\"name\":\"updateTimeout\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractNode\",\"name\":\"nodeInstance\",\"type\":\"address\"},{\"internalType\":\"contractQOS\",\"name\":\"qosInstance\",\"type\":\"address\"},{\"internalType\":\"contractTaskQueue\",\"name\":\"taskQueueInstance\",\"type\":\"address\"},{\"internalType\":\"contractNetworkStats\",\"name\":\"networkStatsInstance\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"modelID\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"enumVSSTask.TaskType\",\"name\":\"taskType\",\"type\":\"uint8\"}],\"name\":\"DownloadModel\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"abortIssuer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"enumVSSTask.TaskStatus\",\"name\":\"lastStatus\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"enumVSSTask.TaskAbortReason\",\"name\":\"abortReason\",\"type\":\"uint8\"}],\"name\":\"TaskEndAborted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"}],\"name\":\"TaskEndGroupRefund\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"}],\"name\":\"TaskEndGroupSuccess\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"}],\"name\":\"TaskEndInvalidated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"}],\"name\":\"TaskEndSuccess\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"selectedNode\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"enumVSSTask.TaskError\",\"name\":\"error\",\"type\":\"uint8\"}],\"name\":\"TaskErrorReported\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"selectedNode\",\"type\":\"address\"}],\"name\":\"TaskParametersUploaded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"}],\"name\":\"TaskQueued\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"selectedNode\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"taskScore\",\"type\":\"bytes\"}],\"name\":\"TaskScoreReady\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"selectedNode\",\"type\":\"address\"}],\"name\":\"TaskStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"}],\"name\":\"TaskValidated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"},{\"internalType\":\"enumVSSTask.TaskAbortReason\",\"name\":\"abortReason\",\"type\":\"uint8\"}],\"name\":\"abortTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumVSSTask.TaskType\",\"name\":\"taskType\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"nonce\",\"type\":\"bytes32\"},{\"internalType\":\"string[]\",\"name\":\"modelIDs\",\"type\":\"string[]\"},{\"internalType\":\"uint256\",\"name\":\"minimumVRAM\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"requiredGPU\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"requiredGPUVRAM\",\"type\":\"uint256\"},{\"internalType\":\"uint256[3]\",\"name\":\"taskVersion\",\"type\":\"uint256[3]\"},{\"internalType\":\"uint256\",\"name\":\"taskSize\",\"type\":\"uint256\"}],\"name\":\"createTask\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nodeAddress\",\"type\":\"address\"}],\"name\":\"getNodeTask\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"}],\"name\":\"getTask\",\"outputs\":[{\"components\":[{\"internalType\":\"enumVSSTask.TaskType\",\"name\":\"taskType\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"samplingSeed\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"nonce\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"sequence\",\"type\":\"uint256\"},{\"internalType\":\"enumVSSTask.TaskStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"selectedNode\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"timeout\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"score\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"taskFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"taskSize\",\"type\":\"uint256\"},{\"internalType\":\"string[]\",\"name\":\"modelIDs\",\"type\":\"string[]\"},{\"internalType\":\"uint256\",\"name\":\"minimumVRAM\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"requiredGPU\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"requiredGPUVRAM\",\"type\":\"uint256\"},{\"internalType\":\"uint256[3]\",\"name\":\"taskVersion\",\"type\":\"uint256[3]\"},{\"internalType\":\"enumVSSTask.TaskAbortReason\",\"name\":\"abortReason\",\"type\":\"uint8\"},{\"internalType\":\"enumVSSTask.TaskError\",\"name\":\"error\",\"type\":\"uint8\"},{\"internalType\":\"address[]\",\"name\":\"paymentAddresses\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"payments\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"createTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"scoreReadyTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structVSSTask.TaskInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"root\",\"type\":\"address\"}],\"name\":\"nodeAvailableCallback\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"},{\"internalType\":\"enumVSSTask.TaskError\",\"name\":\"error\",\"type\":\"uint8\"}],\"name\":\"reportTaskError\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"}],\"name\":\"reportTaskParametersUploaded\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"}],\"name\":\"reportTaskResultUploaded\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"setRelayAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"taskScore\",\"type\":\"bytes\"}],\"name\":\"submitTaskScore\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"updateDistanceThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"t\",\"type\":\"uint256\"}],\"name\":\"updateTimeout\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"vrfProof\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"publicKey\",\"type\":\"bytes\"}],\"name\":\"validateSingleTask\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment1\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment2\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"taskIDCommitment3\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"taskGUID\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"vrfProof\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"publicKey\",\"type\":\"bytes\"}],\"name\":\"validateTaskGroup\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // TaskABI is the input ABI used to generate the binding from.
@@ -204,16 +210,16 @@ func (_Task *TaskTransactorRaw) Transact(opts *bind.TransactOpts, method string,
 
 // GetNodeTask is a free data retrieval call binding the contract method 0x9877ad45.
 //
-// Solidity: function getNodeTask(address nodeAddress) view returns(uint256)
-func (_Task *TaskCaller) GetNodeTask(opts *bind.CallOpts, nodeAddress common.Address) (*big.Int, error) {
+// Solidity: function getNodeTask(address nodeAddress) view returns(bytes32)
+func (_Task *TaskCaller) GetNodeTask(opts *bind.CallOpts, nodeAddress common.Address) ([32]byte, error) {
 	var out []interface{}
 	err := _Task.contract.Call(opts, &out, "getNodeTask", nodeAddress)
 
 	if err != nil {
-		return *new(*big.Int), err
+		return *new([32]byte), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
 
@@ -221,47 +227,47 @@ func (_Task *TaskCaller) GetNodeTask(opts *bind.CallOpts, nodeAddress common.Add
 
 // GetNodeTask is a free data retrieval call binding the contract method 0x9877ad45.
 //
-// Solidity: function getNodeTask(address nodeAddress) view returns(uint256)
-func (_Task *TaskSession) GetNodeTask(nodeAddress common.Address) (*big.Int, error) {
+// Solidity: function getNodeTask(address nodeAddress) view returns(bytes32)
+func (_Task *TaskSession) GetNodeTask(nodeAddress common.Address) ([32]byte, error) {
 	return _Task.Contract.GetNodeTask(&_Task.CallOpts, nodeAddress)
 }
 
 // GetNodeTask is a free data retrieval call binding the contract method 0x9877ad45.
 //
-// Solidity: function getNodeTask(address nodeAddress) view returns(uint256)
-func (_Task *TaskCallerSession) GetNodeTask(nodeAddress common.Address) (*big.Int, error) {
+// Solidity: function getNodeTask(address nodeAddress) view returns(bytes32)
+func (_Task *TaskCallerSession) GetNodeTask(nodeAddress common.Address) ([32]byte, error) {
 	return _Task.Contract.GetNodeTask(&_Task.CallOpts, nodeAddress)
 }
 
-// GetTask is a free data retrieval call binding the contract method 0x1d65e77e.
+// GetTask is a free data retrieval call binding the contract method 0x15a29035.
 //
-// Solidity: function getTask(uint256 taskId) view returns((uint256,uint256,address,bytes32,bytes32,uint256,bool,address[],bytes32[],bytes32[],uint256[],bytes[],uint256[],address,bool,uint256,uint256,uint256))
-func (_Task *TaskCaller) GetTask(opts *bind.CallOpts, taskId *big.Int) (TaskTaskInfo, error) {
+// Solidity: function getTask(bytes32 taskIDCommitment) view returns((uint8,address,bytes32,bytes32,bytes32,uint256,uint8,address,uint256,bytes,uint256,uint256,string[],uint256,string,uint256,uint256[3],uint8,uint8,address[],uint256[],uint256,uint256,uint256))
+func (_Task *TaskCaller) GetTask(opts *bind.CallOpts, taskIDCommitment [32]byte) (VSSTaskTaskInfo, error) {
 	var out []interface{}
-	err := _Task.contract.Call(opts, &out, "getTask", taskId)
+	err := _Task.contract.Call(opts, &out, "getTask", taskIDCommitment)
 
 	if err != nil {
-		return *new(TaskTaskInfo), err
+		return *new(VSSTaskTaskInfo), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(TaskTaskInfo)).(*TaskTaskInfo)
+	out0 := *abi.ConvertType(out[0], new(VSSTaskTaskInfo)).(*VSSTaskTaskInfo)
 
 	return out0, err
 
 }
 
-// GetTask is a free data retrieval call binding the contract method 0x1d65e77e.
+// GetTask is a free data retrieval call binding the contract method 0x15a29035.
 //
-// Solidity: function getTask(uint256 taskId) view returns((uint256,uint256,address,bytes32,bytes32,uint256,bool,address[],bytes32[],bytes32[],uint256[],bytes[],uint256[],address,bool,uint256,uint256,uint256))
-func (_Task *TaskSession) GetTask(taskId *big.Int) (TaskTaskInfo, error) {
-	return _Task.Contract.GetTask(&_Task.CallOpts, taskId)
+// Solidity: function getTask(bytes32 taskIDCommitment) view returns((uint8,address,bytes32,bytes32,bytes32,uint256,uint8,address,uint256,bytes,uint256,uint256,string[],uint256,string,uint256,uint256[3],uint8,uint8,address[],uint256[],uint256,uint256,uint256))
+func (_Task *TaskSession) GetTask(taskIDCommitment [32]byte) (VSSTaskTaskInfo, error) {
+	return _Task.Contract.GetTask(&_Task.CallOpts, taskIDCommitment)
 }
 
-// GetTask is a free data retrieval call binding the contract method 0x1d65e77e.
+// GetTask is a free data retrieval call binding the contract method 0x15a29035.
 //
-// Solidity: function getTask(uint256 taskId) view returns((uint256,uint256,address,bytes32,bytes32,uint256,bool,address[],bytes32[],bytes32[],uint256[],bytes[],uint256[],address,bool,uint256,uint256,uint256))
-func (_Task *TaskCallerSession) GetTask(taskId *big.Int) (TaskTaskInfo, error) {
-	return _Task.Contract.GetTask(&_Task.CallOpts, taskId)
+// Solidity: function getTask(bytes32 taskIDCommitment) view returns((uint8,address,bytes32,bytes32,bytes32,uint256,uint8,address,uint256,bytes,uint256,uint256,string[],uint256,string,uint256,uint256[3],uint8,uint8,address[],uint256[],uint256,uint256,uint256))
+func (_Task *TaskCallerSession) GetTask(taskIDCommitment [32]byte) (VSSTaskTaskInfo, error) {
+	return _Task.Contract.GetTask(&_Task.CallOpts, taskIDCommitment)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -295,160 +301,46 @@ func (_Task *TaskCallerSession) Owner() (common.Address, error) {
 	return _Task.Contract.Owner(&_Task.CallOpts)
 }
 
-// TotalAbortedTasks is a free data retrieval call binding the contract method 0x2ff6d2ca.
+// AbortTask is a paid mutator transaction binding the contract method 0xb03d2b11.
 //
-// Solidity: function totalAbortedTasks() view returns(uint256)
-func (_Task *TaskCaller) TotalAbortedTasks(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Task.contract.Call(opts, &out, "totalAbortedTasks")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
+// Solidity: function abortTask(bytes32 taskIDCommitment, uint8 abortReason) returns()
+func (_Task *TaskTransactor) AbortTask(opts *bind.TransactOpts, taskIDCommitment [32]byte, abortReason uint8) (*types.Transaction, error) {
+	return _Task.contract.Transact(opts, "abortTask", taskIDCommitment, abortReason)
 }
 
-// TotalAbortedTasks is a free data retrieval call binding the contract method 0x2ff6d2ca.
+// AbortTask is a paid mutator transaction binding the contract method 0xb03d2b11.
 //
-// Solidity: function totalAbortedTasks() view returns(uint256)
-func (_Task *TaskSession) TotalAbortedTasks() (*big.Int, error) {
-	return _Task.Contract.TotalAbortedTasks(&_Task.CallOpts)
+// Solidity: function abortTask(bytes32 taskIDCommitment, uint8 abortReason) returns()
+func (_Task *TaskSession) AbortTask(taskIDCommitment [32]byte, abortReason uint8) (*types.Transaction, error) {
+	return _Task.Contract.AbortTask(&_Task.TransactOpts, taskIDCommitment, abortReason)
 }
 
-// TotalAbortedTasks is a free data retrieval call binding the contract method 0x2ff6d2ca.
+// AbortTask is a paid mutator transaction binding the contract method 0xb03d2b11.
 //
-// Solidity: function totalAbortedTasks() view returns(uint256)
-func (_Task *TaskCallerSession) TotalAbortedTasks() (*big.Int, error) {
-	return _Task.Contract.TotalAbortedTasks(&_Task.CallOpts)
+// Solidity: function abortTask(bytes32 taskIDCommitment, uint8 abortReason) returns()
+func (_Task *TaskTransactorSession) AbortTask(taskIDCommitment [32]byte, abortReason uint8) (*types.Transaction, error) {
+	return _Task.Contract.AbortTask(&_Task.TransactOpts, taskIDCommitment, abortReason)
 }
 
-// TotalSuccessTasks is a free data retrieval call binding the contract method 0x775820f8.
+// CreateTask is a paid mutator transaction binding the contract method 0xe3697ca8.
 //
-// Solidity: function totalSuccessTasks() view returns(uint256)
-func (_Task *TaskCaller) TotalSuccessTasks(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Task.contract.Call(opts, &out, "totalSuccessTasks")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
+// Solidity: function createTask(uint8 taskType, bytes32 taskIDCommitment, bytes32 nonce, string[] modelIDs, uint256 minimumVRAM, string requiredGPU, uint256 requiredGPUVRAM, uint256[3] taskVersion, uint256 taskSize) payable returns()
+func (_Task *TaskTransactor) CreateTask(opts *bind.TransactOpts, taskType uint8, taskIDCommitment [32]byte, nonce [32]byte, modelIDs []string, minimumVRAM *big.Int, requiredGPU string, requiredGPUVRAM *big.Int, taskVersion [3]*big.Int, taskSize *big.Int) (*types.Transaction, error) {
+	return _Task.contract.Transact(opts, "createTask", taskType, taskIDCommitment, nonce, modelIDs, minimumVRAM, requiredGPU, requiredGPUVRAM, taskVersion, taskSize)
 }
 
-// TotalSuccessTasks is a free data retrieval call binding the contract method 0x775820f8.
+// CreateTask is a paid mutator transaction binding the contract method 0xe3697ca8.
 //
-// Solidity: function totalSuccessTasks() view returns(uint256)
-func (_Task *TaskSession) TotalSuccessTasks() (*big.Int, error) {
-	return _Task.Contract.TotalSuccessTasks(&_Task.CallOpts)
+// Solidity: function createTask(uint8 taskType, bytes32 taskIDCommitment, bytes32 nonce, string[] modelIDs, uint256 minimumVRAM, string requiredGPU, uint256 requiredGPUVRAM, uint256[3] taskVersion, uint256 taskSize) payable returns()
+func (_Task *TaskSession) CreateTask(taskType uint8, taskIDCommitment [32]byte, nonce [32]byte, modelIDs []string, minimumVRAM *big.Int, requiredGPU string, requiredGPUVRAM *big.Int, taskVersion [3]*big.Int, taskSize *big.Int) (*types.Transaction, error) {
+	return _Task.Contract.CreateTask(&_Task.TransactOpts, taskType, taskIDCommitment, nonce, modelIDs, minimumVRAM, requiredGPU, requiredGPUVRAM, taskVersion, taskSize)
 }
 
-// TotalSuccessTasks is a free data retrieval call binding the contract method 0x775820f8.
+// CreateTask is a paid mutator transaction binding the contract method 0xe3697ca8.
 //
-// Solidity: function totalSuccessTasks() view returns(uint256)
-func (_Task *TaskCallerSession) TotalSuccessTasks() (*big.Int, error) {
-	return _Task.Contract.TotalSuccessTasks(&_Task.CallOpts)
-}
-
-// TotalTasks is a free data retrieval call binding the contract method 0xd22c81e5.
-//
-// Solidity: function totalTasks() view returns(uint256)
-func (_Task *TaskCaller) TotalTasks(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Task.contract.Call(opts, &out, "totalTasks")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// TotalTasks is a free data retrieval call binding the contract method 0xd22c81e5.
-//
-// Solidity: function totalTasks() view returns(uint256)
-func (_Task *TaskSession) TotalTasks() (*big.Int, error) {
-	return _Task.Contract.TotalTasks(&_Task.CallOpts)
-}
-
-// TotalTasks is a free data retrieval call binding the contract method 0xd22c81e5.
-//
-// Solidity: function totalTasks() view returns(uint256)
-func (_Task *TaskCallerSession) TotalTasks() (*big.Int, error) {
-	return _Task.Contract.TotalTasks(&_Task.CallOpts)
-}
-
-// CancelTask is a paid mutator transaction binding the contract method 0x7eec20a8.
-//
-// Solidity: function cancelTask(uint256 taskId) returns()
-func (_Task *TaskTransactor) CancelTask(opts *bind.TransactOpts, taskId *big.Int) (*types.Transaction, error) {
-	return _Task.contract.Transact(opts, "cancelTask", taskId)
-}
-
-// CancelTask is a paid mutator transaction binding the contract method 0x7eec20a8.
-//
-// Solidity: function cancelTask(uint256 taskId) returns()
-func (_Task *TaskSession) CancelTask(taskId *big.Int) (*types.Transaction, error) {
-	return _Task.Contract.CancelTask(&_Task.TransactOpts, taskId)
-}
-
-// CancelTask is a paid mutator transaction binding the contract method 0x7eec20a8.
-//
-// Solidity: function cancelTask(uint256 taskId) returns()
-func (_Task *TaskTransactorSession) CancelTask(taskId *big.Int) (*types.Transaction, error) {
-	return _Task.Contract.CancelTask(&_Task.TransactOpts, taskId)
-}
-
-// CreateTask is a paid mutator transaction binding the contract method 0x043b438f.
-//
-// Solidity: function createTask(uint256 taskType, bytes32 taskHash, bytes32 dataHash, uint256 vramLimit, uint256 cap) payable returns()
-func (_Task *TaskTransactor) CreateTask(opts *bind.TransactOpts, taskType *big.Int, taskHash [32]byte, dataHash [32]byte, vramLimit *big.Int, cap *big.Int) (*types.Transaction, error) {
-	return _Task.contract.Transact(opts, "createTask", taskType, taskHash, dataHash, vramLimit, cap)
-}
-
-// CreateTask is a paid mutator transaction binding the contract method 0x043b438f.
-//
-// Solidity: function createTask(uint256 taskType, bytes32 taskHash, bytes32 dataHash, uint256 vramLimit, uint256 cap) payable returns()
-func (_Task *TaskSession) CreateTask(taskType *big.Int, taskHash [32]byte, dataHash [32]byte, vramLimit *big.Int, cap *big.Int) (*types.Transaction, error) {
-	return _Task.Contract.CreateTask(&_Task.TransactOpts, taskType, taskHash, dataHash, vramLimit, cap)
-}
-
-// CreateTask is a paid mutator transaction binding the contract method 0x043b438f.
-//
-// Solidity: function createTask(uint256 taskType, bytes32 taskHash, bytes32 dataHash, uint256 vramLimit, uint256 cap) payable returns()
-func (_Task *TaskTransactorSession) CreateTask(taskType *big.Int, taskHash [32]byte, dataHash [32]byte, vramLimit *big.Int, cap *big.Int) (*types.Transaction, error) {
-	return _Task.Contract.CreateTask(&_Task.TransactOpts, taskType, taskHash, dataHash, vramLimit, cap)
-}
-
-// DiscloseTaskResult is a paid mutator transaction binding the contract method 0x63be8c33.
-//
-// Solidity: function discloseTaskResult(uint256 taskId, uint256 round, bytes result) returns()
-func (_Task *TaskTransactor) DiscloseTaskResult(opts *bind.TransactOpts, taskId *big.Int, round *big.Int, result []byte) (*types.Transaction, error) {
-	return _Task.contract.Transact(opts, "discloseTaskResult", taskId, round, result)
-}
-
-// DiscloseTaskResult is a paid mutator transaction binding the contract method 0x63be8c33.
-//
-// Solidity: function discloseTaskResult(uint256 taskId, uint256 round, bytes result) returns()
-func (_Task *TaskSession) DiscloseTaskResult(taskId *big.Int, round *big.Int, result []byte) (*types.Transaction, error) {
-	return _Task.Contract.DiscloseTaskResult(&_Task.TransactOpts, taskId, round, result)
-}
-
-// DiscloseTaskResult is a paid mutator transaction binding the contract method 0x63be8c33.
-//
-// Solidity: function discloseTaskResult(uint256 taskId, uint256 round, bytes result) returns()
-func (_Task *TaskTransactorSession) DiscloseTaskResult(taskId *big.Int, round *big.Int, result []byte) (*types.Transaction, error) {
-	return _Task.Contract.DiscloseTaskResult(&_Task.TransactOpts, taskId, round, result)
+// Solidity: function createTask(uint8 taskType, bytes32 taskIDCommitment, bytes32 nonce, string[] modelIDs, uint256 minimumVRAM, string requiredGPU, uint256 requiredGPUVRAM, uint256[3] taskVersion, uint256 taskSize) payable returns()
+func (_Task *TaskTransactorSession) CreateTask(taskType uint8, taskIDCommitment [32]byte, nonce [32]byte, modelIDs []string, minimumVRAM *big.Int, requiredGPU string, requiredGPUVRAM *big.Int, taskVersion [3]*big.Int, taskSize *big.Int) (*types.Transaction, error) {
+	return _Task.Contract.CreateTask(&_Task.TransactOpts, taskType, taskIDCommitment, nonce, modelIDs, minimumVRAM, requiredGPU, requiredGPUVRAM, taskVersion, taskSize)
 }
 
 // NodeAvailableCallback is a paid mutator transaction binding the contract method 0xd06ac297.
@@ -493,67 +385,109 @@ func (_Task *TaskTransactorSession) RenounceOwnership() (*types.Transaction, err
 	return _Task.Contract.RenounceOwnership(&_Task.TransactOpts)
 }
 
-// ReportResultsUploaded is a paid mutator transaction binding the contract method 0x95b1d89b.
+// ReportTaskError is a paid mutator transaction binding the contract method 0xcb9c9475.
 //
-// Solidity: function reportResultsUploaded(uint256 taskId, uint256 round) returns()
-func (_Task *TaskTransactor) ReportResultsUploaded(opts *bind.TransactOpts, taskId *big.Int, round *big.Int) (*types.Transaction, error) {
-	return _Task.contract.Transact(opts, "reportResultsUploaded", taskId, round)
+// Solidity: function reportTaskError(bytes32 taskIDCommitment, uint8 error) returns()
+func (_Task *TaskTransactor) ReportTaskError(opts *bind.TransactOpts, taskIDCommitment [32]byte, error uint8) (*types.Transaction, error) {
+	return _Task.contract.Transact(opts, "reportTaskError", taskIDCommitment, error)
 }
 
-// ReportResultsUploaded is a paid mutator transaction binding the contract method 0x95b1d89b.
+// ReportTaskError is a paid mutator transaction binding the contract method 0xcb9c9475.
 //
-// Solidity: function reportResultsUploaded(uint256 taskId, uint256 round) returns()
-func (_Task *TaskSession) ReportResultsUploaded(taskId *big.Int, round *big.Int) (*types.Transaction, error) {
-	return _Task.Contract.ReportResultsUploaded(&_Task.TransactOpts, taskId, round)
+// Solidity: function reportTaskError(bytes32 taskIDCommitment, uint8 error) returns()
+func (_Task *TaskSession) ReportTaskError(taskIDCommitment [32]byte, error uint8) (*types.Transaction, error) {
+	return _Task.Contract.ReportTaskError(&_Task.TransactOpts, taskIDCommitment, error)
 }
 
-// ReportResultsUploaded is a paid mutator transaction binding the contract method 0x95b1d89b.
+// ReportTaskError is a paid mutator transaction binding the contract method 0xcb9c9475.
 //
-// Solidity: function reportResultsUploaded(uint256 taskId, uint256 round) returns()
-func (_Task *TaskTransactorSession) ReportResultsUploaded(taskId *big.Int, round *big.Int) (*types.Transaction, error) {
-	return _Task.Contract.ReportResultsUploaded(&_Task.TransactOpts, taskId, round)
+// Solidity: function reportTaskError(bytes32 taskIDCommitment, uint8 error) returns()
+func (_Task *TaskTransactorSession) ReportTaskError(taskIDCommitment [32]byte, error uint8) (*types.Transaction, error) {
+	return _Task.Contract.ReportTaskError(&_Task.TransactOpts, taskIDCommitment, error)
 }
 
-// ReportTaskError is a paid mutator transaction binding the contract method 0x695b1c8f.
+// ReportTaskParametersUploaded is a paid mutator transaction binding the contract method 0xf048ef29.
 //
-// Solidity: function reportTaskError(uint256 taskId, uint256 round) returns()
-func (_Task *TaskTransactor) ReportTaskError(opts *bind.TransactOpts, taskId *big.Int, round *big.Int) (*types.Transaction, error) {
-	return _Task.contract.Transact(opts, "reportTaskError", taskId, round)
+// Solidity: function reportTaskParametersUploaded(bytes32 taskIDCommitment) returns()
+func (_Task *TaskTransactor) ReportTaskParametersUploaded(opts *bind.TransactOpts, taskIDCommitment [32]byte) (*types.Transaction, error) {
+	return _Task.contract.Transact(opts, "reportTaskParametersUploaded", taskIDCommitment)
 }
 
-// ReportTaskError is a paid mutator transaction binding the contract method 0x695b1c8f.
+// ReportTaskParametersUploaded is a paid mutator transaction binding the contract method 0xf048ef29.
 //
-// Solidity: function reportTaskError(uint256 taskId, uint256 round) returns()
-func (_Task *TaskSession) ReportTaskError(taskId *big.Int, round *big.Int) (*types.Transaction, error) {
-	return _Task.Contract.ReportTaskError(&_Task.TransactOpts, taskId, round)
+// Solidity: function reportTaskParametersUploaded(bytes32 taskIDCommitment) returns()
+func (_Task *TaskSession) ReportTaskParametersUploaded(taskIDCommitment [32]byte) (*types.Transaction, error) {
+	return _Task.Contract.ReportTaskParametersUploaded(&_Task.TransactOpts, taskIDCommitment)
 }
 
-// ReportTaskError is a paid mutator transaction binding the contract method 0x695b1c8f.
+// ReportTaskParametersUploaded is a paid mutator transaction binding the contract method 0xf048ef29.
 //
-// Solidity: function reportTaskError(uint256 taskId, uint256 round) returns()
-func (_Task *TaskTransactorSession) ReportTaskError(taskId *big.Int, round *big.Int) (*types.Transaction, error) {
-	return _Task.Contract.ReportTaskError(&_Task.TransactOpts, taskId, round)
+// Solidity: function reportTaskParametersUploaded(bytes32 taskIDCommitment) returns()
+func (_Task *TaskTransactorSession) ReportTaskParametersUploaded(taskIDCommitment [32]byte) (*types.Transaction, error) {
+	return _Task.Contract.ReportTaskParametersUploaded(&_Task.TransactOpts, taskIDCommitment)
 }
 
-// SubmitTaskResultCommitment is a paid mutator transaction binding the contract method 0x47f90738.
+// ReportTaskResultUploaded is a paid mutator transaction binding the contract method 0x44f76671.
 //
-// Solidity: function submitTaskResultCommitment(uint256 taskId, uint256 round, bytes32 commitment, bytes32 nonce) returns()
-func (_Task *TaskTransactor) SubmitTaskResultCommitment(opts *bind.TransactOpts, taskId *big.Int, round *big.Int, commitment [32]byte, nonce [32]byte) (*types.Transaction, error) {
-	return _Task.contract.Transact(opts, "submitTaskResultCommitment", taskId, round, commitment, nonce)
+// Solidity: function reportTaskResultUploaded(bytes32 taskIDCommitment) returns()
+func (_Task *TaskTransactor) ReportTaskResultUploaded(opts *bind.TransactOpts, taskIDCommitment [32]byte) (*types.Transaction, error) {
+	return _Task.contract.Transact(opts, "reportTaskResultUploaded", taskIDCommitment)
 }
 
-// SubmitTaskResultCommitment is a paid mutator transaction binding the contract method 0x47f90738.
+// ReportTaskResultUploaded is a paid mutator transaction binding the contract method 0x44f76671.
 //
-// Solidity: function submitTaskResultCommitment(uint256 taskId, uint256 round, bytes32 commitment, bytes32 nonce) returns()
-func (_Task *TaskSession) SubmitTaskResultCommitment(taskId *big.Int, round *big.Int, commitment [32]byte, nonce [32]byte) (*types.Transaction, error) {
-	return _Task.Contract.SubmitTaskResultCommitment(&_Task.TransactOpts, taskId, round, commitment, nonce)
+// Solidity: function reportTaskResultUploaded(bytes32 taskIDCommitment) returns()
+func (_Task *TaskSession) ReportTaskResultUploaded(taskIDCommitment [32]byte) (*types.Transaction, error) {
+	return _Task.Contract.ReportTaskResultUploaded(&_Task.TransactOpts, taskIDCommitment)
 }
 
-// SubmitTaskResultCommitment is a paid mutator transaction binding the contract method 0x47f90738.
+// ReportTaskResultUploaded is a paid mutator transaction binding the contract method 0x44f76671.
 //
-// Solidity: function submitTaskResultCommitment(uint256 taskId, uint256 round, bytes32 commitment, bytes32 nonce) returns()
-func (_Task *TaskTransactorSession) SubmitTaskResultCommitment(taskId *big.Int, round *big.Int, commitment [32]byte, nonce [32]byte) (*types.Transaction, error) {
-	return _Task.Contract.SubmitTaskResultCommitment(&_Task.TransactOpts, taskId, round, commitment, nonce)
+// Solidity: function reportTaskResultUploaded(bytes32 taskIDCommitment) returns()
+func (_Task *TaskTransactorSession) ReportTaskResultUploaded(taskIDCommitment [32]byte) (*types.Transaction, error) {
+	return _Task.Contract.ReportTaskResultUploaded(&_Task.TransactOpts, taskIDCommitment)
+}
+
+// SetRelayAddress is a paid mutator transaction binding the contract method 0xaeba8f3c.
+//
+// Solidity: function setRelayAddress(address addr) returns()
+func (_Task *TaskTransactor) SetRelayAddress(opts *bind.TransactOpts, addr common.Address) (*types.Transaction, error) {
+	return _Task.contract.Transact(opts, "setRelayAddress", addr)
+}
+
+// SetRelayAddress is a paid mutator transaction binding the contract method 0xaeba8f3c.
+//
+// Solidity: function setRelayAddress(address addr) returns()
+func (_Task *TaskSession) SetRelayAddress(addr common.Address) (*types.Transaction, error) {
+	return _Task.Contract.SetRelayAddress(&_Task.TransactOpts, addr)
+}
+
+// SetRelayAddress is a paid mutator transaction binding the contract method 0xaeba8f3c.
+//
+// Solidity: function setRelayAddress(address addr) returns()
+func (_Task *TaskTransactorSession) SetRelayAddress(addr common.Address) (*types.Transaction, error) {
+	return _Task.Contract.SetRelayAddress(&_Task.TransactOpts, addr)
+}
+
+// SubmitTaskScore is a paid mutator transaction binding the contract method 0x35b6175e.
+//
+// Solidity: function submitTaskScore(bytes32 taskIDCommitment, bytes taskScore) returns()
+func (_Task *TaskTransactor) SubmitTaskScore(opts *bind.TransactOpts, taskIDCommitment [32]byte, taskScore []byte) (*types.Transaction, error) {
+	return _Task.contract.Transact(opts, "submitTaskScore", taskIDCommitment, taskScore)
+}
+
+// SubmitTaskScore is a paid mutator transaction binding the contract method 0x35b6175e.
+//
+// Solidity: function submitTaskScore(bytes32 taskIDCommitment, bytes taskScore) returns()
+func (_Task *TaskSession) SubmitTaskScore(taskIDCommitment [32]byte, taskScore []byte) (*types.Transaction, error) {
+	return _Task.Contract.SubmitTaskScore(&_Task.TransactOpts, taskIDCommitment, taskScore)
+}
+
+// SubmitTaskScore is a paid mutator transaction binding the contract method 0x35b6175e.
+//
+// Solidity: function submitTaskScore(bytes32 taskIDCommitment, bytes taskScore) returns()
+func (_Task *TaskTransactorSession) SubmitTaskScore(taskIDCommitment [32]byte, taskScore []byte) (*types.Transaction, error) {
+	return _Task.Contract.SubmitTaskScore(&_Task.TransactOpts, taskIDCommitment, taskScore)
 }
 
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
@@ -617,6 +551,184 @@ func (_Task *TaskSession) UpdateTimeout(t *big.Int) (*types.Transaction, error) 
 // Solidity: function updateTimeout(uint256 t) returns()
 func (_Task *TaskTransactorSession) UpdateTimeout(t *big.Int) (*types.Transaction, error) {
 	return _Task.Contract.UpdateTimeout(&_Task.TransactOpts, t)
+}
+
+// ValidateSingleTask is a paid mutator transaction binding the contract method 0x93c7c00b.
+//
+// Solidity: function validateSingleTask(bytes32 taskIDCommitment, bytes vrfProof, bytes publicKey) returns()
+func (_Task *TaskTransactor) ValidateSingleTask(opts *bind.TransactOpts, taskIDCommitment [32]byte, vrfProof []byte, publicKey []byte) (*types.Transaction, error) {
+	return _Task.contract.Transact(opts, "validateSingleTask", taskIDCommitment, vrfProof, publicKey)
+}
+
+// ValidateSingleTask is a paid mutator transaction binding the contract method 0x93c7c00b.
+//
+// Solidity: function validateSingleTask(bytes32 taskIDCommitment, bytes vrfProof, bytes publicKey) returns()
+func (_Task *TaskSession) ValidateSingleTask(taskIDCommitment [32]byte, vrfProof []byte, publicKey []byte) (*types.Transaction, error) {
+	return _Task.Contract.ValidateSingleTask(&_Task.TransactOpts, taskIDCommitment, vrfProof, publicKey)
+}
+
+// ValidateSingleTask is a paid mutator transaction binding the contract method 0x93c7c00b.
+//
+// Solidity: function validateSingleTask(bytes32 taskIDCommitment, bytes vrfProof, bytes publicKey) returns()
+func (_Task *TaskTransactorSession) ValidateSingleTask(taskIDCommitment [32]byte, vrfProof []byte, publicKey []byte) (*types.Transaction, error) {
+	return _Task.Contract.ValidateSingleTask(&_Task.TransactOpts, taskIDCommitment, vrfProof, publicKey)
+}
+
+// ValidateTaskGroup is a paid mutator transaction binding the contract method 0x127be3ca.
+//
+// Solidity: function validateTaskGroup(bytes32 taskIDCommitment1, bytes32 taskIDCommitment2, bytes32 taskIDCommitment3, bytes32 taskGUID, bytes vrfProof, bytes publicKey) returns()
+func (_Task *TaskTransactor) ValidateTaskGroup(opts *bind.TransactOpts, taskIDCommitment1 [32]byte, taskIDCommitment2 [32]byte, taskIDCommitment3 [32]byte, taskGUID [32]byte, vrfProof []byte, publicKey []byte) (*types.Transaction, error) {
+	return _Task.contract.Transact(opts, "validateTaskGroup", taskIDCommitment1, taskIDCommitment2, taskIDCommitment3, taskGUID, vrfProof, publicKey)
+}
+
+// ValidateTaskGroup is a paid mutator transaction binding the contract method 0x127be3ca.
+//
+// Solidity: function validateTaskGroup(bytes32 taskIDCommitment1, bytes32 taskIDCommitment2, bytes32 taskIDCommitment3, bytes32 taskGUID, bytes vrfProof, bytes publicKey) returns()
+func (_Task *TaskSession) ValidateTaskGroup(taskIDCommitment1 [32]byte, taskIDCommitment2 [32]byte, taskIDCommitment3 [32]byte, taskGUID [32]byte, vrfProof []byte, publicKey []byte) (*types.Transaction, error) {
+	return _Task.Contract.ValidateTaskGroup(&_Task.TransactOpts, taskIDCommitment1, taskIDCommitment2, taskIDCommitment3, taskGUID, vrfProof, publicKey)
+}
+
+// ValidateTaskGroup is a paid mutator transaction binding the contract method 0x127be3ca.
+//
+// Solidity: function validateTaskGroup(bytes32 taskIDCommitment1, bytes32 taskIDCommitment2, bytes32 taskIDCommitment3, bytes32 taskGUID, bytes vrfProof, bytes publicKey) returns()
+func (_Task *TaskTransactorSession) ValidateTaskGroup(taskIDCommitment1 [32]byte, taskIDCommitment2 [32]byte, taskIDCommitment3 [32]byte, taskGUID [32]byte, vrfProof []byte, publicKey []byte) (*types.Transaction, error) {
+	return _Task.Contract.ValidateTaskGroup(&_Task.TransactOpts, taskIDCommitment1, taskIDCommitment2, taskIDCommitment3, taskGUID, vrfProof, publicKey)
+}
+
+// TaskDownloadModelIterator is returned from FilterDownloadModel and is used to iterate over the raw logs and unpacked data for DownloadModel events raised by the Task contract.
+type TaskDownloadModelIterator struct {
+	Event *TaskDownloadModel // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *TaskDownloadModelIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(TaskDownloadModel)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(TaskDownloadModel)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *TaskDownloadModelIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *TaskDownloadModelIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// TaskDownloadModel represents a DownloadModel event raised by the Task contract.
+type TaskDownloadModel struct {
+	NodeAddress common.Address
+	ModelID     string
+	TaskType    uint8
+	Raw         types.Log // Blockchain specific contextual infos
+}
+
+// FilterDownloadModel is a free log retrieval operation binding the contract event 0x2bb8f1e759285a56f96394fa1cc9f2583f0b954c8291d771cdef39177614d157.
+//
+// Solidity: event DownloadModel(address nodeAddress, string modelID, uint8 taskType)
+func (_Task *TaskFilterer) FilterDownloadModel(opts *bind.FilterOpts) (*TaskDownloadModelIterator, error) {
+
+	logs, sub, err := _Task.contract.FilterLogs(opts, "DownloadModel")
+	if err != nil {
+		return nil, err
+	}
+	return &TaskDownloadModelIterator{contract: _Task.contract, event: "DownloadModel", logs: logs, sub: sub}, nil
+}
+
+// WatchDownloadModel is a free log subscription operation binding the contract event 0x2bb8f1e759285a56f96394fa1cc9f2583f0b954c8291d771cdef39177614d157.
+//
+// Solidity: event DownloadModel(address nodeAddress, string modelID, uint8 taskType)
+func (_Task *TaskFilterer) WatchDownloadModel(opts *bind.WatchOpts, sink chan<- *TaskDownloadModel) (event.Subscription, error) {
+
+	logs, sub, err := _Task.contract.WatchLogs(opts, "DownloadModel")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(TaskDownloadModel)
+				if err := _Task.contract.UnpackLog(event, "DownloadModel", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseDownloadModel is a log parse operation binding the contract event 0x2bb8f1e759285a56f96394fa1cc9f2583f0b954c8291d771cdef39177614d157.
+//
+// Solidity: event DownloadModel(address nodeAddress, string modelID, uint8 taskType)
+func (_Task *TaskFilterer) ParseDownloadModel(log types.Log) (*TaskDownloadModel, error) {
+	event := new(TaskDownloadModel)
+	if err := _Task.contract.UnpackLog(event, "DownloadModel", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
 }
 
 // TaskOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the Task contract.
@@ -772,9 +884,9 @@ func (_Task *TaskFilterer) ParseOwnershipTransferred(log types.Log) (*TaskOwners
 	return event, nil
 }
 
-// TaskTaskAbortedIterator is returned from FilterTaskAborted and is used to iterate over the raw logs and unpacked data for TaskAborted events raised by the Task contract.
-type TaskTaskAbortedIterator struct {
-	Event *TaskTaskAborted // Event containing the contract specifics and raw log
+// TaskTaskEndAbortedIterator is returned from FilterTaskEndAborted and is used to iterate over the raw logs and unpacked data for TaskEndAborted events raised by the Task contract.
+type TaskTaskEndAbortedIterator struct {
+	Event *TaskTaskEndAborted // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -788,7 +900,7 @@ type TaskTaskAbortedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *TaskTaskAbortedIterator) Next() bool {
+func (it *TaskTaskEndAbortedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -797,7 +909,7 @@ func (it *TaskTaskAbortedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(TaskTaskAborted)
+			it.Event = new(TaskTaskEndAborted)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -812,7 +924,7 @@ func (it *TaskTaskAbortedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(TaskTaskAborted)
+		it.Event = new(TaskTaskEndAborted)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -828,52 +940,44 @@ func (it *TaskTaskAbortedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *TaskTaskAbortedIterator) Error() error {
+func (it *TaskTaskEndAbortedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *TaskTaskAbortedIterator) Close() error {
+func (it *TaskTaskEndAbortedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// TaskTaskAborted represents a TaskAborted event raised by the Task contract.
-type TaskTaskAborted struct {
-	TaskId *big.Int
-	Reason string
-	Raw    types.Log // Blockchain specific contextual infos
+// TaskTaskEndAborted represents a TaskEndAborted event raised by the Task contract.
+type TaskTaskEndAborted struct {
+	TaskIDCommitment [32]byte
+	AbortIssuer      common.Address
+	LastStatus       uint8
+	AbortReason      uint8
+	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterTaskAborted is a free log retrieval operation binding the contract event 0x346216bb718ede47b40f85e7caf58cd997eebda879d146a8b49091c106c851d9.
+// FilterTaskEndAborted is a free log retrieval operation binding the contract event 0xe4161023d495c9541aba2a4e2be52416c6da996acb4a4481329f4ec310f33046.
 //
-// Solidity: event TaskAborted(uint256 indexed taskId, string reason)
-func (_Task *TaskFilterer) FilterTaskAborted(opts *bind.FilterOpts, taskId []*big.Int) (*TaskTaskAbortedIterator, error) {
+// Solidity: event TaskEndAborted(bytes32 taskIDCommitment, address abortIssuer, uint8 lastStatus, uint8 abortReason)
+func (_Task *TaskFilterer) FilterTaskEndAborted(opts *bind.FilterOpts) (*TaskTaskEndAbortedIterator, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskAborted", taskIdRule)
+	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskEndAborted")
 	if err != nil {
 		return nil, err
 	}
-	return &TaskTaskAbortedIterator{contract: _Task.contract, event: "TaskAborted", logs: logs, sub: sub}, nil
+	return &TaskTaskEndAbortedIterator{contract: _Task.contract, event: "TaskEndAborted", logs: logs, sub: sub}, nil
 }
 
-// WatchTaskAborted is a free log subscription operation binding the contract event 0x346216bb718ede47b40f85e7caf58cd997eebda879d146a8b49091c106c851d9.
+// WatchTaskEndAborted is a free log subscription operation binding the contract event 0xe4161023d495c9541aba2a4e2be52416c6da996acb4a4481329f4ec310f33046.
 //
-// Solidity: event TaskAborted(uint256 indexed taskId, string reason)
-func (_Task *TaskFilterer) WatchTaskAborted(opts *bind.WatchOpts, sink chan<- *TaskTaskAborted, taskId []*big.Int) (event.Subscription, error) {
+// Solidity: event TaskEndAborted(bytes32 taskIDCommitment, address abortIssuer, uint8 lastStatus, uint8 abortReason)
+func (_Task *TaskFilterer) WatchTaskEndAborted(opts *bind.WatchOpts, sink chan<- *TaskTaskEndAborted) (event.Subscription, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskAborted", taskIdRule)
+	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskEndAborted")
 	if err != nil {
 		return nil, err
 	}
@@ -883,8 +987,8 @@ func (_Task *TaskFilterer) WatchTaskAborted(opts *bind.WatchOpts, sink chan<- *T
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(TaskTaskAborted)
-				if err := _Task.contract.UnpackLog(event, "TaskAborted", log); err != nil {
+				event := new(TaskTaskEndAborted)
+				if err := _Task.contract.UnpackLog(event, "TaskEndAborted", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -905,21 +1009,21 @@ func (_Task *TaskFilterer) WatchTaskAborted(opts *bind.WatchOpts, sink chan<- *T
 	}), nil
 }
 
-// ParseTaskAborted is a log parse operation binding the contract event 0x346216bb718ede47b40f85e7caf58cd997eebda879d146a8b49091c106c851d9.
+// ParseTaskEndAborted is a log parse operation binding the contract event 0xe4161023d495c9541aba2a4e2be52416c6da996acb4a4481329f4ec310f33046.
 //
-// Solidity: event TaskAborted(uint256 indexed taskId, string reason)
-func (_Task *TaskFilterer) ParseTaskAborted(log types.Log) (*TaskTaskAborted, error) {
-	event := new(TaskTaskAborted)
-	if err := _Task.contract.UnpackLog(event, "TaskAborted", log); err != nil {
+// Solidity: event TaskEndAborted(bytes32 taskIDCommitment, address abortIssuer, uint8 lastStatus, uint8 abortReason)
+func (_Task *TaskFilterer) ParseTaskEndAborted(log types.Log) (*TaskTaskEndAborted, error) {
+	event := new(TaskTaskEndAborted)
+	if err := _Task.contract.UnpackLog(event, "TaskEndAborted", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// TaskTaskNodeCancelledIterator is returned from FilterTaskNodeCancelled and is used to iterate over the raw logs and unpacked data for TaskNodeCancelled events raised by the Task contract.
-type TaskTaskNodeCancelledIterator struct {
-	Event *TaskTaskNodeCancelled // Event containing the contract specifics and raw log
+// TaskTaskEndGroupRefundIterator is returned from FilterTaskEndGroupRefund and is used to iterate over the raw logs and unpacked data for TaskEndGroupRefund events raised by the Task contract.
+type TaskTaskEndGroupRefundIterator struct {
+	Event *TaskTaskEndGroupRefund // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -933,7 +1037,7 @@ type TaskTaskNodeCancelledIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *TaskTaskNodeCancelledIterator) Next() bool {
+func (it *TaskTaskEndGroupRefundIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -942,7 +1046,7 @@ func (it *TaskTaskNodeCancelledIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(TaskTaskNodeCancelled)
+			it.Event = new(TaskTaskEndGroupRefund)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -957,7 +1061,7 @@ func (it *TaskTaskNodeCancelledIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(TaskTaskNodeCancelled)
+		it.Event = new(TaskTaskEndGroupRefund)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -973,52 +1077,41 @@ func (it *TaskTaskNodeCancelledIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *TaskTaskNodeCancelledIterator) Error() error {
+func (it *TaskTaskEndGroupRefundIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *TaskTaskNodeCancelledIterator) Close() error {
+func (it *TaskTaskEndGroupRefundIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// TaskTaskNodeCancelled represents a TaskNodeCancelled event raised by the Task contract.
-type TaskTaskNodeCancelled struct {
-	TaskId      *big.Int
-	NodeAddress common.Address
-	Raw         types.Log // Blockchain specific contextual infos
+// TaskTaskEndGroupRefund represents a TaskEndGroupRefund event raised by the Task contract.
+type TaskTaskEndGroupRefund struct {
+	TaskIDCommitment [32]byte
+	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterTaskNodeCancelled is a free log retrieval operation binding the contract event 0x5451b4da8bffa59b36dc84ae091811086db04bcdaf13db59567eba01a3d7d51e.
+// FilterTaskEndGroupRefund is a free log retrieval operation binding the contract event 0x013766fc0b6dd5ec82a37d86477d3f43021d4e1bd973cf17d16ddf174c6e1a2a.
 //
-// Solidity: event TaskNodeCancelled(uint256 indexed taskId, address nodeAddress)
-func (_Task *TaskFilterer) FilterTaskNodeCancelled(opts *bind.FilterOpts, taskId []*big.Int) (*TaskTaskNodeCancelledIterator, error) {
+// Solidity: event TaskEndGroupRefund(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) FilterTaskEndGroupRefund(opts *bind.FilterOpts) (*TaskTaskEndGroupRefundIterator, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskNodeCancelled", taskIdRule)
+	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskEndGroupRefund")
 	if err != nil {
 		return nil, err
 	}
-	return &TaskTaskNodeCancelledIterator{contract: _Task.contract, event: "TaskNodeCancelled", logs: logs, sub: sub}, nil
+	return &TaskTaskEndGroupRefundIterator{contract: _Task.contract, event: "TaskEndGroupRefund", logs: logs, sub: sub}, nil
 }
 
-// WatchTaskNodeCancelled is a free log subscription operation binding the contract event 0x5451b4da8bffa59b36dc84ae091811086db04bcdaf13db59567eba01a3d7d51e.
+// WatchTaskEndGroupRefund is a free log subscription operation binding the contract event 0x013766fc0b6dd5ec82a37d86477d3f43021d4e1bd973cf17d16ddf174c6e1a2a.
 //
-// Solidity: event TaskNodeCancelled(uint256 indexed taskId, address nodeAddress)
-func (_Task *TaskFilterer) WatchTaskNodeCancelled(opts *bind.WatchOpts, sink chan<- *TaskTaskNodeCancelled, taskId []*big.Int) (event.Subscription, error) {
+// Solidity: event TaskEndGroupRefund(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) WatchTaskEndGroupRefund(opts *bind.WatchOpts, sink chan<- *TaskTaskEndGroupRefund) (event.Subscription, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskNodeCancelled", taskIdRule)
+	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskEndGroupRefund")
 	if err != nil {
 		return nil, err
 	}
@@ -1028,8 +1121,8 @@ func (_Task *TaskFilterer) WatchTaskNodeCancelled(opts *bind.WatchOpts, sink cha
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(TaskTaskNodeCancelled)
-				if err := _Task.contract.UnpackLog(event, "TaskNodeCancelled", log); err != nil {
+				event := new(TaskTaskEndGroupRefund)
+				if err := _Task.contract.UnpackLog(event, "TaskEndGroupRefund", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1050,21 +1143,21 @@ func (_Task *TaskFilterer) WatchTaskNodeCancelled(opts *bind.WatchOpts, sink cha
 	}), nil
 }
 
-// ParseTaskNodeCancelled is a log parse operation binding the contract event 0x5451b4da8bffa59b36dc84ae091811086db04bcdaf13db59567eba01a3d7d51e.
+// ParseTaskEndGroupRefund is a log parse operation binding the contract event 0x013766fc0b6dd5ec82a37d86477d3f43021d4e1bd973cf17d16ddf174c6e1a2a.
 //
-// Solidity: event TaskNodeCancelled(uint256 indexed taskId, address nodeAddress)
-func (_Task *TaskFilterer) ParseTaskNodeCancelled(log types.Log) (*TaskTaskNodeCancelled, error) {
-	event := new(TaskTaskNodeCancelled)
-	if err := _Task.contract.UnpackLog(event, "TaskNodeCancelled", log); err != nil {
+// Solidity: event TaskEndGroupRefund(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) ParseTaskEndGroupRefund(log types.Log) (*TaskTaskEndGroupRefund, error) {
+	event := new(TaskTaskEndGroupRefund)
+	if err := _Task.contract.UnpackLog(event, "TaskEndGroupRefund", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// TaskTaskNodeSlashedIterator is returned from FilterTaskNodeSlashed and is used to iterate over the raw logs and unpacked data for TaskNodeSlashed events raised by the Task contract.
-type TaskTaskNodeSlashedIterator struct {
-	Event *TaskTaskNodeSlashed // Event containing the contract specifics and raw log
+// TaskTaskEndGroupSuccessIterator is returned from FilterTaskEndGroupSuccess and is used to iterate over the raw logs and unpacked data for TaskEndGroupSuccess events raised by the Task contract.
+type TaskTaskEndGroupSuccessIterator struct {
+	Event *TaskTaskEndGroupSuccess // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1078,7 +1171,7 @@ type TaskTaskNodeSlashedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *TaskTaskNodeSlashedIterator) Next() bool {
+func (it *TaskTaskEndGroupSuccessIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1087,7 +1180,7 @@ func (it *TaskTaskNodeSlashedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(TaskTaskNodeSlashed)
+			it.Event = new(TaskTaskEndGroupSuccess)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1102,7 +1195,7 @@ func (it *TaskTaskNodeSlashedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(TaskTaskNodeSlashed)
+		it.Event = new(TaskTaskEndGroupSuccess)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1118,52 +1211,41 @@ func (it *TaskTaskNodeSlashedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *TaskTaskNodeSlashedIterator) Error() error {
+func (it *TaskTaskEndGroupSuccessIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *TaskTaskNodeSlashedIterator) Close() error {
+func (it *TaskTaskEndGroupSuccessIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// TaskTaskNodeSlashed represents a TaskNodeSlashed event raised by the Task contract.
-type TaskTaskNodeSlashed struct {
-	TaskId      *big.Int
-	NodeAddress common.Address
-	Raw         types.Log // Blockchain specific contextual infos
+// TaskTaskEndGroupSuccess represents a TaskEndGroupSuccess event raised by the Task contract.
+type TaskTaskEndGroupSuccess struct {
+	TaskIDCommitment [32]byte
+	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterTaskNodeSlashed is a free log retrieval operation binding the contract event 0x0f297f1fd7c66c9836a5636092ca18255164bf531f1f9b8717e1214e86620136.
+// FilterTaskEndGroupSuccess is a free log retrieval operation binding the contract event 0x34615f6df03b52f048165d16677ccd9416d392bdaf1a5540030abc3108b5134f.
 //
-// Solidity: event TaskNodeSlashed(uint256 indexed taskId, address nodeAddress)
-func (_Task *TaskFilterer) FilterTaskNodeSlashed(opts *bind.FilterOpts, taskId []*big.Int) (*TaskTaskNodeSlashedIterator, error) {
+// Solidity: event TaskEndGroupSuccess(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) FilterTaskEndGroupSuccess(opts *bind.FilterOpts) (*TaskTaskEndGroupSuccessIterator, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskNodeSlashed", taskIdRule)
+	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskEndGroupSuccess")
 	if err != nil {
 		return nil, err
 	}
-	return &TaskTaskNodeSlashedIterator{contract: _Task.contract, event: "TaskNodeSlashed", logs: logs, sub: sub}, nil
+	return &TaskTaskEndGroupSuccessIterator{contract: _Task.contract, event: "TaskEndGroupSuccess", logs: logs, sub: sub}, nil
 }
 
-// WatchTaskNodeSlashed is a free log subscription operation binding the contract event 0x0f297f1fd7c66c9836a5636092ca18255164bf531f1f9b8717e1214e86620136.
+// WatchTaskEndGroupSuccess is a free log subscription operation binding the contract event 0x34615f6df03b52f048165d16677ccd9416d392bdaf1a5540030abc3108b5134f.
 //
-// Solidity: event TaskNodeSlashed(uint256 indexed taskId, address nodeAddress)
-func (_Task *TaskFilterer) WatchTaskNodeSlashed(opts *bind.WatchOpts, sink chan<- *TaskTaskNodeSlashed, taskId []*big.Int) (event.Subscription, error) {
+// Solidity: event TaskEndGroupSuccess(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) WatchTaskEndGroupSuccess(opts *bind.WatchOpts, sink chan<- *TaskTaskEndGroupSuccess) (event.Subscription, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskNodeSlashed", taskIdRule)
+	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskEndGroupSuccess")
 	if err != nil {
 		return nil, err
 	}
@@ -1173,8 +1255,8 @@ func (_Task *TaskFilterer) WatchTaskNodeSlashed(opts *bind.WatchOpts, sink chan<
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(TaskTaskNodeSlashed)
-				if err := _Task.contract.UnpackLog(event, "TaskNodeSlashed", log); err != nil {
+				event := new(TaskTaskEndGroupSuccess)
+				if err := _Task.contract.UnpackLog(event, "TaskEndGroupSuccess", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1195,21 +1277,21 @@ func (_Task *TaskFilterer) WatchTaskNodeSlashed(opts *bind.WatchOpts, sink chan<
 	}), nil
 }
 
-// ParseTaskNodeSlashed is a log parse operation binding the contract event 0x0f297f1fd7c66c9836a5636092ca18255164bf531f1f9b8717e1214e86620136.
+// ParseTaskEndGroupSuccess is a log parse operation binding the contract event 0x34615f6df03b52f048165d16677ccd9416d392bdaf1a5540030abc3108b5134f.
 //
-// Solidity: event TaskNodeSlashed(uint256 indexed taskId, address nodeAddress)
-func (_Task *TaskFilterer) ParseTaskNodeSlashed(log types.Log) (*TaskTaskNodeSlashed, error) {
-	event := new(TaskTaskNodeSlashed)
-	if err := _Task.contract.UnpackLog(event, "TaskNodeSlashed", log); err != nil {
+// Solidity: event TaskEndGroupSuccess(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) ParseTaskEndGroupSuccess(log types.Log) (*TaskTaskEndGroupSuccess, error) {
+	event := new(TaskTaskEndGroupSuccess)
+	if err := _Task.contract.UnpackLog(event, "TaskEndGroupSuccess", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// TaskTaskNodeSuccessIterator is returned from FilterTaskNodeSuccess and is used to iterate over the raw logs and unpacked data for TaskNodeSuccess events raised by the Task contract.
-type TaskTaskNodeSuccessIterator struct {
-	Event *TaskTaskNodeSuccess // Event containing the contract specifics and raw log
+// TaskTaskEndInvalidatedIterator is returned from FilterTaskEndInvalidated and is used to iterate over the raw logs and unpacked data for TaskEndInvalidated events raised by the Task contract.
+type TaskTaskEndInvalidatedIterator struct {
+	Event *TaskTaskEndInvalidated // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1223,7 +1305,7 @@ type TaskTaskNodeSuccessIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *TaskTaskNodeSuccessIterator) Next() bool {
+func (it *TaskTaskEndInvalidatedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1232,7 +1314,7 @@ func (it *TaskTaskNodeSuccessIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(TaskTaskNodeSuccess)
+			it.Event = new(TaskTaskEndInvalidated)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1247,7 +1329,7 @@ func (it *TaskTaskNodeSuccessIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(TaskTaskNodeSuccess)
+		it.Event = new(TaskTaskEndInvalidated)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1263,53 +1345,41 @@ func (it *TaskTaskNodeSuccessIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *TaskTaskNodeSuccessIterator) Error() error {
+func (it *TaskTaskEndInvalidatedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *TaskTaskNodeSuccessIterator) Close() error {
+func (it *TaskTaskEndInvalidatedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// TaskTaskNodeSuccess represents a TaskNodeSuccess event raised by the Task contract.
-type TaskTaskNodeSuccess struct {
-	TaskId      *big.Int
-	NodeAddress common.Address
-	Fee         *big.Int
-	Raw         types.Log // Blockchain specific contextual infos
+// TaskTaskEndInvalidated represents a TaskEndInvalidated event raised by the Task contract.
+type TaskTaskEndInvalidated struct {
+	TaskIDCommitment [32]byte
+	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterTaskNodeSuccess is a free log retrieval operation binding the contract event 0x7c0de5a9de40ae20fc84128fa8611c1afa9ef6e2dad146d43fe44aa25081ccde.
+// FilterTaskEndInvalidated is a free log retrieval operation binding the contract event 0x7dd089995216e4d8cb199db2119aaa97782d4b5014824e145e0b30bb7681b099.
 //
-// Solidity: event TaskNodeSuccess(uint256 indexed taskId, address nodeAddress, uint256 fee)
-func (_Task *TaskFilterer) FilterTaskNodeSuccess(opts *bind.FilterOpts, taskId []*big.Int) (*TaskTaskNodeSuccessIterator, error) {
+// Solidity: event TaskEndInvalidated(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) FilterTaskEndInvalidated(opts *bind.FilterOpts) (*TaskTaskEndInvalidatedIterator, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskNodeSuccess", taskIdRule)
+	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskEndInvalidated")
 	if err != nil {
 		return nil, err
 	}
-	return &TaskTaskNodeSuccessIterator{contract: _Task.contract, event: "TaskNodeSuccess", logs: logs, sub: sub}, nil
+	return &TaskTaskEndInvalidatedIterator{contract: _Task.contract, event: "TaskEndInvalidated", logs: logs, sub: sub}, nil
 }
 
-// WatchTaskNodeSuccess is a free log subscription operation binding the contract event 0x7c0de5a9de40ae20fc84128fa8611c1afa9ef6e2dad146d43fe44aa25081ccde.
+// WatchTaskEndInvalidated is a free log subscription operation binding the contract event 0x7dd089995216e4d8cb199db2119aaa97782d4b5014824e145e0b30bb7681b099.
 //
-// Solidity: event TaskNodeSuccess(uint256 indexed taskId, address nodeAddress, uint256 fee)
-func (_Task *TaskFilterer) WatchTaskNodeSuccess(opts *bind.WatchOpts, sink chan<- *TaskTaskNodeSuccess, taskId []*big.Int) (event.Subscription, error) {
+// Solidity: event TaskEndInvalidated(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) WatchTaskEndInvalidated(opts *bind.WatchOpts, sink chan<- *TaskTaskEndInvalidated) (event.Subscription, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskNodeSuccess", taskIdRule)
+	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskEndInvalidated")
 	if err != nil {
 		return nil, err
 	}
@@ -1319,8 +1389,8 @@ func (_Task *TaskFilterer) WatchTaskNodeSuccess(opts *bind.WatchOpts, sink chan<
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(TaskTaskNodeSuccess)
-				if err := _Task.contract.UnpackLog(event, "TaskNodeSuccess", log); err != nil {
+				event := new(TaskTaskEndInvalidated)
+				if err := _Task.contract.UnpackLog(event, "TaskEndInvalidated", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1341,21 +1411,21 @@ func (_Task *TaskFilterer) WatchTaskNodeSuccess(opts *bind.WatchOpts, sink chan<
 	}), nil
 }
 
-// ParseTaskNodeSuccess is a log parse operation binding the contract event 0x7c0de5a9de40ae20fc84128fa8611c1afa9ef6e2dad146d43fe44aa25081ccde.
+// ParseTaskEndInvalidated is a log parse operation binding the contract event 0x7dd089995216e4d8cb199db2119aaa97782d4b5014824e145e0b30bb7681b099.
 //
-// Solidity: event TaskNodeSuccess(uint256 indexed taskId, address nodeAddress, uint256 fee)
-func (_Task *TaskFilterer) ParseTaskNodeSuccess(log types.Log) (*TaskTaskNodeSuccess, error) {
-	event := new(TaskTaskNodeSuccess)
-	if err := _Task.contract.UnpackLog(event, "TaskNodeSuccess", log); err != nil {
+// Solidity: event TaskEndInvalidated(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) ParseTaskEndInvalidated(log types.Log) (*TaskTaskEndInvalidated, error) {
+	event := new(TaskTaskEndInvalidated)
+	if err := _Task.contract.UnpackLog(event, "TaskEndInvalidated", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// TaskTaskPendingIterator is returned from FilterTaskPending and is used to iterate over the raw logs and unpacked data for TaskPending events raised by the Task contract.
-type TaskTaskPendingIterator struct {
-	Event *TaskTaskPending // Event containing the contract specifics and raw log
+// TaskTaskEndSuccessIterator is returned from FilterTaskEndSuccess and is used to iterate over the raw logs and unpacked data for TaskEndSuccess events raised by the Task contract.
+type TaskTaskEndSuccessIterator struct {
+	Event *TaskTaskEndSuccess // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1369,7 +1439,7 @@ type TaskTaskPendingIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *TaskTaskPendingIterator) Next() bool {
+func (it *TaskTaskEndSuccessIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1378,7 +1448,7 @@ func (it *TaskTaskPendingIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(TaskTaskPending)
+			it.Event = new(TaskTaskEndSuccess)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1393,7 +1463,7 @@ func (it *TaskTaskPendingIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(TaskTaskPending)
+		it.Event = new(TaskTaskEndSuccess)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1409,55 +1479,41 @@ func (it *TaskTaskPendingIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *TaskTaskPendingIterator) Error() error {
+func (it *TaskTaskEndSuccessIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *TaskTaskPendingIterator) Close() error {
+func (it *TaskTaskEndSuccessIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// TaskTaskPending represents a TaskPending event raised by the Task contract.
-type TaskTaskPending struct {
-	TaskId   *big.Int
-	TaskType *big.Int
-	Creator  common.Address
-	TaskHash [32]byte
-	DataHash [32]byte
-	Raw      types.Log // Blockchain specific contextual infos
+// TaskTaskEndSuccess represents a TaskEndSuccess event raised by the Task contract.
+type TaskTaskEndSuccess struct {
+	TaskIDCommitment [32]byte
+	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterTaskPending is a free log retrieval operation binding the contract event 0xa8b23b175c46381c07d9001d248005cebb7fd414d3f64bf1cebfe320a23f6050.
+// FilterTaskEndSuccess is a free log retrieval operation binding the contract event 0xedbb681c299fed103abc0767f9969e4891c7f3e23b9fbb0d0bab0a2a3018fe65.
 //
-// Solidity: event TaskPending(uint256 taskId, uint256 taskType, address indexed creator, bytes32 taskHash, bytes32 dataHash)
-func (_Task *TaskFilterer) FilterTaskPending(opts *bind.FilterOpts, creator []common.Address) (*TaskTaskPendingIterator, error) {
+// Solidity: event TaskEndSuccess(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) FilterTaskEndSuccess(opts *bind.FilterOpts) (*TaskTaskEndSuccessIterator, error) {
 
-	var creatorRule []interface{}
-	for _, creatorItem := range creator {
-		creatorRule = append(creatorRule, creatorItem)
-	}
-
-	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskPending", creatorRule)
+	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskEndSuccess")
 	if err != nil {
 		return nil, err
 	}
-	return &TaskTaskPendingIterator{contract: _Task.contract, event: "TaskPending", logs: logs, sub: sub}, nil
+	return &TaskTaskEndSuccessIterator{contract: _Task.contract, event: "TaskEndSuccess", logs: logs, sub: sub}, nil
 }
 
-// WatchTaskPending is a free log subscription operation binding the contract event 0xa8b23b175c46381c07d9001d248005cebb7fd414d3f64bf1cebfe320a23f6050.
+// WatchTaskEndSuccess is a free log subscription operation binding the contract event 0xedbb681c299fed103abc0767f9969e4891c7f3e23b9fbb0d0bab0a2a3018fe65.
 //
-// Solidity: event TaskPending(uint256 taskId, uint256 taskType, address indexed creator, bytes32 taskHash, bytes32 dataHash)
-func (_Task *TaskFilterer) WatchTaskPending(opts *bind.WatchOpts, sink chan<- *TaskTaskPending, creator []common.Address) (event.Subscription, error) {
+// Solidity: event TaskEndSuccess(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) WatchTaskEndSuccess(opts *bind.WatchOpts, sink chan<- *TaskTaskEndSuccess) (event.Subscription, error) {
 
-	var creatorRule []interface{}
-	for _, creatorItem := range creator {
-		creatorRule = append(creatorRule, creatorItem)
-	}
-
-	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskPending", creatorRule)
+	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskEndSuccess")
 	if err != nil {
 		return nil, err
 	}
@@ -1467,8 +1523,8 @@ func (_Task *TaskFilterer) WatchTaskPending(opts *bind.WatchOpts, sink chan<- *T
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(TaskTaskPending)
-				if err := _Task.contract.UnpackLog(event, "TaskPending", log); err != nil {
+				event := new(TaskTaskEndSuccess)
+				if err := _Task.contract.UnpackLog(event, "TaskEndSuccess", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1489,21 +1545,21 @@ func (_Task *TaskFilterer) WatchTaskPending(opts *bind.WatchOpts, sink chan<- *T
 	}), nil
 }
 
-// ParseTaskPending is a log parse operation binding the contract event 0xa8b23b175c46381c07d9001d248005cebb7fd414d3f64bf1cebfe320a23f6050.
+// ParseTaskEndSuccess is a log parse operation binding the contract event 0xedbb681c299fed103abc0767f9969e4891c7f3e23b9fbb0d0bab0a2a3018fe65.
 //
-// Solidity: event TaskPending(uint256 taskId, uint256 taskType, address indexed creator, bytes32 taskHash, bytes32 dataHash)
-func (_Task *TaskFilterer) ParseTaskPending(log types.Log) (*TaskTaskPending, error) {
-	event := new(TaskTaskPending)
-	if err := _Task.contract.UnpackLog(event, "TaskPending", log); err != nil {
+// Solidity: event TaskEndSuccess(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) ParseTaskEndSuccess(log types.Log) (*TaskTaskEndSuccess, error) {
+	event := new(TaskTaskEndSuccess)
+	if err := _Task.contract.UnpackLog(event, "TaskEndSuccess", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// TaskTaskResultCommitmentsReadyIterator is returned from FilterTaskResultCommitmentsReady and is used to iterate over the raw logs and unpacked data for TaskResultCommitmentsReady events raised by the Task contract.
-type TaskTaskResultCommitmentsReadyIterator struct {
-	Event *TaskTaskResultCommitmentsReady // Event containing the contract specifics and raw log
+// TaskTaskErrorReportedIterator is returned from FilterTaskErrorReported and is used to iterate over the raw logs and unpacked data for TaskErrorReported events raised by the Task contract.
+type TaskTaskErrorReportedIterator struct {
+	Event *TaskTaskErrorReported // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1517,7 +1573,7 @@ type TaskTaskResultCommitmentsReadyIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *TaskTaskResultCommitmentsReadyIterator) Next() bool {
+func (it *TaskTaskErrorReportedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1526,7 +1582,7 @@ func (it *TaskTaskResultCommitmentsReadyIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(TaskTaskResultCommitmentsReady)
+			it.Event = new(TaskTaskErrorReported)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1541,7 +1597,7 @@ func (it *TaskTaskResultCommitmentsReadyIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(TaskTaskResultCommitmentsReady)
+		it.Event = new(TaskTaskErrorReported)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1557,51 +1613,43 @@ func (it *TaskTaskResultCommitmentsReadyIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *TaskTaskResultCommitmentsReadyIterator) Error() error {
+func (it *TaskTaskErrorReportedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *TaskTaskResultCommitmentsReadyIterator) Close() error {
+func (it *TaskTaskErrorReportedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// TaskTaskResultCommitmentsReady represents a TaskResultCommitmentsReady event raised by the Task contract.
-type TaskTaskResultCommitmentsReady struct {
-	TaskId *big.Int
-	Raw    types.Log // Blockchain specific contextual infos
+// TaskTaskErrorReported represents a TaskErrorReported event raised by the Task contract.
+type TaskTaskErrorReported struct {
+	TaskIDCommitment [32]byte
+	SelectedNode     common.Address
+	Error            uint8
+	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterTaskResultCommitmentsReady is a free log retrieval operation binding the contract event 0xb16812d8924e5125b1e331ca0097225a801aaa45b056a9ab12ab6ba658e6c9e5.
+// FilterTaskErrorReported is a free log retrieval operation binding the contract event 0x3c1ceb9f05e479d4405f57845f8486cc0bc0045bb1bc9a185b82d19866eafa1c.
 //
-// Solidity: event TaskResultCommitmentsReady(uint256 indexed taskId)
-func (_Task *TaskFilterer) FilterTaskResultCommitmentsReady(opts *bind.FilterOpts, taskId []*big.Int) (*TaskTaskResultCommitmentsReadyIterator, error) {
+// Solidity: event TaskErrorReported(bytes32 taskIDCommitment, address selectedNode, uint8 error)
+func (_Task *TaskFilterer) FilterTaskErrorReported(opts *bind.FilterOpts) (*TaskTaskErrorReportedIterator, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskResultCommitmentsReady", taskIdRule)
+	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskErrorReported")
 	if err != nil {
 		return nil, err
 	}
-	return &TaskTaskResultCommitmentsReadyIterator{contract: _Task.contract, event: "TaskResultCommitmentsReady", logs: logs, sub: sub}, nil
+	return &TaskTaskErrorReportedIterator{contract: _Task.contract, event: "TaskErrorReported", logs: logs, sub: sub}, nil
 }
 
-// WatchTaskResultCommitmentsReady is a free log subscription operation binding the contract event 0xb16812d8924e5125b1e331ca0097225a801aaa45b056a9ab12ab6ba658e6c9e5.
+// WatchTaskErrorReported is a free log subscription operation binding the contract event 0x3c1ceb9f05e479d4405f57845f8486cc0bc0045bb1bc9a185b82d19866eafa1c.
 //
-// Solidity: event TaskResultCommitmentsReady(uint256 indexed taskId)
-func (_Task *TaskFilterer) WatchTaskResultCommitmentsReady(opts *bind.WatchOpts, sink chan<- *TaskTaskResultCommitmentsReady, taskId []*big.Int) (event.Subscription, error) {
+// Solidity: event TaskErrorReported(bytes32 taskIDCommitment, address selectedNode, uint8 error)
+func (_Task *TaskFilterer) WatchTaskErrorReported(opts *bind.WatchOpts, sink chan<- *TaskTaskErrorReported) (event.Subscription, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskResultCommitmentsReady", taskIdRule)
+	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskErrorReported")
 	if err != nil {
 		return nil, err
 	}
@@ -1611,8 +1659,8 @@ func (_Task *TaskFilterer) WatchTaskResultCommitmentsReady(opts *bind.WatchOpts,
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(TaskTaskResultCommitmentsReady)
-				if err := _Task.contract.UnpackLog(event, "TaskResultCommitmentsReady", log); err != nil {
+				event := new(TaskTaskErrorReported)
+				if err := _Task.contract.UnpackLog(event, "TaskErrorReported", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1633,21 +1681,21 @@ func (_Task *TaskFilterer) WatchTaskResultCommitmentsReady(opts *bind.WatchOpts,
 	}), nil
 }
 
-// ParseTaskResultCommitmentsReady is a log parse operation binding the contract event 0xb16812d8924e5125b1e331ca0097225a801aaa45b056a9ab12ab6ba658e6c9e5.
+// ParseTaskErrorReported is a log parse operation binding the contract event 0x3c1ceb9f05e479d4405f57845f8486cc0bc0045bb1bc9a185b82d19866eafa1c.
 //
-// Solidity: event TaskResultCommitmentsReady(uint256 indexed taskId)
-func (_Task *TaskFilterer) ParseTaskResultCommitmentsReady(log types.Log) (*TaskTaskResultCommitmentsReady, error) {
-	event := new(TaskTaskResultCommitmentsReady)
-	if err := _Task.contract.UnpackLog(event, "TaskResultCommitmentsReady", log); err != nil {
+// Solidity: event TaskErrorReported(bytes32 taskIDCommitment, address selectedNode, uint8 error)
+func (_Task *TaskFilterer) ParseTaskErrorReported(log types.Log) (*TaskTaskErrorReported, error) {
+	event := new(TaskTaskErrorReported)
+	if err := _Task.contract.UnpackLog(event, "TaskErrorReported", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// TaskTaskResultUploadedIterator is returned from FilterTaskResultUploaded and is used to iterate over the raw logs and unpacked data for TaskResultUploaded events raised by the Task contract.
-type TaskTaskResultUploadedIterator struct {
-	Event *TaskTaskResultUploaded // Event containing the contract specifics and raw log
+// TaskTaskParametersUploadedIterator is returned from FilterTaskParametersUploaded and is used to iterate over the raw logs and unpacked data for TaskParametersUploaded events raised by the Task contract.
+type TaskTaskParametersUploadedIterator struct {
+	Event *TaskTaskParametersUploaded // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1661,7 +1709,7 @@ type TaskTaskResultUploadedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *TaskTaskResultUploadedIterator) Next() bool {
+func (it *TaskTaskParametersUploadedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1670,7 +1718,7 @@ func (it *TaskTaskResultUploadedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(TaskTaskResultUploaded)
+			it.Event = new(TaskTaskParametersUploaded)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1685,7 +1733,7 @@ func (it *TaskTaskResultUploadedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(TaskTaskResultUploaded)
+		it.Event = new(TaskTaskParametersUploaded)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1701,51 +1749,42 @@ func (it *TaskTaskResultUploadedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *TaskTaskResultUploadedIterator) Error() error {
+func (it *TaskTaskParametersUploadedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *TaskTaskResultUploadedIterator) Close() error {
+func (it *TaskTaskParametersUploadedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// TaskTaskResultUploaded represents a TaskResultUploaded event raised by the Task contract.
-type TaskTaskResultUploaded struct {
-	TaskId *big.Int
-	Raw    types.Log // Blockchain specific contextual infos
+// TaskTaskParametersUploaded represents a TaskParametersUploaded event raised by the Task contract.
+type TaskTaskParametersUploaded struct {
+	TaskIDCommitment [32]byte
+	SelectedNode     common.Address
+	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterTaskResultUploaded is a free log retrieval operation binding the contract event 0x11f72037be5686bd54d7042f5a9392a74a7c127754536da6a05710bfdf1f9a0e.
+// FilterTaskParametersUploaded is a free log retrieval operation binding the contract event 0x414ae8bfed908fc770ab249e9e7e13e2c2c023995d7a718453702fbd7f5d46a3.
 //
-// Solidity: event TaskResultUploaded(uint256 indexed taskId)
-func (_Task *TaskFilterer) FilterTaskResultUploaded(opts *bind.FilterOpts, taskId []*big.Int) (*TaskTaskResultUploadedIterator, error) {
+// Solidity: event TaskParametersUploaded(bytes32 taskIDCommitment, address selectedNode)
+func (_Task *TaskFilterer) FilterTaskParametersUploaded(opts *bind.FilterOpts) (*TaskTaskParametersUploadedIterator, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskResultUploaded", taskIdRule)
+	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskParametersUploaded")
 	if err != nil {
 		return nil, err
 	}
-	return &TaskTaskResultUploadedIterator{contract: _Task.contract, event: "TaskResultUploaded", logs: logs, sub: sub}, nil
+	return &TaskTaskParametersUploadedIterator{contract: _Task.contract, event: "TaskParametersUploaded", logs: logs, sub: sub}, nil
 }
 
-// WatchTaskResultUploaded is a free log subscription operation binding the contract event 0x11f72037be5686bd54d7042f5a9392a74a7c127754536da6a05710bfdf1f9a0e.
+// WatchTaskParametersUploaded is a free log subscription operation binding the contract event 0x414ae8bfed908fc770ab249e9e7e13e2c2c023995d7a718453702fbd7f5d46a3.
 //
-// Solidity: event TaskResultUploaded(uint256 indexed taskId)
-func (_Task *TaskFilterer) WatchTaskResultUploaded(opts *bind.WatchOpts, sink chan<- *TaskTaskResultUploaded, taskId []*big.Int) (event.Subscription, error) {
+// Solidity: event TaskParametersUploaded(bytes32 taskIDCommitment, address selectedNode)
+func (_Task *TaskFilterer) WatchTaskParametersUploaded(opts *bind.WatchOpts, sink chan<- *TaskTaskParametersUploaded) (event.Subscription, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskResultUploaded", taskIdRule)
+	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskParametersUploaded")
 	if err != nil {
 		return nil, err
 	}
@@ -1755,8 +1794,8 @@ func (_Task *TaskFilterer) WatchTaskResultUploaded(opts *bind.WatchOpts, sink ch
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(TaskTaskResultUploaded)
-				if err := _Task.contract.UnpackLog(event, "TaskResultUploaded", log); err != nil {
+				event := new(TaskTaskParametersUploaded)
+				if err := _Task.contract.UnpackLog(event, "TaskParametersUploaded", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1777,12 +1816,282 @@ func (_Task *TaskFilterer) WatchTaskResultUploaded(opts *bind.WatchOpts, sink ch
 	}), nil
 }
 
-// ParseTaskResultUploaded is a log parse operation binding the contract event 0x11f72037be5686bd54d7042f5a9392a74a7c127754536da6a05710bfdf1f9a0e.
+// ParseTaskParametersUploaded is a log parse operation binding the contract event 0x414ae8bfed908fc770ab249e9e7e13e2c2c023995d7a718453702fbd7f5d46a3.
 //
-// Solidity: event TaskResultUploaded(uint256 indexed taskId)
-func (_Task *TaskFilterer) ParseTaskResultUploaded(log types.Log) (*TaskTaskResultUploaded, error) {
-	event := new(TaskTaskResultUploaded)
-	if err := _Task.contract.UnpackLog(event, "TaskResultUploaded", log); err != nil {
+// Solidity: event TaskParametersUploaded(bytes32 taskIDCommitment, address selectedNode)
+func (_Task *TaskFilterer) ParseTaskParametersUploaded(log types.Log) (*TaskTaskParametersUploaded, error) {
+	event := new(TaskTaskParametersUploaded)
+	if err := _Task.contract.UnpackLog(event, "TaskParametersUploaded", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// TaskTaskQueuedIterator is returned from FilterTaskQueued and is used to iterate over the raw logs and unpacked data for TaskQueued events raised by the Task contract.
+type TaskTaskQueuedIterator struct {
+	Event *TaskTaskQueued // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *TaskTaskQueuedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(TaskTaskQueued)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(TaskTaskQueued)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *TaskTaskQueuedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *TaskTaskQueuedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// TaskTaskQueued represents a TaskQueued event raised by the Task contract.
+type TaskTaskQueued struct {
+	TaskIDCommitment [32]byte
+	Raw              types.Log // Blockchain specific contextual infos
+}
+
+// FilterTaskQueued is a free log retrieval operation binding the contract event 0x24d242f18ee31f8680a00041d1cc841752e13001a3a9a67f5c7562ba5fe67b2b.
+//
+// Solidity: event TaskQueued(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) FilterTaskQueued(opts *bind.FilterOpts) (*TaskTaskQueuedIterator, error) {
+
+	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskQueued")
+	if err != nil {
+		return nil, err
+	}
+	return &TaskTaskQueuedIterator{contract: _Task.contract, event: "TaskQueued", logs: logs, sub: sub}, nil
+}
+
+// WatchTaskQueued is a free log subscription operation binding the contract event 0x24d242f18ee31f8680a00041d1cc841752e13001a3a9a67f5c7562ba5fe67b2b.
+//
+// Solidity: event TaskQueued(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) WatchTaskQueued(opts *bind.WatchOpts, sink chan<- *TaskTaskQueued) (event.Subscription, error) {
+
+	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskQueued")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(TaskTaskQueued)
+				if err := _Task.contract.UnpackLog(event, "TaskQueued", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseTaskQueued is a log parse operation binding the contract event 0x24d242f18ee31f8680a00041d1cc841752e13001a3a9a67f5c7562ba5fe67b2b.
+//
+// Solidity: event TaskQueued(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) ParseTaskQueued(log types.Log) (*TaskTaskQueued, error) {
+	event := new(TaskTaskQueued)
+	if err := _Task.contract.UnpackLog(event, "TaskQueued", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// TaskTaskScoreReadyIterator is returned from FilterTaskScoreReady and is used to iterate over the raw logs and unpacked data for TaskScoreReady events raised by the Task contract.
+type TaskTaskScoreReadyIterator struct {
+	Event *TaskTaskScoreReady // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *TaskTaskScoreReadyIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(TaskTaskScoreReady)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(TaskTaskScoreReady)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *TaskTaskScoreReadyIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *TaskTaskScoreReadyIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// TaskTaskScoreReady represents a TaskScoreReady event raised by the Task contract.
+type TaskTaskScoreReady struct {
+	TaskIDCommitment [32]byte
+	SelectedNode     common.Address
+	TaskScore        []byte
+	Raw              types.Log // Blockchain specific contextual infos
+}
+
+// FilterTaskScoreReady is a free log retrieval operation binding the contract event 0x9aeb9b7daec64fcb1c8ca252f759fafa84039670d35f6265841a690646707725.
+//
+// Solidity: event TaskScoreReady(bytes32 taskIDCommitment, address selectedNode, bytes taskScore)
+func (_Task *TaskFilterer) FilterTaskScoreReady(opts *bind.FilterOpts) (*TaskTaskScoreReadyIterator, error) {
+
+	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskScoreReady")
+	if err != nil {
+		return nil, err
+	}
+	return &TaskTaskScoreReadyIterator{contract: _Task.contract, event: "TaskScoreReady", logs: logs, sub: sub}, nil
+}
+
+// WatchTaskScoreReady is a free log subscription operation binding the contract event 0x9aeb9b7daec64fcb1c8ca252f759fafa84039670d35f6265841a690646707725.
+//
+// Solidity: event TaskScoreReady(bytes32 taskIDCommitment, address selectedNode, bytes taskScore)
+func (_Task *TaskFilterer) WatchTaskScoreReady(opts *bind.WatchOpts, sink chan<- *TaskTaskScoreReady) (event.Subscription, error) {
+
+	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskScoreReady")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(TaskTaskScoreReady)
+				if err := _Task.contract.UnpackLog(event, "TaskScoreReady", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseTaskScoreReady is a log parse operation binding the contract event 0x9aeb9b7daec64fcb1c8ca252f759fafa84039670d35f6265841a690646707725.
+//
+// Solidity: event TaskScoreReady(bytes32 taskIDCommitment, address selectedNode, bytes taskScore)
+func (_Task *TaskFilterer) ParseTaskScoreReady(log types.Log) (*TaskTaskScoreReady, error) {
+	event := new(TaskTaskScoreReady)
+	if err := _Task.contract.UnpackLog(event, "TaskScoreReady", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -1858,52 +2167,29 @@ func (it *TaskTaskStartedIterator) Close() error {
 
 // TaskTaskStarted represents a TaskStarted event raised by the Task contract.
 type TaskTaskStarted struct {
-	TaskId       *big.Int
-	TaskType     *big.Int
-	Creator      common.Address
-	SelectedNode common.Address
-	TaskHash     [32]byte
-	DataHash     [32]byte
-	Round        *big.Int
-	Raw          types.Log // Blockchain specific contextual infos
+	TaskIDCommitment [32]byte
+	SelectedNode     common.Address
+	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterTaskStarted is a free log retrieval operation binding the contract event 0x1399dffd65fe4e2d81d94992e9227fc0a75a5289ba36619c5afe826c0e686440.
+// FilterTaskStarted is a free log retrieval operation binding the contract event 0x9bd27d3fcd577a82b21e57704c0d97fad539157111679935b4584f4e1abe37dc.
 //
-// Solidity: event TaskStarted(uint256 taskId, uint256 taskType, address indexed creator, address indexed selectedNode, bytes32 taskHash, bytes32 dataHash, uint256 round)
-func (_Task *TaskFilterer) FilterTaskStarted(opts *bind.FilterOpts, creator []common.Address, selectedNode []common.Address) (*TaskTaskStartedIterator, error) {
+// Solidity: event TaskStarted(bytes32 taskIDCommitment, address selectedNode)
+func (_Task *TaskFilterer) FilterTaskStarted(opts *bind.FilterOpts) (*TaskTaskStartedIterator, error) {
 
-	var creatorRule []interface{}
-	for _, creatorItem := range creator {
-		creatorRule = append(creatorRule, creatorItem)
-	}
-	var selectedNodeRule []interface{}
-	for _, selectedNodeItem := range selectedNode {
-		selectedNodeRule = append(selectedNodeRule, selectedNodeItem)
-	}
-
-	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskStarted", creatorRule, selectedNodeRule)
+	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskStarted")
 	if err != nil {
 		return nil, err
 	}
 	return &TaskTaskStartedIterator{contract: _Task.contract, event: "TaskStarted", logs: logs, sub: sub}, nil
 }
 
-// WatchTaskStarted is a free log subscription operation binding the contract event 0x1399dffd65fe4e2d81d94992e9227fc0a75a5289ba36619c5afe826c0e686440.
+// WatchTaskStarted is a free log subscription operation binding the contract event 0x9bd27d3fcd577a82b21e57704c0d97fad539157111679935b4584f4e1abe37dc.
 //
-// Solidity: event TaskStarted(uint256 taskId, uint256 taskType, address indexed creator, address indexed selectedNode, bytes32 taskHash, bytes32 dataHash, uint256 round)
-func (_Task *TaskFilterer) WatchTaskStarted(opts *bind.WatchOpts, sink chan<- *TaskTaskStarted, creator []common.Address, selectedNode []common.Address) (event.Subscription, error) {
+// Solidity: event TaskStarted(bytes32 taskIDCommitment, address selectedNode)
+func (_Task *TaskFilterer) WatchTaskStarted(opts *bind.WatchOpts, sink chan<- *TaskTaskStarted) (event.Subscription, error) {
 
-	var creatorRule []interface{}
-	for _, creatorItem := range creator {
-		creatorRule = append(creatorRule, creatorItem)
-	}
-	var selectedNodeRule []interface{}
-	for _, selectedNodeItem := range selectedNode {
-		selectedNodeRule = append(selectedNodeRule, selectedNodeItem)
-	}
-
-	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskStarted", creatorRule, selectedNodeRule)
+	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskStarted")
 	if err != nil {
 		return nil, err
 	}
@@ -1935,9 +2221,9 @@ func (_Task *TaskFilterer) WatchTaskStarted(opts *bind.WatchOpts, sink chan<- *T
 	}), nil
 }
 
-// ParseTaskStarted is a log parse operation binding the contract event 0x1399dffd65fe4e2d81d94992e9227fc0a75a5289ba36619c5afe826c0e686440.
+// ParseTaskStarted is a log parse operation binding the contract event 0x9bd27d3fcd577a82b21e57704c0d97fad539157111679935b4584f4e1abe37dc.
 //
-// Solidity: event TaskStarted(uint256 taskId, uint256 taskType, address indexed creator, address indexed selectedNode, bytes32 taskHash, bytes32 dataHash, uint256 round)
+// Solidity: event TaskStarted(bytes32 taskIDCommitment, address selectedNode)
 func (_Task *TaskFilterer) ParseTaskStarted(log types.Log) (*TaskTaskStarted, error) {
 	event := new(TaskTaskStarted)
 	if err := _Task.contract.UnpackLog(event, "TaskStarted", log); err != nil {
@@ -1947,9 +2233,9 @@ func (_Task *TaskFilterer) ParseTaskStarted(log types.Log) (*TaskTaskStarted, er
 	return event, nil
 }
 
-// TaskTaskSuccessIterator is returned from FilterTaskSuccess and is used to iterate over the raw logs and unpacked data for TaskSuccess events raised by the Task contract.
-type TaskTaskSuccessIterator struct {
-	Event *TaskTaskSuccess // Event containing the contract specifics and raw log
+// TaskTaskValidatedIterator is returned from FilterTaskValidated and is used to iterate over the raw logs and unpacked data for TaskValidated events raised by the Task contract.
+type TaskTaskValidatedIterator struct {
+	Event *TaskTaskValidated // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1963,7 +2249,7 @@ type TaskTaskSuccessIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *TaskTaskSuccessIterator) Next() bool {
+func (it *TaskTaskValidatedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1972,7 +2258,7 @@ func (it *TaskTaskSuccessIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(TaskTaskSuccess)
+			it.Event = new(TaskTaskValidated)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1987,7 +2273,7 @@ func (it *TaskTaskSuccessIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(TaskTaskSuccess)
+		it.Event = new(TaskTaskValidated)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -2003,63 +2289,41 @@ func (it *TaskTaskSuccessIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *TaskTaskSuccessIterator) Error() error {
+func (it *TaskTaskValidatedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *TaskTaskSuccessIterator) Close() error {
+func (it *TaskTaskValidatedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// TaskTaskSuccess represents a TaskSuccess event raised by the Task contract.
-type TaskTaskSuccess struct {
-	TaskId     *big.Int
-	Result     []byte
-	ResultNode common.Address
-	Raw        types.Log // Blockchain specific contextual infos
+// TaskTaskValidated represents a TaskValidated event raised by the Task contract.
+type TaskTaskValidated struct {
+	TaskIDCommitment [32]byte
+	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterTaskSuccess is a free log retrieval operation binding the contract event 0x3cd644a756687c7dd87bbe74e2fd65bde569a3335e26f68f8fa334b2849673f7.
+// FilterTaskValidated is a free log retrieval operation binding the contract event 0xb86e6a82586576bc010ad08619492657c958d11f13926ea7cd171c66d20bad4d.
 //
-// Solidity: event TaskSuccess(uint256 indexed taskId, bytes result, address indexed resultNode)
-func (_Task *TaskFilterer) FilterTaskSuccess(opts *bind.FilterOpts, taskId []*big.Int, resultNode []common.Address) (*TaskTaskSuccessIterator, error) {
+// Solidity: event TaskValidated(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) FilterTaskValidated(opts *bind.FilterOpts) (*TaskTaskValidatedIterator, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	var resultNodeRule []interface{}
-	for _, resultNodeItem := range resultNode {
-		resultNodeRule = append(resultNodeRule, resultNodeItem)
-	}
-
-	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskSuccess", taskIdRule, resultNodeRule)
+	logs, sub, err := _Task.contract.FilterLogs(opts, "TaskValidated")
 	if err != nil {
 		return nil, err
 	}
-	return &TaskTaskSuccessIterator{contract: _Task.contract, event: "TaskSuccess", logs: logs, sub: sub}, nil
+	return &TaskTaskValidatedIterator{contract: _Task.contract, event: "TaskValidated", logs: logs, sub: sub}, nil
 }
 
-// WatchTaskSuccess is a free log subscription operation binding the contract event 0x3cd644a756687c7dd87bbe74e2fd65bde569a3335e26f68f8fa334b2849673f7.
+// WatchTaskValidated is a free log subscription operation binding the contract event 0xb86e6a82586576bc010ad08619492657c958d11f13926ea7cd171c66d20bad4d.
 //
-// Solidity: event TaskSuccess(uint256 indexed taskId, bytes result, address indexed resultNode)
-func (_Task *TaskFilterer) WatchTaskSuccess(opts *bind.WatchOpts, sink chan<- *TaskTaskSuccess, taskId []*big.Int, resultNode []common.Address) (event.Subscription, error) {
+// Solidity: event TaskValidated(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) WatchTaskValidated(opts *bind.WatchOpts, sink chan<- *TaskTaskValidated) (event.Subscription, error) {
 
-	var taskIdRule []interface{}
-	for _, taskIdItem := range taskId {
-		taskIdRule = append(taskIdRule, taskIdItem)
-	}
-
-	var resultNodeRule []interface{}
-	for _, resultNodeItem := range resultNode {
-		resultNodeRule = append(resultNodeRule, resultNodeItem)
-	}
-
-	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskSuccess", taskIdRule, resultNodeRule)
+	logs, sub, err := _Task.contract.WatchLogs(opts, "TaskValidated")
 	if err != nil {
 		return nil, err
 	}
@@ -2069,8 +2333,8 @@ func (_Task *TaskFilterer) WatchTaskSuccess(opts *bind.WatchOpts, sink chan<- *T
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(TaskTaskSuccess)
-				if err := _Task.contract.UnpackLog(event, "TaskSuccess", log); err != nil {
+				event := new(TaskTaskValidated)
+				if err := _Task.contract.UnpackLog(event, "TaskValidated", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -2091,12 +2355,12 @@ func (_Task *TaskFilterer) WatchTaskSuccess(opts *bind.WatchOpts, sink chan<- *T
 	}), nil
 }
 
-// ParseTaskSuccess is a log parse operation binding the contract event 0x3cd644a756687c7dd87bbe74e2fd65bde569a3335e26f68f8fa334b2849673f7.
+// ParseTaskValidated is a log parse operation binding the contract event 0xb86e6a82586576bc010ad08619492657c958d11f13926ea7cd171c66d20bad4d.
 //
-// Solidity: event TaskSuccess(uint256 indexed taskId, bytes result, address indexed resultNode)
-func (_Task *TaskFilterer) ParseTaskSuccess(log types.Log) (*TaskTaskSuccess, error) {
-	event := new(TaskTaskSuccess)
-	if err := _Task.contract.UnpackLog(event, "TaskSuccess", log); err != nil {
+// Solidity: event TaskValidated(bytes32 taskIDCommitment)
+func (_Task *TaskFilterer) ParseTaskValidated(log types.Log) (*TaskTaskValidated, error) {
+	event := new(TaskTaskValidated)
+	if err := _Task.contract.UnpackLog(event, "TaskValidated", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
