@@ -40,8 +40,8 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	go tasks.AutoCreateTasks(context.Background())
 	go tasks.ProcessTasks(context.Background())
+	go tasks.AutoCreateTasks(context.Background())
 
 	startServer()
 }

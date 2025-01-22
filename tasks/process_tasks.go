@@ -145,6 +145,9 @@ func validateTaskGroup(ctx context.Context, task1, task2, task3 *models.Inferenc
 }
 
 func syncTask(ctx context.Context, task *models.InferenceTask) (*bindings.VSSTaskTaskInfo, error) {
+	if len(task.TaskIDCommitment) == 0 {
+		return nil, nil
+	}
 	taskIDCommitmentBytes, err := utils.HexStrToBytes32(task.TaskIDCommitment)
 	if err != nil {
 		return nil, err
@@ -339,7 +342,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 				log.Errorf("ProcessTasks: %s decode private key failed: %v", task.TaskIDCommitment, err)
 				return err
 			}
-			vrfProof, vrfNum, err := vrfProve(privateKey, chainTask.SamplingSeed[:])
+			vrfNum, vrfProof, err := vrfProve(privateKey, chainTask.SamplingSeed[:])
 			if err != nil {
 				log.Errorf("ProcessTasks: %s vrf prove failed: %v", task.TaskIDCommitment, err)
 				return err
@@ -378,8 +381,10 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			if err := task.Update(ctx, tx, newTask); err != nil {
 				return err
 			}
-			if err := models.SaveTasks(ctx, tx, subTasks); err != nil {
-				return err
+			if len(subTasks) > 0 {
+				if err := models.SaveTasks(ctx, tx, subTasks); err != nil {
+					return err
+				}
 			}
 			return nil
 		})
@@ -389,8 +394,22 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 		log.Infof("ProcessTasks: create task %s on chain", task.TaskIDCommitment)
 	}
 
-	// upload task params to relay when task starts
 	if task.Status == models.InferenceTaskCreated {
+		for {
+			_, err := syncTask(ctx, task)
+			if err != nil {
+				return err
+			}
+			if task.Status == models.InferenceTaskStarted || task.Status == models.InferenceTaskEndAborted {
+				break
+			}
+			time.Sleep(time.Second)
+		}
+		log.Infof("ProcessTasks: task %s status %d", task.TaskIDCommitment, task.Status)
+	}
+
+	// upload task params to relay when task starts
+	if task.Status == models.InferenceTaskStarted {
 		if err := relay.UploadTask(ctx, task.TaskIDCommitment, task.TaskArgs); err != nil {
 			log.Errorf("ProcessTasks: relay upload task %s error: %v", task.TaskIDCommitment, err)
 			return err
@@ -562,6 +581,7 @@ func ProcessTasks(ctx context.Context) {
 						case err := <-c:
 							if err != nil {
 								log.Errorf("ProcessTasks: process task %s error %v, retry", task.TaskIDCommitment, err)
+								time.Sleep(2 * time.Second)
 							} else {
 								log.Infof("ProcessTasks: process task %s successfully", task.TaskIDCommitment)
 								return

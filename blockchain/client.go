@@ -8,6 +8,7 @@ import (
 	"errors"
 	"math/big"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
@@ -20,6 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var txMutex sync.Mutex
 var ethRpcClient *ethclient.Client
 
 func GetRpcClient() (*ethclient.Client, error) {

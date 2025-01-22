@@ -1,35 +1,40 @@
 package migrations
 
 import (
-	"crynux_bridge/models"
-
 	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/gorm"
 )
 
 
 func M20241005(db *gorm.DB) *gormigrate.Gormigrate {
+	type Client struct {
+		gorm.Model
+		ClientId string `json:"client_id"`
+	}
 
 	type ClientTask struct {
 		gorm.Model
 		ClientID       uint `gorm:"index"`
-		Client         models.Client
-		InferenceTasks []models.InferenceTask
+		Client         Client
 	}
 	
+	type TaskStatus int
+	type ChainTaskType uint8
+
+
 	type InferenceTask struct {
 		gorm.Model
 		ClientID     uint
-		Client       models.Client
+		Client       Client
 		ClientTaskID uint `gorm:"index"`
 		ClientTask   ClientTask
 		TaskArgs     string
-		Status       models.TaskStatus
+		Status       TaskStatus
 		TxHash       string
 		TaskId       uint64
 		ResultNode   string
 		AbortReason  string
-		TaskType     models.ChainTaskType
+		TaskType     ChainTaskType
 		VramLimit    uint64
 		TaskFee      uint64
 		Cap          uint64

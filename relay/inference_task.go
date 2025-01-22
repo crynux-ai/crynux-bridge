@@ -19,7 +19,7 @@ import (
 )
 
 type GetTaskResultInput struct {
-	Index            uint64 `json:"index"`
+	Index            string `json:"index"`
 	TaskIDCommitment string `json:"task_id_commitment"`
 }
 
@@ -122,7 +122,7 @@ func UploadTask(ctx context.Context, taskIDCommitment, taskArgs string) error {
 	ctx1, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	r, _ := http.NewRequestWithContext(ctx1, "POST", reqUrl, body)
-	r.Header.Add("Content-Type", "application/json")
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := http.DefaultClient.Do(r)
 	if err != nil {
 		return err
@@ -140,7 +140,7 @@ func UploadTask(ctx context.Context, taskIDCommitment, taskArgs string) error {
 func DownloadTaskResult(ctx context.Context, taskIDCommitment string, index uint64, dst io.Writer) error {
 	appConfig := config.GetConfig()
 	getResultInput := &GetTaskResultInput{
-		Index:            index,
+		Index:            strconv.FormatUint(index, 10),
 		TaskIDCommitment: taskIDCommitment,
 	}
 

@@ -6,27 +6,18 @@ import (
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	crand "crypto/rand"
+	"errors"
 	"fmt"
 	"math/rand"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
-func autoCreateTask(ctx context.Context) error {
-	clientID := "auto-task"
-	client := models.Client{ClientId: clientID}
-
+func generateRandomTask(client models.Client) *models.InferenceTask {
 	clientTask := models.ClientTask{Client: client}
-	if err := func() error {
-		dbCtx, cancel := context.WithTimeout(ctx, time.Second)
-		defer cancel()
-		return config.GetDB().WithContext(dbCtx).Create(&clientTask).Error
-	}(); err != nil {
-		log.Errorf("AutoTask: auto create task failed: %v", err)
-		return err
-	}
 
 	var taskArgs string
 	var minVram uint64
@@ -34,21 +25,17 @@ func autoCreateTask(ctx context.Context) error {
 	if r < 0.5 {
 		prompt := "Self-portrait oil painting,a beautiful cyborg with golden hair,8k"
 		seed := rand.Intn(100000000)
-		taskArgs = fmt.Sprintf(`{"version":"2.5.0","base_model":{"name":"crynux-ai/sdxl-turbo", "variant": "fp16"},"prompt":"%s","negative_prompt":"","scheduler":{"method":"EulerAncestralDiscreteScheduler","args":{"timestep_spacing":"trailing"}},"task_config":{"num_images":1,"seed":%d,"steps":1,"cfg":0}}`, prompt, seed)
+		taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/sdxl-turbo", "variant": "fp16"},"prompt":"%s","negative_prompt":"","scheduler":{"method":"EulerAncestralDiscreteScheduler","args":{"timestep_spacing":"trailing"}},"task_config":{"num_images":1,"seed":%d,"steps":1,"cfg":0}}`, prompt, seed)
 		minVram = 14
 	} else {
 		prompt := "best quality, ultra high res, photorealistic++++, 1girl, off-shoulder sweater, smiling, faded ash gray messy bun hair+, border light, depth of field, looking at viewer, closeup"
 		negativePrompt := "paintings, sketches, worst quality+++++, low quality+++++, normal quality+++++, lowres, normal quality, monochrome++, grayscale++, skin spots, acnes, skin blemishes, age spot, glans"
 		seed := rand.Intn(100000000)
-		taskArgs = fmt.Sprintf(`{"version":"2.5.0","base_model":{"name":"crynux-ai/stable-diffusion-v1-5", "variant": "fp16"},"prompt":"%s","negative_prompt":"%s","task_config":{"num_images":1,"seed":%d,"steps":25,"cfg":0,"safety_checker":false}}`, prompt, negativePrompt, seed)
+		taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/stable-diffusion-v1-5", "variant": "fp16"},"prompt":"%s","negative_prompt":"%s","task_config":{"num_images":1,"seed":%d,"steps":25,"cfg":0,"safety_checker":false}}`, prompt, negativePrompt, seed)
 		minVram = 4
 	}
 	taskType := models.TaskTypeSD
-	taskModelIDs, err := models.GetTaskConfigModelIDs(taskArgs, taskType)
-	if err != nil {
-		log.Errorf("AutoTask: cannot get model ids from task args: %v", err)
-		return err
-	}
+	taskModelIDs, _ := models.GetTaskConfigModelIDs(taskArgs, taskType)
 
 	appConfig := config.GetConfig()
 	taskFee := appConfig.Task.TaskFee
@@ -69,34 +56,81 @@ func autoCreateTask(ctx context.Context) error {
 		TaskSize:     1,
 		TaskID:       taskID,
 	}
-	if err := task.Save(ctx, config.GetDB()); err != nil {
-		log.Errorf("AutoTask: cannot save task %v", err)
+	return task
+}
+
+func getPendingAutoTasksCount(ctx context.Context, client models.Client) (uint64, error) {
+	dbCtx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+
+	task := &models.InferenceTask{
+		Client: client,
+	}
+	var count int64
+	if err := config.GetDB().WithContext(dbCtx).Model(&task).Where(&task).Where("(status = ? OR status = ?)", models.InferenceTaskPending, models.InferenceTaskStarted).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return uint64(count), nil
+}
+
+func autoCreateTasks(ctx context.Context) error {
+	appConfig := config.GetConfig()
+
+	clientID := "auto-task"
+	client := models.Client{ClientId: clientID}
+
+	if err := func() error {
+		dbCtx, cancel := context.WithTimeout(ctx, time.Second)
+		defer cancel()
+		err := config.GetDB().WithContext(dbCtx).Model(&client).Where(&client).First(&client).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return config.GetDB().WithContext(dbCtx).Create(&client).Error
+			}
+			return err
+		}
+		return nil
+	}(); err != nil {
+		log.Errorf("AutoTask: create client failed: %v", err)
 		return err
 	}
 
-	log.Infof("AutoTask: auto create task %s", taskID)
-	return nil
-}
-
-func autoCreateTasks(ctx context.Context) {
-	appConfig := config.GetConfig()
-
 	for {
-		batchSize := 10
-		cnt, err := blockchain.GetQueuedTasks(ctx)
+		batchSize := int(appConfig.Task.AutoTasksBatchSize)
+		tasks := make([]*models.InferenceTask, batchSize)
+		cnt, err := getPendingAutoTasksCount(ctx, client)
 		if err != nil {
-			log.Errorf("AutoTask: cannot get queued tasks %v", err)
+			log.Errorf("AutoTask: cannot get pending auto tasks count %v", err)
+			time.Sleep(2 * time.Second)
 			continue
 		}
-		queuedTasks := cnt.Uint64()
-		log.Infof("AutoTask: queued tasks count: %d", queuedTasks)
-		if queuedTasks > appConfig.Task.QueuedTasksLimit {
-			batchSize = 1
+		log.Infof("AutoTask: pending auto tasks count: %d", cnt)
+		if cnt > appConfig.Task.PendingAutoTasksLimit {
 			time.Sleep(30 * time.Second)
+			continue
 		}
+		queuedTask, err := blockchain.GetQueuedTasks(ctx)
+		if err != nil {
+			log.Errorf("AutoTask: cannot get queued tasks count %v", err)
+			time.Sleep(2 * time.Second)
+			continue
+		}
+		queuedTaskCnt := queuedTask.Uint64()
+		log.Infof("AutoTask: queued task count %d", queuedTaskCnt)
+		if queuedTask.Uint64() > appConfig.Task.PendingAutoTasksLimit {
+			time.Sleep(30 * time.Second)
+			continue
+		}
+
 		for i := 0; i < batchSize; i++ {
-			go autoCreateTask(ctx)
+			task := generateRandomTask(client)
+			tasks[i] = task
 		}
+		if err := models.SaveTasks(ctx, config.GetDB(), tasks); err != nil {
+			log.Errorf("AutoTask: cannot save auto tasks: %v", err)
+			return err
+		}
+		time.Sleep(5 * time.Second)
 	}
 }
 
@@ -104,8 +138,16 @@ func AutoCreateTasks(ctx context.Context) {
 	ctx1, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	go autoCreateTask(ctx1)
-	<- ctx1.Done()
+	go func() {
+		for {
+			err := autoCreateTasks(ctx1)
+			if err != nil {
+				log.Errorf("AutoTask: auto create tasks error: %v", err)
+				time.Sleep(5 * time.Second)
+			}
+		}
+	}()
+	<-ctx1.Done()
 	err := ctx1.Err()
 	log.Errorf("AutoTask: timeout %v, finish", err)
 }

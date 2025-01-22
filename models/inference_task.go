@@ -151,7 +151,7 @@ func (task *InferenceTask) Update(ctx context.Context, db *gorm.DB, newTask *Inf
 	if task.ID == 0 {
 		return errors.New("InferenceTask.ID cannot be 0 when update")
 	}
-	dbCtx, cancel := context.WithTimeout(ctx, time.Second)
+	dbCtx, cancel := context.WithTimeout(ctx, 2 * time.Second)
 	defer cancel()
 	if err := db.WithContext(dbCtx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(task).Updates(newTask).Error; err != nil {

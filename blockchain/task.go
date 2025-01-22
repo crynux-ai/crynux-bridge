@@ -63,6 +63,9 @@ func CreateTaskOnChain(ctx context.Context, task *models.InferenceTask) (string,
 	address := common.HexToAddress(appConfig.Blockchain.Account.Address)
 	privkey := appConfig.Blockchain.Account.PrivateKey
 
+	txMutex.Lock()
+	defer txMutex.Unlock()
+
 	auth, err := GetAuth(ctx, address, privkey)
 	if err != nil {
 		return "", err
@@ -74,20 +77,21 @@ func CreateTaskOnChain(ctx context.Context, task *models.InferenceTask) (string,
 		return "", err
 	}
 	auth.Context = callCtx
+	auth.Value = big.NewInt(int64(task.TaskFee))
 
 	taskIDCommitment, _ := utils.HexStrToBytes32(task.TaskIDCommitment)
 	nonce, _ := utils.HexStrToBytes32(task.Nonce)
 
 	versionArr := strings.SplitN(task.TaskVersion, ".", 3)
 	if len(versionArr) != 3 {
-		return "", errors.New("Task version invalid")
+		return "", errors.New("task version invalid")
 	}
 	var taskVersion [3]*big.Int
 	for i := 0; i < 3; i++ {
 		versionStr := versionArr[i]
 		version, err := strconv.Atoi(versionStr)
 		if err != nil {
-			return "", errors.New("Task version invalid")
+			return "", errors.New("task version invalid")
 		}
 		taskVersion[i] = big.NewInt(int64(version))
 	}
@@ -120,6 +124,9 @@ func ValidateSingleTask(ctx context.Context, task *models.InferenceTask) (string
 	appConfig := config.GetConfig()
 	address := common.HexToAddress(appConfig.Blockchain.Account.Address)
 	privkey := appConfig.Blockchain.Account.PrivateKey
+
+	txMutex.Lock()
+	defer txMutex.Unlock()
 
 	auth, err := GetAuth(ctx, address, privkey)
 	if err != nil {
@@ -168,6 +175,9 @@ func ValidateTaskGroup(ctx context.Context, task1, task2, task3 *models.Inferenc
 	appConfig := config.GetConfig()
 	address := common.HexToAddress(appConfig.Blockchain.Account.Address)
 	privkey := appConfig.Blockchain.Account.PrivateKey
+
+	txMutex.Lock()
+	defer txMutex.Unlock()
 
 	auth, err := GetAuth(ctx, address, privkey)
 	if err != nil {

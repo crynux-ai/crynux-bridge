@@ -57,7 +57,6 @@ type AppConfig struct {
 			Netstats    string `mapstructure:"netstats"`
 			Task        string `mapstructure:"task"`
 			Node        string `mapstructure:"node"`
-			CrynuxToken string `mapstructure:"crynux_token"`
 		} `mapstructure:"contracts"`
 	} `mapstructure:"blockchain"`
 
@@ -66,9 +65,10 @@ type AppConfig struct {
 	} `mapstructure:"relay"`
 
 	Task struct {
-		TaskFee          uint64 `mapstructure:"task_fee"`
-		RepeatNum        int    `mapstructure:"repeat_num"`
-		QueuedTasksLimit uint64    `mapstructure:"queued_tasks_limit"`
+		TaskFee               uint64 `mapstructure:"task_fee"`
+		RepeatNum             int    `mapstructure:"repeat_num"`
+		PendingAutoTasksLimit uint64 `mapstructure:"pending_auto_tasks_limit"`
+		AutoTasksBatchSize    uint64 `mapstructure:"auto_tasks_batch_size"`
 	} `mapstructure:"task"`
 
 	TaskSchema struct {

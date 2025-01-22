@@ -18,7 +18,7 @@ import (
 type GetTaskImageInput struct {
 	ClientID     string `path:"client_id" description:"Client id" validate:"required"`
 	ClientTaskID uint   `path:"client_task_id" description:"Client task id" validate:"required"`
-	Index        uint64 `path:"index" description:"Result index" validate:"required"`
+	Index        *uint64 `path:"index" description:"Result index" validate:"required"`
 }
 
 func GetTaskImage(c *gin.Context, in *GetTaskImageInput) error {
@@ -78,7 +78,7 @@ func GetTaskImage(c *gin.Context, in *GetTaskImageInput) error {
 	if task.TaskType == models.TaskTypeLLM {
 		ext = "json"
 	}
-	filename := fmt.Sprintf("%d.%s", in.Index, ext)
+	filename := fmt.Sprintf("%d.%s", *in.Index, ext)
 
 	appConfig := config.GetConfig()
 	imageFile := filepath.Join(

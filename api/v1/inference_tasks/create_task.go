@@ -18,8 +18,8 @@ import (
 type TaskInput struct {
 	ClientID        string               `json:"client_id" description:"Client id" validate:"required"`
 	TaskArgs        string               `json:"task_args" description:"Task args" validate:"required"`
-	TaskType        models.ChainTaskType `json:"task_type" description:"Task type. 0 - SD task, 1 - LLM task, 2 - SD Finetune task" validate:"required"`
-	TaskVersion     *string              `json:"task_version,omitempty" description:"Task version. Default is 3.0.0" validate:"omitempty"`
+	TaskType        *models.ChainTaskType `json:"task_type" description:"Task type. 0 - SD task, 1 - LLM task, 2 - SD Finetune task" validate:"required"`
+	TaskVersion     *string              `json:"task_version,omitempty" description:"Task version. Default is 2.5.0" validate:"omitempty"`
 	MinVram         *uint64              `json:"min_vram,omitempty" description:"Task minimal vram requirement" validate:"omitempty"`
 	RequiredGPU     string               `json:"required_gpu,omitempty" description:"Task required GPU name" validate:"omitempty"`
 	RequiredGPUVram uint64               `json:"required_gpu_vram,omitempty" description:"Task required GPU Vram" validate:"omitempty"`
@@ -102,7 +102,9 @@ func CreateTask(c *gin.Context, in *TaskInput) (*TaskResponse, error) {
 		}
 	}
 
-	result, err := models.ValidateTaskArgsJsonStr(in.TaskArgs, in.TaskType)
+	taskType := *in.TaskType
+
+	result, err := models.ValidateTaskArgsJsonStr(in.TaskArgs, taskType)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
@@ -115,7 +117,7 @@ func CreateTask(c *gin.Context, in *TaskInput) (*TaskResponse, error) {
 
 	if in.MinVram == nil {
 		// task args has been validated, so there should be no error
-		minVram, _ = getDefaultMinVram(in.TaskType, in.TaskArgs)
+		minVram, _ = getDefaultMinVram(taskType, in.TaskArgs)
 	} else {
 		minVram = *in.MinVram
 	}
@@ -138,15 +140,15 @@ func CreateTask(c *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	}
 
 	// task args has been validated, so there should be no error
-	taskSize, _ := getTaskSize(in.TaskType, in.TaskArgs)
-	taskFee := getTaskFee(in.TaskType, appConfig.Task.TaskFee, taskSize) // unit: GWei
+	taskSize, _ := getTaskSize(taskType, in.TaskArgs)
+	taskFee := getTaskFee(taskType, appConfig.Task.TaskFee, taskSize) // unit: GWei
 
 	repeatNum := appConfig.Task.RepeatNum
 	if in.RepeatNum != nil {
 		repeatNum = *in.RepeatNum
 	}
 
-	modelIDs, err := models.GetTaskConfigModelIDs(in.TaskArgs, in.TaskType)
+	modelIDs, err := models.GetTaskConfigModelIDs(in.TaskArgs, taskType)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
@@ -161,7 +163,7 @@ func CreateTask(c *gin.Context, in *TaskInput) (*TaskResponse, error) {
 			Client:     client,
 			ClientTask: clientTask,
 			TaskArgs:   in.TaskArgs,
-			TaskType:   in.TaskType,
+			TaskType:   taskType,
 			TaskModelIDs: modelIDs,
 			TaskVersion: taskVersion,
 			TaskFee: taskFee,
