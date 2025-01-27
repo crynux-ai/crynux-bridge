@@ -79,6 +79,12 @@ func CreateTaskOnChain(ctx context.Context, task *models.InferenceTask) (string,
 	auth.Context = callCtx
 	auth.Value = big.NewInt(int64(task.TaskFee))
 
+	txNonce, err := getNonce(callCtx, address)
+	if err != nil {
+		return "", err
+	}
+	auth.Nonce = big.NewInt(int64(txNonce))
+
 	taskIDCommitment, _ := utils.HexStrToBytes32(task.TaskIDCommitment)
 	nonce, _ := utils.HexStrToBytes32(task.Nonce)
 
@@ -112,6 +118,7 @@ func CreateTaskOnChain(ctx context.Context, task *models.InferenceTask) (string,
 		return "", err
 	}
 
+	addNonce(txNonce)
 	return tx.Hash().Hex(), nil
 }
 
@@ -140,6 +147,12 @@ func ValidateSingleTask(ctx context.Context, task *models.InferenceTask) (string
 	}
 	auth.Context = callCtx
 
+	txNonce, err := getNonce(callCtx, address)
+	if err != nil {
+		return "", err
+	}
+	auth.Nonce = big.NewInt(int64(txNonce))
+
 	taskIDCommitment, _ := utils.HexStrToBytes32(task.TaskIDCommitment)
 	vrfProof, _ := hexutil.Decode(task.VRFProof)
 	privateKey, err := crypto.HexToECDSA(privkey)
@@ -163,6 +176,7 @@ func ValidateSingleTask(ctx context.Context, task *models.InferenceTask) (string
 	if err != nil {
 		return "", err
 	}
+	addNonce(txNonce)
 	return tx.Hash().Hex(), nil
 }
 
@@ -190,6 +204,12 @@ func ValidateTaskGroup(ctx context.Context, task1, task2, task3 *models.Inferenc
 		return "", err
 	}
 	auth.Context = callCtx
+
+	txNonce, err := getNonce(callCtx, address)
+	if err != nil {
+		return "", err
+	}
+	auth.Nonce = big.NewInt(int64(txNonce))
 
 	if !(task1.TaskID == task2.TaskID && task1.TaskID == task3.TaskID) {
 		return "", errors.New("taskID of tasks in group is not the same")
@@ -223,6 +243,7 @@ func ValidateTaskGroup(ctx context.Context, task1, task2, task3 *models.Inferenc
 	if err != nil {
 		return "", err
 	}
+	addNonce(txNonce)
 	return tx.Hash().Hex(), nil
 
 }
