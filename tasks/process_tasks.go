@@ -31,7 +31,7 @@ import (
 var cancelErrPattern = regexp.MustCompile(`Timeout not reached`)
 
 func getChainTask(ctx context.Context, taskIDCommitmentBytes [32]byte) (*bindings.VSSTaskTaskInfo, error) {
-	callCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	return blockchain.GetTaskByCommitment(callCtx, taskIDCommitmentBytes)
@@ -59,7 +59,7 @@ func createTask(ctx context.Context, task *models.InferenceTask) error {
 	task.TaskIDCommitment = taskIDCommitment
 
 	txHash, err := func() (string, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
 		return blockchain.CreateTaskOnChain(callCtx, task)
 	}()
@@ -88,7 +88,7 @@ func createTask(ctx context.Context, task *models.InferenceTask) error {
 
 func validateSingleTask(ctx context.Context, task *models.InferenceTask) error {
 	txHash, err := func() (string, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
 		return blockchain.ValidateSingleTask(callCtx, task)
 	}()
@@ -118,7 +118,7 @@ func validateSingleTask(ctx context.Context, task *models.InferenceTask) error {
 
 func validateTaskGroup(ctx context.Context, task1, task2, task3 *models.InferenceTask) error {
 	txHash, err := func() (string, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
 		return blockchain.ValidateTaskGroup(callCtx, task1, task2, task3)
 	}()
@@ -149,7 +149,7 @@ func validateTaskGroup(ctx context.Context, task1, task2, task3 *models.Inferenc
 
 func cancelTask(ctx context.Context, task *models.InferenceTask) error {
 	txHash, err := func() (string, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
 		return blockchain.CancelTask(callCtx, task)
 	}()
