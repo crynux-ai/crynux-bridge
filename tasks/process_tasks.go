@@ -14,6 +14,7 @@ import (
 	"math/big"
 	"os"
 	"path"
+	"regexp"
 	"sync"
 	"time"
 
@@ -26,6 +27,8 @@ import (
 	"github.com/vechain/go-ecvrf"
 	"gorm.io/gorm"
 )
+
+var cancelErrPattern = regexp.MustCompile(`Timeout not reached`)
 
 func getChainTask(ctx context.Context, taskIDCommitmentBytes [32]byte) (*bindings.VSSTaskTaskInfo, error) {
 	callCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -139,6 +142,36 @@ func validateTaskGroup(ctx context.Context, task1, task2, task3 *models.Inferenc
 		}
 		taskIDCommitments := []string{task1.TaskIDCommitment, task2.TaskIDCommitment, task3.TaskIDCommitment}
 		log.Errorf("ProcessTasks: %s validateTaskGroup %v failed: %s", task1.TaskID, taskIDCommitments, errMsg)
+		return errors.New(errMsg)
+	}
+	return nil
+}
+
+func cancelTask(ctx context.Context, task *models.InferenceTask) error {
+	txHash, err := func() (string, error) {
+		callCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		return blockchain.CancelTask(callCtx, task)
+	}()
+	if err != nil {
+		return err
+	}
+
+	receipt, err := func() (*types.Receipt, error) {
+		callCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
+		defer cancel()
+		return blockchain.WaitTxReceipt(callCtx, common.HexToHash(txHash))
+	}()
+	if err != nil {
+		return err
+	}
+
+	if receipt.Status == 0 {
+		errMsg, err := blockchain.GetErrorMessageFromReceipt(ctx, receipt)
+		if err != nil {
+			return err
+		}
+		log.Errorf("ProcessTasks: %s cancelTask failed: %s", task.TaskIDCommitment, errMsg)
 		return errors.New(errMsg)
 	}
 	return nil
@@ -589,12 +622,34 @@ func ProcessTasks(ctx context.Context) {
 						case <-ctx1.Done():
 							err := ctx1.Err()
 							log.Errorf("ProcessTasks: process task %s timeout %v, finish", task.TaskIDCommitment, err)
-							// set task status to aborted to avoid processing it again
 							if err == context.DeadlineExceeded {
-								newTask := &models.InferenceTask{Status: models.InferenceTaskEndAborted}
-								if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
-									log.Errorf("ProcessTasks: save task %s error %v", task.TaskIDCommitment, err)
+								// try to cancel task
+								if task.Status != models.InferenceTaskPending && 
+									task.Status != models.InferenceTaskEndAborted && 
+									task.Status != models.InferenceTaskEndInvalidated &&
+									task.Status != models.InferenceTaskEndGroupRefund &&
+									task.Status != models.InferenceTaskEndSuccess && 
+									task.Status != models.InferenceTaskResultDownloaded {
+										err := cancelTask(ctx, &task)
+										if err != nil {
+											log.Errorf("ProcessTasks: cannot cancel task %s due to %v", task.TaskIDCommitment, err)
+											if len(cancelErrPattern.FindString(err.Error())) > 0 {
+												ctx1, cancel = context.WithTimeout(ctx, 3 * time.Minute)
+												defer cancel()
+											}
+											continue
+										}
 								}
+								if task.Status != models.InferenceTaskEndAborted && 
+									task.Status != models.InferenceTaskEndInvalidated &&
+									task.Status != models.InferenceTaskEndGroupRefund &&
+									task.Status != models.InferenceTaskEndSuccess && 
+									task.Status != models.InferenceTaskResultDownloaded {
+										newTask := &models.InferenceTask{Status: models.InferenceTaskEndAborted, AbortReason: models.TaskAbortTimeout}
+										if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
+											log.Errorf("ProcessTasks: save task %s error %v", task.TaskIDCommitment, err)
+										}
+									}
 							}
 							return
 						}
