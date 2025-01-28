@@ -115,6 +115,7 @@ func CreateTaskOnChain(ctx context.Context, task *models.InferenceTask) (string,
 		big.NewInt(int64(task.TaskSize)),
 	)
 	if err != nil {
+		err = processSendingTxError(err)
 		return "", err
 	}
 
@@ -174,6 +175,7 @@ func ValidateSingleTask(ctx context.Context, task *models.InferenceTask) (string
 
 	tx, err := taskInstance.ValidateSingleTask(auth, *taskIDCommitment, vrfProof, publicKeyBytes)
 	if err != nil {
+		err = processSendingTxError(err)
 		return "", err
 	}
 	addNonce(txNonce)
@@ -241,6 +243,7 @@ func ValidateTaskGroup(ctx context.Context, task1, task2, task3 *models.Inferenc
 	publicKeyBytes = publicKeyBytes[1:]
 	tx, err := taskInstance.ValidateTaskGroup(auth, *taskIDCommitment1, *taskIDCommitment2, *taskIDCommitment3, *taskID, vrfProof, publicKeyBytes)
 	if err != nil {
+		err = processSendingTxError(err)
 		return "", err
 	}
 	addNonce(txNonce)
