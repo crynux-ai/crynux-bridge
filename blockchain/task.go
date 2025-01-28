@@ -260,7 +260,10 @@ func CancelTask(ctx context.Context, task *models.InferenceTask) (string, error)
 	address := common.HexToAddress(appConfig.Blockchain.Account.Address)
 	privkey := appConfig.Blockchain.Account.PrivateKey
 
-	taskIDCommitment, _ := utils.HexStrToBytes32(task.TaskIDCommitment)
+	taskIDCommitment, err := utils.HexStrToBytes32(task.TaskIDCommitment)
+	if err != nil {
+		return "", err
+	}
 	
 	txMutex.Lock()
 	defer txMutex.Unlock()

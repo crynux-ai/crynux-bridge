@@ -148,6 +148,10 @@ func validateTaskGroup(ctx context.Context, task1, task2, task3 *models.Inferenc
 }
 
 func cancelTask(ctx context.Context, task *models.InferenceTask) error {
+	if len(task.TaskIDCommitment) == 0 {
+		return nil
+	}
+
 	txHash, err := func() (string, error) {
 		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
@@ -315,14 +319,14 @@ func downloadTaskResult(ctx context.Context, task *models.InferenceTask) error {
 	for i := uint64(0); i < task.TaskSize; i++ {
 		filename := path.Join(taskFolder, fmt.Sprintf("%d.%s", i, ext))
 		wg.Add(1)
-		go func (ctx context.Context, taskIDCommitment string, index uint64, filename string)  {
+		go func(ctx context.Context, taskIDCommitment string, index uint64, filename string) {
 			defer wg.Done()
 			errCh <- doDownloadTaskResult(ctx, taskIDCommitment, index, filename)
 		}(ctx1, task.TaskIDCommitment, i, filename)
 	}
 	wg.Wait()
 	for i := 0; i < int(task.TaskSize); i++ {
-		err := <- errCh
+		err := <-errCh
 		if err != nil {
 			return err
 		}
@@ -624,32 +628,32 @@ func ProcessTasks(ctx context.Context) {
 							log.Errorf("ProcessTasks: process task %s timeout %v, finish", task.TaskIDCommitment, err)
 							if err == context.DeadlineExceeded {
 								// try to cancel task
-								if task.Status != models.InferenceTaskPending && 
-									task.Status != models.InferenceTaskEndAborted && 
+								if task.Status != models.InferenceTaskPending &&
+									task.Status != models.InferenceTaskEndAborted &&
 									task.Status != models.InferenceTaskEndInvalidated &&
 									task.Status != models.InferenceTaskEndGroupRefund &&
-									task.Status != models.InferenceTaskEndSuccess && 
+									task.Status != models.InferenceTaskEndSuccess &&
 									task.Status != models.InferenceTaskResultDownloaded {
-										err := cancelTask(ctx, &task)
-										if err != nil {
-											log.Errorf("ProcessTasks: cannot cancel task %s due to %v", task.TaskIDCommitment, err)
-											if len(cancelErrPattern.FindString(err.Error())) > 0 {
-												ctx1, cancel = context.WithTimeout(ctx, 3 * time.Minute)
-												defer cancel()
-											}
-											continue
+									err := cancelTask(ctx, &task)
+									if err != nil {
+										log.Errorf("ProcessTasks: cannot cancel task %s due to %v", task.TaskIDCommitment, err)
+										if len(cancelErrPattern.FindString(err.Error())) > 0 {
+											ctx1, cancel = context.WithTimeout(ctx, 3*time.Minute)
+											defer cancel()
 										}
-								}
-								if task.Status != models.InferenceTaskEndAborted && 
-									task.Status != models.InferenceTaskEndInvalidated &&
-									task.Status != models.InferenceTaskEndGroupRefund &&
-									task.Status != models.InferenceTaskEndSuccess && 
-									task.Status != models.InferenceTaskResultDownloaded {
-										newTask := &models.InferenceTask{Status: models.InferenceTaskEndAborted, AbortReason: models.TaskAbortTimeout}
-										if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
-											log.Errorf("ProcessTasks: save task %s error %v", task.TaskIDCommitment, err)
-										}
+										continue
 									}
+								}
+								if task.Status != models.InferenceTaskEndAborted &&
+									task.Status != models.InferenceTaskEndInvalidated &&
+									task.Status != models.InferenceTaskEndGroupRefund &&
+									task.Status != models.InferenceTaskEndSuccess &&
+									task.Status != models.InferenceTaskResultDownloaded {
+									newTask := &models.InferenceTask{Status: models.InferenceTaskEndAborted, AbortReason: models.TaskAbortTimeout}
+									if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
+										log.Errorf("ProcessTasks: save task %s error %v", task.TaskIDCommitment, err)
+									}
+								}
 							}
 							return
 						}
