@@ -80,7 +80,7 @@ func createTask(ctx context.Context, task *models.InferenceTask) error {
 		if err != nil {
 			return err
 		}
-		log.Errorf("ProcessTasks: %s createTaskOnChain failed: %s", task.TaskIDCommitment, errMsg)
+		log.Errorf("ProcessTasks: %d createTaskOnChain failed: %s", task.ID, errMsg)
 		return errors.New(errMsg)
 	}
 	return nil
@@ -110,7 +110,7 @@ func validateSingleTask(ctx context.Context, task *models.InferenceTask) error {
 		if err != nil {
 			return err
 		}
-		log.Errorf("ProcessTasks: %s validateSingleTask failed: %s", task.TaskIDCommitment, errMsg)
+		log.Errorf("ProcessTasks: %d validateSingleTask failed: %s", task.ID, errMsg)
 		return errors.New(errMsg)
 	}
 	return nil
@@ -175,7 +175,7 @@ func cancelTask(ctx context.Context, task *models.InferenceTask) error {
 		if err != nil {
 			return err
 		}
-		log.Errorf("ProcessTasks: %s cancelTask failed: %s", task.TaskIDCommitment, errMsg)
+		log.Errorf("ProcessTasks: %d cancelTask failed: %s", task.ID, errMsg)
 		return errors.New(errMsg)
 	}
 	return nil
@@ -303,7 +303,7 @@ func downloadTaskResult(ctx context.Context, task *models.InferenceTask) error {
 	)
 
 	if err := os.MkdirAll(taskFolder, 0700); err != nil {
-		log.Errorf("ProcessTasks: cannot create task result dir of %s", task.TaskIDCommitment)
+		log.Errorf("ProcessTasks: cannot create task result dir of %d", task.ID)
 		return err
 	}
 
@@ -376,12 +376,12 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			pk := appConfig.Blockchain.Account.PrivateKey
 			privateKey, err := hexutil.Decode("0x" + pk)
 			if err != nil {
-				log.Errorf("ProcessTasks: %s decode private key failed: %v", task.TaskIDCommitment, err)
+				log.Errorf("ProcessTasks: %d decode private key failed: %v", task.ID, err)
 				return err
 			}
 			vrfNum, vrfProof, err := vrfProve(privateKey, chainTask.SamplingSeed[:])
 			if err != nil {
-				log.Errorf("ProcessTasks: %s vrf prove failed: %v", task.TaskIDCommitment, err)
+				log.Errorf("ProcessTasks: %d vrf prove failed: %v", task.ID, err)
 				return err
 			}
 			newTask.VRFProof = hexutil.Encode(vrfProof)
@@ -428,7 +428,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 		if err != nil {
 			return err
 		}
-		log.Infof("ProcessTasks: create task %s on chain", task.TaskIDCommitment)
+		log.Infof("ProcessTasks: create task %d on chain", task.ID)
 	}
 
 	if task.Status == models.InferenceTaskCreated {
@@ -442,13 +442,13 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			}
 			time.Sleep(time.Second)
 		}
-		log.Infof("ProcessTasks: task %s status %d", task.TaskIDCommitment, task.Status)
+		log.Infof("ProcessTasks: task %d status %d", task.ID, task.Status)
 	}
 
 	// upload task params to relay when task starts
 	if task.Status == models.InferenceTaskStarted {
 		if err := relay.UploadTask(ctx, task.TaskIDCommitment, task.TaskArgs); err != nil {
-			log.Errorf("ProcessTasks: relay upload task %s error: %v", task.TaskIDCommitment, err)
+			log.Errorf("ProcessTasks: relay upload task %d error: %v", task.ID, err)
 			return err
 		}
 
@@ -458,7 +458,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 		if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
 			return err
 		}
-		log.Infof("ProcessTasks: upload params of task %s", task.TaskIDCommitment)
+		log.Infof("ProcessTasks: upload params of task %d", task.ID)
 	}
 
 	// wait task status to be score ready, error reported or abort
@@ -473,11 +473,11 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			}
 			time.Sleep(time.Second)
 		}
-		log.Infof("ProcessTasks: task %s status %d", task.TaskIDCommitment, task.Status)
+		log.Infof("ProcessTasks: task %d status %d", task.ID, task.Status)
 	}
 
 	if task.Status == models.InferenceTaskEndAborted {
-		log.Errorf("ProcessTasks: task %s aborted for reason: %d", task.TaskIDCommitment, task.AbortReason)
+		log.Errorf("ProcessTasks: task %d aborted for reason: %d", task.ID, task.AbortReason)
 		return nil
 	}
 
@@ -523,12 +523,12 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 				if err := validateSingleTask(ctx, task); err != nil {
 					return err
 				}
-				log.Infof("ProcessTasks: validate single task %s", task.TaskIDCommitment)
+				log.Infof("ProcessTasks: validate single task %d", task.ID)
 			} else if len(taskGroup) == 3 {
 				if err := validateTaskGroup(ctx, &taskGroup[0], &taskGroup[1], &taskGroup[2]); err != nil {
 					return err
 				}
-				log.Infof("ProcessTasks: validate task group task %s, %s, %s", taskGroup[0].TaskIDCommitment, taskGroup[1].TaskIDCommitment, taskGroup[2].TaskIDCommitment)
+				log.Infof("ProcessTasks: validate task group task %d, %d, %d", taskGroup[0].ID, taskGroup[1].ID, taskGroup[2].ID)
 			}
 		}
 
@@ -543,7 +543,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			}
 			time.Sleep(time.Second)
 		}
-		log.Infof("ProcessTasks: task %s status %d", task.TaskIDCommitment, task.Status)
+		log.Infof("ProcessTasks: task %d status %d", task.ID, task.Status)
 	}
 
 	// download task result
@@ -558,7 +558,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 		if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
 			return err
 		}
-		log.Infof("ProcessTasks: download results of task %s", task.TaskIDCommitment)
+		log.Infof("ProcessTasks: download results of task %d", task.ID)
 	}
 	return nil
 }
@@ -601,7 +601,7 @@ func ProcessTasks(ctx context.Context) {
 
 			for _, task := range tasks {
 				go func(ctx context.Context, task models.InferenceTask) {
-					log.Infof("ProcessTasks: start processing task %s", task.TaskIDCommitment)
+					log.Infof("ProcessTasks: start processing task %d", task.ID)
 					var ctx1 context.Context
 					var cancel context.CancelFunc
 					deadline := task.CreatedAt.Add(10 * time.Minute)
@@ -617,15 +617,15 @@ func ProcessTasks(ctx context.Context) {
 						select {
 						case err := <-c:
 							if err != nil {
-								log.Errorf("ProcessTasks: process task %s error %v, retry", task.TaskIDCommitment, err)
+								log.Errorf("ProcessTasks: process task %d error %v, retry", task.ID, err)
 								time.Sleep(2 * time.Second)
 							} else {
-								log.Infof("ProcessTasks: process task %s successfully", task.TaskIDCommitment)
+								log.Infof("ProcessTasks: process task %d successfully", task.ID)
 								return
 							}
 						case <-ctx1.Done():
 							err := ctx1.Err()
-							log.Errorf("ProcessTasks: process task %s timeout %v, finish", task.TaskIDCommitment, err)
+							log.Errorf("ProcessTasks: process task %d timeout %v, finish", task.ID, err)
 							if err == context.DeadlineExceeded {
 								// try to cancel task
 								if task.Status != models.InferenceTaskPending &&
@@ -636,7 +636,7 @@ func ProcessTasks(ctx context.Context) {
 									task.Status != models.InferenceTaskResultDownloaded {
 									err := cancelTask(ctx, &task)
 									if err != nil {
-										log.Errorf("ProcessTasks: cannot cancel task %s due to %v", task.TaskIDCommitment, err)
+										log.Errorf("ProcessTasks: cannot cancel task %d due to %v", task.ID, err)
 										if len(cancelErrPattern.FindString(err.Error())) > 0 {
 											ctx1, cancel = context.WithTimeout(ctx, 3*time.Minute)
 											defer cancel()
@@ -651,7 +651,7 @@ func ProcessTasks(ctx context.Context) {
 									task.Status != models.InferenceTaskResultDownloaded {
 									newTask := &models.InferenceTask{Status: models.InferenceTaskEndAborted, AbortReason: models.TaskAbortTimeout}
 									if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
-										log.Errorf("ProcessTasks: save task %s error %v", task.TaskIDCommitment, err)
+										log.Errorf("ProcessTasks: save task %d error %v", task.ID, err)
 									}
 								}
 							}
