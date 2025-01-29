@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -261,7 +262,11 @@ func GetErrorMessageFromReceipt(ctx context.Context, receipt *types.Receipt) (st
 		return "", err
 	}
 
-	return unpackError(res)
+	errMsg, err := unpackError(res)
+	if err != nil {
+		errMsg = "Unknown tx error" + hexutil.Encode(res)
+	}
+	return errMsg, err
 }
 
 var (
@@ -270,8 +275,11 @@ var (
 )
 
 func unpackError(result []byte) (string, error) {
+	if len(result) < 4 {
+		return "", errors.New("tx result length too short")
+	}
 	if !bytes.Equal(result[:4], errorSig) {
-		return "", errors.New("TX result not of type Error(string)")
+		return "", errors.New("tx result not of type Error(string)")
 	}
 
 	vs, err := abi.Arguments{{Type: abiString}}.UnpackValues(result[4:])
