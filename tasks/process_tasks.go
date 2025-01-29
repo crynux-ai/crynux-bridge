@@ -352,7 +352,13 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			Nonce:            task.Nonce,
 			TaskIDCommitment: task.TaskIDCommitment,
 		}
+		if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
+			return err
+		}
+		log.Infof("ProcessTasks: create task %d on chain", task.ID)
+	}
 
+	if task.Status == models.InferenceTaskCreated {
 		// get task sequence and sampling number
 		taskIDCommitmentBytes, err := utils.HexStrToBytes32(task.TaskIDCommitment)
 		if err != nil {
@@ -363,6 +369,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 		if err != nil {
 			return err
 		}
+		newTask := &models.InferenceTask{}
 		newTask.Sequence = chainTask.Sequence.Uint64()
 
 		subTasks := make([]*models.InferenceTask, 0)
@@ -428,10 +435,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 		if err != nil {
 			return err
 		}
-		log.Infof("ProcessTasks: create task %d on chain", task.ID)
-	}
 
-	if task.Status == models.InferenceTaskCreated {
 		for {
 			_, err := syncTask(ctx, task)
 			if err != nil {
@@ -643,6 +647,7 @@ func ProcessTasks(ctx context.Context) {
 										}
 										continue
 									}
+									log.Infof("ProcessTasks: cancel task %d", task.ID)
 								}
 								if task.Status != models.InferenceTaskEndAborted &&
 									task.Status != models.InferenceTaskEndInvalidated &&
