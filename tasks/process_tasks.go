@@ -46,8 +46,8 @@ func vrfProve(privateKey, samplingSeed []byte) ([]byte, []byte, error) {
 	return beta, pi, nil
 }
 
-func createTask(ctx context.Context, task *models.InferenceTask) error {
-	taskIDBytes := hexutil.MustDecode(task.TaskID)
+func generateTaskIDCommitment(taskID string) (string, string) {
+	taskIDBytes := hexutil.MustDecode(taskID)
 	nonceBytes := make([]byte, 32)
 	rand.Read(nonceBytes)
 	nonce := hexutil.Encode(nonceBytes)
@@ -55,9 +55,10 @@ func createTask(ctx context.Context, task *models.InferenceTask) error {
 	taskIDCommitmentBytes := crypto.Keccak256(append(taskIDBytes, nonceBytes...))
 	taskIDCommitment := hexutil.Encode(taskIDCommitmentBytes)
 
-	task.Nonce = nonce
-	task.TaskIDCommitment = taskIDCommitment
+	return nonce, taskIDCommitment
+}
 
+func createTask(ctx context.Context, task *models.InferenceTask) error {
 	txHash, err := func() (string, error) {
 		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
@@ -343,14 +344,23 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 
 	// report task params is uploaded to blochchain
 	if task.Status == models.InferenceTaskPending {
+		if len(task.TaskIDCommitment) == 0 {
+			nonce, taskIDCommitment := generateTaskIDCommitment(task.TaskID)
+			newTask := &models.InferenceTask{
+				Nonce:            nonce,
+				TaskIDCommitment: taskIDCommitment,
+			}
+			if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
+				return err
+			}
+		}
+
 		if err := createTask(ctx, task); err != nil {
 			return err
 		}
 
 		newTask := &models.InferenceTask{
-			Status:           models.InferenceTaskCreated,
-			Nonce:            task.Nonce,
-			TaskIDCommitment: task.TaskIDCommitment,
+			Status: models.InferenceTaskCreated,
 		}
 		if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
 			return err
