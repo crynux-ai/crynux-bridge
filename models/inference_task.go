@@ -45,6 +45,7 @@ const (
 	InferenceTaskEndInvalidated
 	InferenceTaskEndSuccess
 	InferenceTaskResultDownloaded
+	InferenceTaskNeedCancel
 )
 
 type ChainTaskType uint8
