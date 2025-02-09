@@ -26,95 +26,156 @@ var ethRpcClient *ethclient.Client
 var chainID *big.Int
 var gasPrice *big.Int
 
-func GetRpcClient() (*ethclient.Client, error) {
+var taskContractInstance *bindings.Task
+var nodeContractInstance *bindings.Node
+var netstatsContractInstance *bindings.NetworkStats
+
+func GetRpcClient() *ethclient.Client {
 	if ethRpcClient == nil {
-		appConfig := config.GetConfig()
-		client, err := ethclient.Dial(appConfig.Blockchain.RpcEndpoint)
-
-		if err != nil {
-			return nil, err
-		}
-
-		ethRpcClient = client
+		log.Panicln("eth rpc client is nil")
 	}
-
-	return ethRpcClient, nil
+	return ethRpcClient
 }
 
-func getSuggestGasPrice(ctx context.Context) (*big.Int, error) {
-	if gasPrice == nil {
-		client, err := GetRpcClient()
-		if err != nil {
-			return nil, nil
-		}
+func GetTaskContractInstance() *bindings.Task {
+	if taskContractInstance == nil {
+		log.Panicln("task contract instance is nil")
+	}
+	return taskContractInstance
+}
 
-		if err := getLimiter().Wait(ctx); err != nil {
-			return nil, nil
-		}
+func GetNodeContractInstance() *bindings.Node {
+	if nodeContractInstance == nil {
+		log.Panicln("node contract instance is nil")
+	}
+	return nodeContractInstance
+}
+
+func GetNetstatsContractInstance() *bindings.NetworkStats {
+	if netstatsContractInstance == nil {
+		log.Panicln("netstats contract instance is nil")
+	}
+	return netstatsContractInstance
+}
+
+func getGasPrice() *big.Int {
+	if gasPrice == nil {
+		log.Panicln("gas price is nil")
+	}
+	return gasPrice
+}
+
+func getChainID() *big.Int {
+	if chainID == nil {
+		log.Panicln("chain id is nil")
+	}
+	return chainID
+}
+
+func Init(ctx context.Context) error {
+	appConfig := config.GetConfig()
+	if err := initEthRpcClient(appConfig.Blockchain.RpcEndpoint); err != nil {
+		return err
+	}
+	if err := initTaskContractInstance(appConfig.Blockchain.Contracts.Task); err != nil {
+		return err
+	}
+	if err := initNodeContractAddress(appConfig.Blockchain.Contracts.Node); err != nil {
+		return err
+	}
+	if err := initNetstatsContractAddress(appConfig.Blockchain.Contracts.Netstats); err != nil {
+		return err
+	}
+	if err := initChainID(ctx, appConfig.Blockchain.ChainID); err != nil {
+		return err
+	}
+	if err := initSuggestGasPrice(ctx, appConfig.Blockchain.GasPrice); err != nil {
+		return err
+	}
+	return nil
+}
+
+func initEthRpcClient(endpoint string) error {
+	client, err := ethclient.Dial(endpoint)
+	if err != nil {
+		return err
+	}
+	ethRpcClient = client
+	return nil
+}
+
+func initTaskContractInstance(taskContractAddress string) error {
+	client := GetRpcClient()
+	taskInstance, err := bindings.NewTask(common.HexToAddress(taskContractAddress), client)
+	if err != nil {
+		return err
+	}
+	taskContractInstance = taskInstance
+	return nil
+}
+
+func initNodeContractAddress(nodeContractAddress string) error {
+	client := GetRpcClient()
+	nodeInstance, err := bindings.NewNode(common.HexToAddress(nodeContractAddress), client)
+	if err != nil {
+		return err
+	}
+	nodeContractInstance = nodeInstance
+	return nil
+}
+
+func initNetstatsContractAddress(netstatsContractAddress string) error {
+	client := GetRpcClient()
+	netstatsInstance, err := bindings.NewNetworkStats(common.HexToAddress(netstatsContractAddress), client)
+	if err != nil {
+		return err
+	}
+	netstatsContractInstance = netstatsInstance
+	return nil
+}
+
+func initSuggestGasPrice(ctx context.Context, gasPriceNum uint64) error {
+	if gasPriceNum > 0 {
+		gasPrice = big.NewInt(0).SetUint64(gasPriceNum)
+	} else {
 		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
+		client := GetRpcClient()
 		p, err := client.SuggestGasPrice(callCtx)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		log.Debugln("Estimated gas price from blockchain: " + p.String())
 		gasPrice = p
 	}
-	return gasPrice, nil
+	return nil
 }
 
-func getChainID(ctx context.Context) (*big.Int, error) {
-	if chainID == nil {
-		client, err := GetRpcClient()
-		if err != nil {
-			return nil, nil
-		}
-
-		if err := getLimiter().Wait(ctx); err != nil {
-			return nil, nil
-		}
+func initChainID(ctx context.Context, chainIDNum uint64) error {
+	if chainIDNum > 0 {
+		chainID = big.NewInt(0).SetUint64(chainIDNum)
+	} else {
 		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
+		client := GetRpcClient()
 		id, err := client.ChainID(callCtx)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		chainID = id
 	}
-	return chainID, nil
+	return nil
 }
 
 func GetAuth(ctx context.Context, address common.Address, privateKeyStr string) (*bind.TransactOpts, error) {
-
 	appConfig := config.GetConfig()
 
 	var err error
-	gasPrice := big.NewInt(0)
-	if appConfig.Blockchain.GasPrice > 0 {
-		gasPrice.SetUint64(appConfig.Blockchain.GasPrice)
-	} else {
-		gasPrice, err = getSuggestGasPrice(ctx)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	privateKey, err := crypto.HexToECDSA(privateKeyStr)
 	if err != nil {
 		return nil, err
 	}
-
-	chainID := big.NewInt(0)
-	if appConfig.Blockchain.ChainID > 0 {
-		chainID.SetUint64(appConfig.Blockchain.ChainID)
-	} else {
-		chainID, err = getChainID(ctx)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, getChainID())
 	if err != nil {
 		return nil, err
 	}
@@ -123,17 +184,14 @@ func GetAuth(ctx context.Context, address common.Address, privateKeyStr string) 
 
 	auth.Value = big.NewInt(0)
 	auth.GasLimit = appConfig.Blockchain.GasLimit
-	auth.GasPrice = gasPrice
+	auth.GasPrice = getGasPrice()
 
 	return auth, nil
 }
 
 func WaitTxReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
 	deadline, hasDeadline := ctx.Deadline()
-	client, err := GetRpcClient()
-	if err != nil {
-		return nil, err
-	}
+	client := GetRpcClient()
 
 	for {
 		r, err := func() (*types.Receipt, error) {
@@ -157,33 +215,7 @@ func WaitTxReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, err
 }
 
 func SendETH(ctx context.Context, from common.Address, to common.Address, amount *big.Int, privateKeyStr string) (*types.Transaction, error) {
-	appConfig := config.GetConfig()
-
-	client, err := GetRpcClient()
-	if err != nil {
-		return nil, err
-	}
-
-	gasPrice := big.NewInt(0)
-	if appConfig.Blockchain.GasPrice > 0 {
-		gasPrice.SetUint64(appConfig.Blockchain.GasPrice)
-	} else {
-		gasPrice, err = getSuggestGasPrice(ctx)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	chainID := big.NewInt(0)
-	if appConfig.Blockchain.ChainID > 0 {
-		chainID.SetUint64(appConfig.Blockchain.ChainID)
-	} else {
-		chainID, err = getChainID(ctx)
-		if err != nil {
-			return nil, err
-		}
-	}
-
+	client := GetRpcClient()
 	gasLimit := config.GetConfig().Blockchain.GasLimit
 
 	txMutex.Lock()
@@ -193,14 +225,14 @@ func SendETH(ctx context.Context, from common.Address, to common.Address, amount
 		return nil, err
 	}
 
-	tx := types.NewTransaction(nonce, to, amount, gasLimit, gasPrice, nil)
+	tx := types.NewTransaction(nonce, to, amount, gasLimit, getGasPrice(), nil)
 
 	privateKey, err := crypto.HexToECDSA(privateKeyStr)
 	if err != nil {
 		return nil, err
 	}
 
-	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(getChainID()), privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -223,11 +255,7 @@ func SendETH(ctx context.Context, from common.Address, to common.Address, amount
 
 func GetErrorMessageFromReceipt(ctx context.Context, receipt *types.Receipt) (string, error) {
 
-	client, err := GetRpcClient()
-	if err != nil {
-		return "", err
-	}
-
+	client := GetRpcClient()
 	if err := getLimiter().Wait(ctx); err != nil {
 		return "", err
 	}
@@ -288,75 +316,4 @@ func unpackError(result []byte) (string, error) {
 	}
 
 	return vs[0].(string), nil
-}
-
-var taskContractInstance *bindings.Task
-var nodeContractInstance *bindings.Node
-var netstatsContractInstance *bindings.NetworkStats
-
-func GetTaskContractInstance() (*bindings.Task, error) {
-
-	if taskContractInstance == nil {
-		appConfig := config.GetConfig()
-		taskContractAddress := common.HexToAddress(appConfig.Blockchain.Contracts.Task)
-
-		client, err := GetRpcClient()
-		if err != nil {
-			return nil, err
-		}
-
-		instance, err := bindings.NewTask(taskContractAddress, client)
-
-		if err != nil {
-			return nil, err
-		}
-
-		taskContractInstance = instance
-	}
-
-	return taskContractInstance, nil
-}
-
-func GetNodeContractInstance() (*bindings.Node, error) {
-	if nodeContractInstance == nil {
-		appConfig := config.GetConfig()
-		nodeContractAddress := common.HexToAddress(appConfig.Blockchain.Contracts.Node)
-
-		client, err := GetRpcClient()
-		if err != nil {
-			return nil, err
-		}
-
-		instance, err := bindings.NewNode(nodeContractAddress, client)
-
-		if err != nil {
-			return nil, err
-		}
-
-		nodeContractInstance = instance
-	}
-
-	return nodeContractInstance, nil
-}
-
-func GetNetstatsContractInstance() (*bindings.NetworkStats, error) {
-	if netstatsContractInstance == nil {
-		appConfig := config.GetConfig()
-		address := common.HexToAddress(appConfig.Blockchain.Contracts.Netstats)
-
-		client, err := GetRpcClient()
-		if err != nil {
-			return nil, err
-		}
-
-		instance, err := bindings.NewNetworkStats(address, client)
-
-		if err != nil {
-			return nil, err
-		}
-
-		netstatsContractInstance = instance
-	}
-
-	return netstatsContractInstance, nil
 }

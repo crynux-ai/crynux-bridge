@@ -16,14 +16,11 @@ import (
 var localNonce *uint64
 var txMutex sync.Mutex
 
-var pattern *regexp.Regexp = regexp.MustCompile(`invalid nonce; got (\d+), expected (\d+)`)
+var pattern *regexp.Regexp = regexp.MustCompile(`[Nn]once`)
 
 func getNonce(ctx context.Context, address common.Address) (uint64, error) {
 	if localNonce == nil {
-		client, err := GetRpcClient()
-		if err != nil {
-			return 0, err
-		}
+		client := GetRpcClient()
 
 		if err := getLimiter().Wait(ctx); err != nil {
 			return 0, err
@@ -48,22 +45,14 @@ func addNonce(nonce uint64) {
 	(*localNonce)++
 }
 
-func matchNonceError(errStr string) (uint64, bool) {
+func matchNonceError(errStr string) bool {
 	res := pattern.FindStringSubmatch(errStr)
-	if res == nil {
-		return 0, false
-	}
-	nonceStr := res[len(res)-1]
-	if len(nonceStr) == 0 {
-		return 0, false
-	}
-	nonce, _ := strconv.ParseUint(nonceStr, 10, 64)
-	return nonce, true
+	return res != nil
 }
 
 func processSendingTxError(err error) error {
-	if nonce, ok := matchNonceError(err.Error()); ok {
-		*localNonce = nonce
+	if ok := matchNonceError(err.Error()); ok {
+		localNonce = nil
 	}
 	return err
 }

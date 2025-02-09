@@ -34,9 +34,12 @@ func main() {
 
 	startDBMigration()
 
+	if err := blockchain.Init(context.Background()); err != nil {
+		log.Fatalln(err)
+	}
+
 	// Check the account balance
-	// Approve all the balance to the task contract
-	if err := blockchain.ApproveAllBalanceForTaskCreator(); err != nil {
+	if err := blockchain.CheckBalanceForTaskCreator(); err != nil {
 		log.Fatalln(err)
 	}
 

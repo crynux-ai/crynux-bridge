@@ -25,10 +25,7 @@ func GetWalletBalance(_ *gin.Context) (*GetWalletBalanceResponse, error) {
 	appConfig := config.GetConfig()
 	applicationWalletAddress := common.HexToAddress(appConfig.Blockchain.Account.Address)
 
-	client, err := blockchain.GetRpcClient()
-	if err != nil {
-		return nil, response.NewExceptionResponse(err)
-	}
+	client := blockchain.GetRpcClient()
 
 	balance, err := client.BalanceAt(
 		context.Background(),
