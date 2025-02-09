@@ -29,10 +29,7 @@ import (
 )
 
 func GetTaskByCommitment(ctx context.Context, taskIDCommitment [32]byte) (*bindings.VSSTaskTaskInfo, error) {
-	taskInstance, err := GetTaskContractInstance()
-	if err != nil {
-		return nil, err
-	}
+	taskInstance := GetTaskContractInstance()
 
 	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
@@ -54,10 +51,7 @@ func GetTaskByCommitment(ctx context.Context, taskIDCommitment [32]byte) (*bindi
 }
 
 func CreateTaskOnChain(ctx context.Context, task *models.InferenceTask) (string, error) {
-	taskInstance, err := GetTaskContractInstance()
-	if err != nil {
-		return "", err
-	}
+	taskInstance := GetTaskContractInstance()
 
 	appConfig := config.GetConfig()
 	address := common.HexToAddress(appConfig.Blockchain.Account.Address)
@@ -124,10 +118,7 @@ func CreateTaskOnChain(ctx context.Context, task *models.InferenceTask) (string,
 }
 
 func ValidateSingleTask(ctx context.Context, task *models.InferenceTask) (string, error) {
-	taskInstance, err := GetTaskContractInstance()
-	if err != nil {
-		return "", err
-	}
+	taskInstance := GetTaskContractInstance()
 
 	appConfig := config.GetConfig()
 	address := common.HexToAddress(appConfig.Blockchain.Account.Address)
@@ -183,10 +174,7 @@ func ValidateSingleTask(ctx context.Context, task *models.InferenceTask) (string
 }
 
 func ValidateTaskGroup(ctx context.Context, task1, task2, task3 *models.InferenceTask) (string, error) {
-	taskInstance, err := GetTaskContractInstance()
-	if err != nil {
-		return "", err
-	}
+	taskInstance := GetTaskContractInstance()
 
 	appConfig := config.GetConfig()
 	address := common.HexToAddress(appConfig.Blockchain.Account.Address)
@@ -251,10 +239,7 @@ func ValidateTaskGroup(ctx context.Context, task1, task2, task3 *models.Inferenc
 }
 
 func CancelTask(ctx context.Context, task *models.InferenceTask) (string, error) {
-	taskInstance, err := GetTaskContractInstance()
-	if err != nil {
-		return "", err
-	}
+	taskInstance := GetTaskContractInstance()
 
 	appConfig := config.GetConfig()
 	address := common.HexToAddress(appConfig.Blockchain.Account.Address)
@@ -328,17 +313,14 @@ func GetHashForGPTResponse(resp string) []byte {
 	return h[:]
 }
 
-func ApproveAllBalanceForTaskCreator() error {
+func CheckBalanceForTaskCreator() error {
 
 	// Check ETH balance
-	client, err := GetRpcClient()
-	if err != nil {
-		return err
-	}
+	client := GetRpcClient()
 
 	appAddress := common.HexToAddress(config.GetConfig().Blockchain.Account.Address)
 
-	log.Infoln("Approve all balance for the application account: " + config.GetConfig().Blockchain.Account.Address)
+	log.Infoln("Check balance for the application account: " + config.GetConfig().Blockchain.Account.Address)
 
 	currentETHBalance, err := client.BalanceAt(
 		context.Background(),

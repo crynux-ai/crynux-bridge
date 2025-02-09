@@ -21,10 +21,7 @@ type GetNodeStatsOutput struct {
 
 func GetNodeStats(*gin.Context) (*GetNodeStatsOutput, error) {
 
-	netstatsContractInstance, err := blockchain.GetNetstatsContractInstance()
-	if err != nil {
-		return nil, response.NewExceptionResponse(err)
-	}
+	netstatsContractInstance := blockchain.GetNetstatsContractInstance()
 
 	totalNodes, err := netstatsContractInstance.TotalNodes(&bind.CallOpts{
 		Pending: false,

@@ -9,10 +9,7 @@ import (
 )
 
 func GetQueuedTasks(ctx context.Context) (*big.Int, error) {
-	netstatsInstance, err := GetNetstatsContractInstance()
-	if err != nil {
-		return nil, err
-	}
+	netstatsInstance := GetNetstatsContractInstance()
 
 	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()

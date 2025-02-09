@@ -20,10 +20,7 @@ var pattern *regexp.Regexp = regexp.MustCompile(`invalid nonce; got (\d+), expec
 
 func getNonce(ctx context.Context, address common.Address) (uint64, error) {
 	if localNonce == nil {
-		client, err := GetRpcClient()
-		if err != nil {
-			return 0, err
-		}
+		client := GetRpcClient()
 
 		if err := getLimiter().Wait(ctx); err != nil {
 			return 0, err
