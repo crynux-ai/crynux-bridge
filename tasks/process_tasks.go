@@ -583,7 +583,7 @@ func ProcessTasks(ctx context.Context) {
 					log.Infof("ProcessTasks: start processing task %d", task.ID)
 					var ctx1 context.Context
 					var cancel context.CancelFunc
-					deadline := task.CreatedAt.Add(10 * time.Minute)
+					deadline := task.CreatedAt.Add(24 * time.Hour + time.Minute)
 					ctx1, cancel = context.WithDeadline(ctx, deadline)
 					defer cancel()
 
