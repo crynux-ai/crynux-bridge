@@ -65,6 +65,7 @@ func createTask(ctx context.Context, task *models.InferenceTask) error {
 	if err != nil {
 		return err
 	}
+	log.Infof("ProcessTasks: create task %d on chain tx hash %s", task.ID, txHash)
 
 	receipt, err := func() (*types.Receipt, error) {
 		callCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
@@ -583,7 +584,7 @@ func ProcessTasks(ctx context.Context) {
 					log.Infof("ProcessTasks: start processing task %d", task.ID)
 					var ctx1 context.Context
 					var cancel context.CancelFunc
-					deadline := task.CreatedAt.Add(24 * time.Hour + time.Minute)
+					deadline := task.CreatedAt.Add(10 * time.Minute)
 					ctx1, cancel = context.WithDeadline(ctx, deadline)
 					defer cancel()
 
