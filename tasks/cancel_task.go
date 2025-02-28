@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	log "github.com/sirupsen/logrus"
 )
@@ -49,7 +50,14 @@ func cancelTaskOnChain(ctx context.Context, task *models.InferenceTask) error {
 }
 
 func cancelTask(ctx context.Context, task *models.InferenceTask) error {
+	newTask := &models.InferenceTask{}
 	if len(task.TaskIDCommitment) == 0 {
+		newTask.Status = models.InferenceTaskEndAborted
+		newTask.AbortReason = models.TaskAbortTimeout
+		if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
+			log.Errorf("CancelTasks: cannot save task %d status: %v", task.ID, err)
+			return err
+		}
 		return nil
 	}
 	taskIDCommitment, _ := utils.HexStrToBytes32(task.TaskIDCommitment)
@@ -58,21 +66,36 @@ func cancelTask(ctx context.Context, task *models.InferenceTask) error {
 		log.Errorf("CancelTasks: cannot get task %d from chain: %v", task.ID, err)
 		return err
 	}
+	if hexutil.Encode(chainTask.TaskIDCommitment[:]) != task.TaskIDCommitment {
+		newTask.Status = models.InferenceTaskEndAborted
+		newTask.AbortReason = models.TaskAbortTimeout
+		if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
+			log.Errorf("CancelTasks: cannot save task %d status: %v", task.ID, err)
+			return err
+		}
+		return nil
+	}
 
-	newTask := &models.InferenceTask{}
-	if chainTask.Status != uint8(models.ChainTaskEndAborted) {
+	chainTaskStatus := models.ChainTaskStatus(chainTask.Status)
+	if chainTaskStatus == models.ChainTaskEndSuccess || chainTaskStatus == models.ChainTaskEndGroupSuccess {
+		newTask.Status = models.InferenceTaskEndSuccess
+	} else if chainTaskStatus == models.ChainTaskEndGroupRefund {
+		newTask.Status = models.InferenceTaskEndGroupRefund
+	} else if chainTaskStatus == models.ChainTaskEndInvalidated {
+		newTask.Status = models.InferenceTaskEndInvalidated
+	} else if chainTaskStatus == models.ChainTaskEndAborted {
+		newTask.Status = models.InferenceTaskEndAborted
+		newTask.AbortReason = models.TaskAbortReason(chainTask.AbortReason)
+	} else {
 		if err := cancelTaskOnChain(ctx, task); err != nil {
 			log.Errorf("CancelTasks: cannot cancel task %d on chain: %v", task.ID, err)
 			return err
 		}
 		newTask.Status = models.InferenceTaskEndAborted
 		newTask.AbortReason = models.TaskAbortTimeout
-	} else {
-		newTask.Status = models.InferenceTaskEndAborted
-		newTask.AbortReason = models.TaskAbortReason(chainTask.AbortReason)
 	}
 	if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
-		log.Errorf("CancelTasks: cannot cancel task %d on chain: %v", task.ID, err)
+		log.Errorf("CancelTasks: cannot save task %d status: %v", task.ID, err)
 		return err
 	}
 	return nil
