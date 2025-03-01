@@ -9,6 +9,7 @@ import (
 	"crynux_bridge/relay"
 	"crynux_bridge/utils"
 	"crypto/rand"
+	mrand "math/rand"
 	"errors"
 	"fmt"
 	"math/big"
@@ -546,8 +547,6 @@ func ProcessTasks(ctx context.Context) {
 	limit := 100
 	lastID := uint(0)
 
-	interval := 1
-
 	for {
 		tasks, err := func(ctx context.Context) ([]models.InferenceTask, error) {
 			var tasks []models.InferenceTask
@@ -571,7 +570,7 @@ func ProcessTasks(ctx context.Context) {
 		}(ctx)
 		if err != nil {
 			log.Errorf("ProcessTasks: cannot get unprocessed tasks: %v", err)
-			time.Sleep(time.Duration(interval) * time.Second)
+			time.Sleep(time.Duration(mrand.Float64() * 1000) * time.Millisecond)
 			continue
 		}
 
@@ -597,7 +596,8 @@ func ProcessTasks(ctx context.Context) {
 						case err := <-c:
 							if err != nil {
 								log.Errorf("ProcessTasks: process task %d error %v, retry", task.ID, err)
-								time.Sleep(2 * time.Second)
+								duration := time.Duration((mrand.Float64() * 3 + 2) * 1000)
+								time.Sleep(duration * time.Millisecond)
 							} else {
 								log.Infof("ProcessTasks: process task %d successfully", task.ID)
 								return
@@ -632,6 +632,8 @@ func ProcessTasks(ctx context.Context) {
 						}
 					}
 				}(ctx, task)
+
+				time.Sleep(time.Duration(mrand.Float64() * 1000) * time.Millisecond)
 			}
 		}
 
