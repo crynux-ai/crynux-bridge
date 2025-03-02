@@ -35,7 +35,11 @@ blockchain:
 relay:
   base_url: "https://dy.relay.crynux.ai"
 task:
-  task_fee: 4100000000
+  task_fee: 4100000000000000
+  repeat_num: 1
+  pending_auto_tasks_limit: 10
+  AutoTasksBatchSize: 1
+  timeout: 30
 task_schema:
   stable_diffusion_inference: 'https://raw.githubusercontent.com/crynux-ai/stable-diffusion-task/main/schema/stable-diffusion-inference-task.json'
   gpt_inference: "https://raw.githubusercontent.com/crynux-ai/gpt-task/main/schema/gpt-inference-task.json"

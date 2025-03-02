@@ -54,9 +54,9 @@ type AppConfig struct {
 		} `mapstructure:"account"`
 
 		Contracts struct {
-			Netstats    string `mapstructure:"netstats"`
-			Task        string `mapstructure:"task"`
-			Node        string `mapstructure:"node"`
+			Netstats string `mapstructure:"netstats"`
+			Task     string `mapstructure:"task"`
+			Node     string `mapstructure:"node"`
 		} `mapstructure:"contracts"`
 	} `mapstructure:"blockchain"`
 
@@ -69,6 +69,7 @@ type AppConfig struct {
 		RepeatNum             int    `mapstructure:"repeat_num"`
 		PendingAutoTasksLimit uint64 `mapstructure:"pending_auto_tasks_limit"`
 		AutoTasksBatchSize    uint64 `mapstructure:"auto_tasks_batch_size"`
+		Timeout               uint64 `mapstructure:"timeout"`
 	} `mapstructure:"task"`
 
 	TaskSchema struct {
