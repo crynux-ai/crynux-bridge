@@ -547,6 +547,8 @@ func ProcessTasks(ctx context.Context) {
 	limit := 100
 	lastID := uint(0)
 
+	appConfig := config.GetConfig()
+
 	for {
 		tasks, err := func(ctx context.Context) ([]models.InferenceTask, error) {
 			var tasks []models.InferenceTask
@@ -582,7 +584,8 @@ func ProcessTasks(ctx context.Context) {
 					log.Infof("ProcessTasks: start processing task %d", task.ID)
 					var ctx1 context.Context
 					var cancel context.CancelFunc
-					deadline := task.CreatedAt.Add(10 * time.Minute)
+					duration := time.Duration(appConfig.Task.Timeout) * time.Minute
+					deadline := task.CreatedAt.Add(duration)
 					ctx1, cancel = context.WithDeadline(ctx, deadline)
 					defer cancel()
 
