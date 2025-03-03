@@ -560,6 +560,7 @@ func ProcessTasks(ctx context.Context) {
 				Where("status != ?", models.InferenceTaskEndInvalidated).
 				Where("status != ?", models.InferenceTaskEndGroupRefund).
 				Where("status != ?", models.InferenceTaskResultDownloaded).
+				Where("status != ?", models.InferenceTaskNeedCancel).
 				Where("id > ?", lastID).
 				Find(&tasks).
 				Order("id ASC").
