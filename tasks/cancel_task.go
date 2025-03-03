@@ -50,6 +50,7 @@ func cancelTaskOnChain(ctx context.Context, task *models.InferenceTask) error {
 }
 
 func cancelTask(ctx context.Context, task *models.InferenceTask) error {
+	log.Infof("CancelTasks: start to cancel task %d", task.ID)
 	newTask := &models.InferenceTask{}
 	if len(task.TaskIDCommitment) == 0 {
 		newTask.Status = models.InferenceTaskEndAborted
@@ -58,6 +59,7 @@ func cancelTask(ctx context.Context, task *models.InferenceTask) error {
 			log.Errorf("CancelTasks: cannot save task %d status: %v", task.ID, err)
 			return err
 		}
+		log.Infof("CancelTasks: task %d canceled successfully", task.ID)
 		return nil
 	}
 	taskIDCommitment, _ := utils.HexStrToBytes32(task.TaskIDCommitment)
@@ -73,6 +75,7 @@ func cancelTask(ctx context.Context, task *models.InferenceTask) error {
 			log.Errorf("CancelTasks: cannot save task %d status: %v", task.ID, err)
 			return err
 		}
+		log.Infof("CancelTasks: task %d canceled successfully", task.ID)
 		return nil
 	}
 
@@ -108,7 +111,7 @@ func getTasksNeedCancel(ctx context.Context) ([]models.InferenceTask, error) {
 
 	allTasks := []models.InferenceTask{}
 	for {
-		tasks, err := func(ctx context.Context) ([]models.InferenceTask, error) {
+		tasks, err := func(ctx context.Context, offset, limit int) ([]models.InferenceTask, error) {
 			var tasks []models.InferenceTask
 
 			dbCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
@@ -124,7 +127,7 @@ func getTasksNeedCancel(ctx context.Context) ([]models.InferenceTask, error) {
 				return nil, err
 			}
 			return tasks, nil
-		}(ctx)
+		}(ctx, offset, limit)
 		if err != nil {
 			return nil, err
 		}
@@ -146,6 +149,7 @@ func CancelTasks(ctx context.Context) {
 			time.Sleep(2 * time.Second)
 			continue
 		}
+		log.Infof("CancelTasks: %d tasks need to cancel", len(tasks))
 
 		for _, task := range tasks {
 			if err := cancelTask(ctx, &task); err != nil {
