@@ -518,7 +518,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			if err != nil {
 				return err
 			}
-			if task.Status == models.InferenceTaskValidated || task.Status == models.InferenceTaskEndInvalidated || task.Status == models.InferenceTaskEndSuccess || task.Status == models.InferenceTaskEndGroupRefund || task.Status == models.InferenceTaskEndAborted {
+			if task.Status == models.InferenceTaskEndInvalidated || task.Status == models.InferenceTaskEndSuccess || task.Status == models.InferenceTaskEndGroupRefund || task.Status == models.InferenceTaskEndAborted {
 				break
 			}
 			time.Sleep(time.Second)
@@ -527,7 +527,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 	}
 
 	// download task result
-	if task.Status == models.InferenceTaskValidated || task.Status == models.InferenceTaskEndSuccess {
+	if task.Status == models.InferenceTaskEndSuccess {
 		err := downloadTaskResult(ctx, task)
 		if err != nil {
 			return err
