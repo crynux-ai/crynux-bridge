@@ -98,6 +98,7 @@ func cancelTask(ctx context.Context, task *models.InferenceTask) error {
 		log.Errorf("CancelTasks: cannot save task %d status: %v", task.ID, err)
 		return err
 	}
+	log.Infof("CancelTasks: task %d canceled successfully", task.ID)
 	return nil
 }
 
