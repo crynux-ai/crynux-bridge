@@ -118,10 +118,10 @@ func getTasksNeedCancel(ctx context.Context) ([]models.InferenceTask, error) {
 			defer cancel()
 			err := config.GetDB().WithContext(dbCtx).Model(&models.InferenceTask{}).
 				Where("status = ?", models.InferenceTaskNeedCancel).
-				Find(&tasks).
 				Order("id ASC").
 				Limit(limit).
 				Offset(offset).
+				Find(&tasks).
 				Error
 			if err != nil {
 				return nil, err
