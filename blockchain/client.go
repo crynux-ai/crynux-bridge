@@ -245,11 +245,9 @@ func SendETH(ctx context.Context, from common.Address, to common.Address, amount
 	defer cancel()
 	err = client.SendTransaction(callCtx, signedTx)
 	if err != nil {
-		err = processSendingTxError(err)
 		return nil, err
 	}
 
-	addNonce(nonce)
 	return signedTx, nil
 }
 
