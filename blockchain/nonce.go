@@ -22,10 +22,6 @@ func getNonce(ctx context.Context, address common.Address) (uint64, error) {
 	if localNonce == nil {
 		client := GetRpcClient()
 
-		if err := getLimiter().Wait(ctx); err != nil {
-			return 0, err
-		}
-
 		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
 		nonce, err := client.PendingNonceAt(callCtx, address)

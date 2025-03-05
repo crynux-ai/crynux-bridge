@@ -19,9 +19,5 @@ func GetQueuedTasks(ctx context.Context) (*big.Int, error) {
 		Context: callCtx,
 	}
 
-	if err := getLimiter().Wait(callCtx); err != nil {
-		return nil, err
-	}
-
 	return netstatsInstance.QueuedTasks(opts)
 }

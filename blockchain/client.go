@@ -256,9 +256,6 @@ func SendETH(ctx context.Context, from common.Address, to common.Address, amount
 func GetErrorMessageFromReceipt(ctx context.Context, receipt *types.Receipt) (string, error) {
 
 	client := GetRpcClient()
-	if err := getLimiter().Wait(ctx); err != nil {
-		return "", err
-	}
 
 	ctx1, cancel1 := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel1()
@@ -274,10 +271,6 @@ func GetErrorMessageFromReceipt(ctx context.Context, receipt *types.Receipt) (st
 		GasPrice: tx.GasPrice(),
 		Value:    tx.Value(),
 		Data:     tx.Data(),
-	}
-
-	if err := getLimiter().Wait(ctx); err != nil {
-		return "", err
 	}
 
 	blockNumber := big.NewInt(0).Sub(receipt.BlockNumber, big.NewInt(1))
