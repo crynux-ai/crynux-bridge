@@ -2,56 +2,19 @@ package tasks
 
 import (
 	"context"
-	"crynux_bridge/blockchain"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
-	"crynux_bridge/utils"
-	"errors"
+	"crynux_bridge/relay"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core/types"
 	log "github.com/sirupsen/logrus"
 )
 
-func cancelTaskOnChain(ctx context.Context, task *models.InferenceTask) error {
-	if len(task.TaskIDCommitment) == 0 {
-		return nil
-	}
-
-	txHash, err := func() (string, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-		defer cancel()
-		return blockchain.CancelTask(callCtx, task)
-	}()
-	if err != nil {
-		return err
-	}
-
-	receipt, err := func() (*types.Receipt, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
-		defer cancel()
-		return blockchain.WaitTxReceipt(callCtx, common.HexToHash(txHash))
-	}()
-	if err != nil {
-		return err
-	}
-
-	if receipt.Status == 0 {
-		errMsg, err := blockchain.GetErrorMessageFromReceipt(ctx, receipt)
-		if err != nil {
-			return err
-		}
-		log.Errorf("ProcessTasks: %d cancelTask failed: %s", task.ID, errMsg)
-		return errors.New(errMsg)
-	}
-	return nil
-}
-
 func cancelTask(ctx context.Context, task *models.InferenceTask) error {
 	log.Infof("CancelTasks: start to cancel task %d", task.ID)
+	taskIDCommitment := task.TaskIDCommitment
 	newTask := &models.InferenceTask{}
+	// If task is not uploaded yet, cancel it directly
 	if len(task.TaskIDCommitment) == 0 {
 		newTask.Status = models.InferenceTaskEndAborted
 		newTask.AbortReason = models.TaskAbortTimeout
@@ -62,23 +25,15 @@ func cancelTask(ctx context.Context, task *models.InferenceTask) error {
 		log.Infof("CancelTasks: task %d canceled successfully", task.ID)
 		return nil
 	}
-	taskIDCommitment, _ := utils.HexStrToBytes32(task.TaskIDCommitment)
-	chainTask, err := blockchain.GetTaskByCommitment(ctx, *taskIDCommitment)
+
+	chainTask, err := relay.GetTaskByCommitment(ctx, taskIDCommitment)
 	if err != nil {
-		log.Errorf("CancelTasks: cannot get task %d from chain: %v", task.ID, err)
+		log.Errorf("CancelTasks: cannot get task %d : %v", task.ID, err)
 		return err
 	}
-	if hexutil.Encode(chainTask.TaskIDCommitment[:]) != task.TaskIDCommitment {
-		newTask.Status = models.InferenceTaskEndAborted
-		newTask.AbortReason = models.TaskAbortTimeout
-		if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
-			log.Errorf("CancelTasks: cannot save task %d status: %v", task.ID, err)
-			return err
-		}
-		log.Infof("CancelTasks: task %d canceled successfully", task.ID)
-		return nil
-	}
 
+	// If task is already finished, we don't need to cancel it
+	// Otherwise, cancel it
 	chainTaskStatus := models.ChainTaskStatus(chainTask.Status)
 	if chainTaskStatus == models.ChainTaskEndSuccess || chainTaskStatus == models.ChainTaskEndGroupSuccess {
 		newTask.Status = models.InferenceTaskEndSuccess
@@ -90,8 +45,8 @@ func cancelTask(ctx context.Context, task *models.InferenceTask) error {
 		newTask.Status = models.InferenceTaskEndAborted
 		newTask.AbortReason = models.TaskAbortReason(chainTask.AbortReason)
 	} else {
-		if err := cancelTaskOnChain(ctx, task); err != nil {
-			log.Errorf("CancelTasks: cannot cancel task %d on chain: %v", task.ID, err)
+		if err := relay.CancelTask(ctx, task, models.TaskAbortTimeout); err != nil {
+			log.Errorf("CancelTasks: cannot cancel task %d : %v", task.ID, err)
 			return err
 		}
 		newTask.Status = models.InferenceTaskEndAborted

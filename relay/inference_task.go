@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -94,47 +93,6 @@ func processRelayResponse(resp *http.Response) error {
 			ErrorMessage: resp.Status,
 		}
 	}
-}
-
-func UploadTask(ctx context.Context, taskIDCommitment, taskArgs string) error {
-
-	appConfig := config.GetConfig()
-
-	params := &UploadTaskParamsInput{
-		TaskArgs:         taskArgs,
-		TaskIDCommitment: taskIDCommitment,
-	}
-
-	timestamp, signature, err := SignData(params, appConfig.Blockchain.Account.PrivateKey)
-	if err != nil {
-		return err
-	}
-
-	form := url.Values{}
-	form.Add("task_id_commitment", taskIDCommitment)
-	form.Add("task_args", taskArgs)
-	form.Add("timestamp", strconv.FormatInt(timestamp, 10))
-	form.Add("signature", signature)
-	body := strings.NewReader(form.Encode())
-
-	reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/" + taskIDCommitment
-
-	ctx1, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-	r, _ := http.NewRequestWithContext(ctx1, "POST", reqUrl, body)
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	resp, err := http.DefaultClient.Do(r)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	if err := processRelayResponse(resp); err != nil {
-		log.Errorf("Relay, upload task params of %s error: %v", taskIDCommitment, err)
-		return err
-	}
-
-	log.Infof("Relay: upload task params of %s", taskIDCommitment)
-	return nil
 }
 
 func DownloadTaskResult(ctx context.Context, taskIDCommitment string, index uint64, dst io.Writer) error {

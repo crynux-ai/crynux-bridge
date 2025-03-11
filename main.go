@@ -6,6 +6,7 @@ import (
 	"crynux_bridge/blockchain"
 	"crynux_bridge/config"
 	"crynux_bridge/migrate"
+	"crynux_bridge/relay"
 	"crynux_bridge/tasks"
 	"fmt"
 	"os"
@@ -39,7 +40,7 @@ func main() {
 	}
 
 	// Check the account balance
-	if err := blockchain.CheckBalanceForTaskCreator(); err != nil {
+	if err := relay.CheckBalanceForTaskCreator(context.Background()); err != nil {
 		log.Fatalln(err)
 	}
 
