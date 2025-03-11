@@ -2,38 +2,33 @@ package tasks
 
 import (
 	"context"
-	"crynux_bridge/blockchain"
-	"crynux_bridge/blockchain/bindings"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"crynux_bridge/relay"
-	"crynux_bridge/utils"
 	"crypto/rand"
-	mrand "math/rand"
 	"errors"
 	"fmt"
 	"math/big"
+	mrand "math/rand"
 	"os"
 	"path"
 	"sync"
 	"time"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	log "github.com/sirupsen/logrus"
 	"github.com/vechain/go-ecvrf"
 	"gorm.io/gorm"
 )
 
-
-func getChainTask(ctx context.Context, taskIDCommitmentBytes [32]byte) (*bindings.VSSTaskTaskInfo, error) {
+// Get task by taskIDCommitment
+func getTask(ctx context.Context, taskIDCommitment string) (*models.RelayTask, error) {
 	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	return blockchain.GetTaskByCommitment(callCtx, taskIDCommitmentBytes)
+	return relay.GetTaskByCommitment(callCtx, taskIDCommitment)
 }
 
 func vrfProve(privateKey, samplingSeed []byte) ([]byte, []byte, error) {
@@ -58,106 +53,40 @@ func generateTaskIDCommitment(taskID string) (string, string) {
 }
 
 func createTask(ctx context.Context, task *models.InferenceTask) error {
-	txHash, err := func() (string, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-		defer cancel()
-		return blockchain.CreateTaskOnChain(callCtx, task)
-	}()
-	if err != nil {
-		return err
-	}
-
-	receipt, err := func() (*types.Receipt, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
-		defer cancel()
-		return blockchain.WaitTxReceipt(callCtx, common.HexToHash(txHash))
-	}()
-	if err != nil {
-		return err
-	}
-	if receipt.Status == 0 {
-		errMsg, err := blockchain.GetErrorMessageFromReceipt(ctx, receipt)
-		if err != nil {
-			return err
-		}
-		log.Errorf("ProcessTasks: %d createTaskOnChain failed: %s", task.ID, errMsg)
-		return errors.New(errMsg)
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if err := relay.CreateTask(callCtx, task); err != nil {
+		log.Errorf("ProcessTasks: %d createTask failed: err: %v", task.ID, err)
 	}
 	return nil
 }
 
 func validateSingleTask(ctx context.Context, task *models.InferenceTask) error {
-	txHash, err := func() (string, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-		defer cancel()
-		return blockchain.ValidateSingleTask(callCtx, task)
-	}()
-	if err != nil {
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if err := relay.ValidateTask(callCtx, []*models.InferenceTask{task}); err != nil {
+		log.Errorf("ProcessTasks: %d validateSingleTask failed: err: %v", task.ID, err)
 		return err
-	}
-
-	receipt, err := func() (*types.Receipt, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
-		defer cancel()
-		return blockchain.WaitTxReceipt(callCtx, common.HexToHash(txHash))
-	}()
-	if err != nil {
-		return err
-	}
-
-	if receipt.Status == 0 {
-		errMsg, err := blockchain.GetErrorMessageFromReceipt(ctx, receipt)
-		if err != nil {
-			return err
-		}
-		log.Errorf("ProcessTasks: %d validateSingleTask failed: %s", task.ID, errMsg)
-		return errors.New(errMsg)
 	}
 	return nil
 }
 
 func validateTaskGroup(ctx context.Context, task1, task2, task3 *models.InferenceTask) error {
-	txHash, err := func() (string, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-		defer cancel()
-		return blockchain.ValidateTaskGroup(callCtx, task1, task2, task3)
-	}()
-	if err != nil {
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if err := relay.ValidateTask(callCtx, []*models.InferenceTask{task1, task2, task3}); err != nil {
+		log.Errorf("ProcessTasks: %d validateTaskGroup failed: err: %v", task1.ID, err)
 		return err
-	}
-
-	receipt, err := func() (*types.Receipt, error) {
-		callCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
-		defer cancel()
-		return blockchain.WaitTxReceipt(callCtx, common.HexToHash(txHash))
-	}()
-	if err != nil {
-		return err
-	}
-
-	if receipt.Status == 0 {
-		errMsg, err := blockchain.GetErrorMessageFromReceipt(ctx, receipt)
-		if err != nil {
-			return err
-		}
-		taskIDCommitments := []string{task1.TaskIDCommitment, task2.TaskIDCommitment, task3.TaskIDCommitment}
-		log.Errorf("ProcessTasks: %s validateTaskGroup %v failed: %s", task1.TaskID, taskIDCommitments, errMsg)
-		return errors.New(errMsg)
 	}
 	return nil
 }
 
-
-func syncTask(ctx context.Context, task *models.InferenceTask) (*bindings.VSSTaskTaskInfo, error) {
+func syncTask(ctx context.Context, task *models.InferenceTask) (*models.RelayTask, error) {
 	if len(task.TaskIDCommitment) == 0 {
 		return nil, nil
 	}
-	taskIDCommitmentBytes, err := utils.HexStrToBytes32(task.TaskIDCommitment)
-	if err != nil {
-		return nil, err
-	}
 
-	chainTask, err := getChainTask(ctx, *taskIDCommitmentBytes)
+	chainTask, err := getTask(ctx, task.TaskIDCommitment)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +95,7 @@ func syncTask(ctx context.Context, task *models.InferenceTask) (*bindings.VSSTas
 	newTask := &models.InferenceTask{}
 	chainTaskStatus := models.ChainTaskStatus(chainTask.Status)
 	abortReason := models.TaskAbortReason(chainTask.AbortReason)
-	taskError := models.TaskError(chainTask.Error)
+	taskError := models.TaskError(chainTask.TaskError)
 
 	if abortReason != task.AbortReason {
 		newTask.AbortReason = abortReason
@@ -302,13 +231,15 @@ func downloadTaskResult(ctx context.Context, task *models.InferenceTask) error {
 }
 
 func processOneTask(ctx context.Context, task *models.InferenceTask) error {
-	// sync task from blockchain first
+	// sync task
 	_, err := syncTask(ctx, task)
 	if err != nil {
 		return err
 	}
 
-	// report task params is uploaded to blochchain
+	// 1. Generate taskIDCommitment if not exist
+	// 2. Create task
+	// 3. Update task status to InferenceTaskCreated
 	if task.Status == models.InferenceTaskPending {
 		if len(task.TaskIDCommitment) == 0 {
 			nonce, taskIDCommitment := generateTaskIDCommitment(task.TaskID)
@@ -331,29 +262,27 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 		if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
 			return err
 		}
-		log.Infof("ProcessTasks: create task %d on chain", task.ID)
+		log.Infof("ProcessTasks: create task %d ", task.ID)
 	}
 
-	if task.Status == models.InferenceTaskCreated {
+	// 1. Sync sequence and sampling seed, update local database
+	// 2. If needs two more sub-tasks, generate them and store into database
+	// 3. Wait for task result hash to be submitted to relay(Status: InferenceTaskTaskScoreReady)
+	if task.Status == models.InferenceTaskCreated || task.Status == models.InferenceTaskStarted || task.Status == models.InferenceTaskParamsUploaded {
 		// get task sequence and sampling number
-		taskIDCommitmentBytes, err := utils.HexStrToBytes32(task.TaskIDCommitment)
-		if err != nil {
-			return err
-		}
-
-		chainTask, err := getChainTask(ctx, *taskIDCommitmentBytes)
+		chainTask, err := getTask(ctx, task.TaskIDCommitment)
 		if err != nil {
 			return err
 		}
 		newTask := &models.InferenceTask{}
-		newTask.Sequence = chainTask.Sequence.Uint64()
+		newTask.Sequence = chainTask.Sequence
 
 		subTasks := make([]*models.InferenceTask, 0)
 
 		// validation tasks' sampling seed is not empty
 		// avoid generating validation tasks for validation tasks
 		if len(task.SamplingSeed) == 0 {
-			newTask.SamplingSeed = hexutil.Encode(chainTask.SamplingSeed[:])
+			newTask.SamplingSeed = chainTask.SamplingSeed
 			// generate vrf proof
 			appConfig := config.GetConfig()
 			pk := appConfig.Blockchain.Account.PrivateKey
@@ -362,7 +291,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 				log.Errorf("ProcessTasks: %d decode private key failed: %v", task.ID, err)
 				return err
 			}
-			vrfNum, vrfProof, err := vrfProve(privateKey, chainTask.SamplingSeed[:])
+			vrfNum, vrfProof, err := vrfProve(privateKey, []byte(chainTask.SamplingSeed))
 			if err != nil {
 				log.Errorf("ProcessTasks: %d vrf prove failed: %v", task.ID, err)
 				return err
@@ -412,12 +341,13 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			return err
 		}
 
+		// wait task status to be score-ready or error reported
 		for {
 			_, err := syncTask(ctx, task)
 			if err != nil {
 				return err
 			}
-			if task.Status == models.InferenceTaskStarted || task.Status == models.InferenceTaskEndAborted {
+			if task.Status == models.InferenceTaskScoreReady || task.Status == models.InferenceTaskErrorReported {
 				break
 			}
 			time.Sleep(time.Second)
@@ -425,42 +355,9 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 		log.Infof("ProcessTasks: task %d status %d", task.ID, task.Status)
 	}
 
-	// upload task params to relay when task starts
-	if task.Status == models.InferenceTaskStarted {
-		if err := relay.UploadTask(ctx, task.TaskIDCommitment, task.TaskArgs); err != nil {
-			log.Errorf("ProcessTasks: relay upload task %d error: %v", task.ID, err)
-			return err
-		}
-
-		newTask := &models.InferenceTask{
-			Status: models.InferenceTaskParamsUploaded,
-		}
-		if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
-			return err
-		}
-		log.Infof("ProcessTasks: upload params of task %d", task.ID)
-	}
-
-	// wait task status to be score ready, error reported or abort
-	if task.Status == models.InferenceTaskParamsUploaded {
-		for {
-			_, err := syncTask(ctx, task)
-			if err != nil {
-				return err
-			}
-			if task.Status == models.InferenceTaskScoreReady || task.Status == models.InferenceTaskErrorReported || task.Status == models.InferenceTaskEndAborted {
-				break
-			}
-			time.Sleep(time.Second)
-		}
-		log.Infof("ProcessTasks: task %d status %d", task.ID, task.Status)
-	}
-
-	if task.Status == models.InferenceTaskEndAborted {
-		log.Errorf("ProcessTasks: task %d aborted for reason: %d", task.ID, task.AbortReason)
-		return nil
-	}
-
+	// 1. If single task, validate
+	// 2. If task group, wait until all sub-tasks are ready, then validate
+	// 3. Wait for validate result(Status: InferenceTaskEndInvalidated, InferenceTaskEndSuccess, InferenceTaskEndGroupRefund, InferenceTaskEndAborted)
 	if task.Status == models.InferenceTaskScoreReady || task.Status == models.InferenceTaskErrorReported {
 		needValidate := false
 		taskGroup, err := models.GetTaskGroup(ctx, config.GetDB(), task.TaskID)
@@ -543,6 +440,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 	return nil
 }
 
+// Get unprocessed tasks from database and process them, each task is processed in a goroutine
 func ProcessTasks(ctx context.Context) {
 	limit := 100
 	lastID := uint(0)
@@ -550,6 +448,7 @@ func ProcessTasks(ctx context.Context) {
 	appConfig := config.GetConfig()
 
 	for {
+		// get unprocessed tasks from database
 		tasks, err := func(ctx context.Context) ([]models.InferenceTask, error) {
 			var tasks []models.InferenceTask
 
@@ -573,10 +472,11 @@ func ProcessTasks(ctx context.Context) {
 		}(ctx)
 		if err != nil {
 			log.Errorf("ProcessTasks: cannot get unprocessed tasks: %v", err)
-			time.Sleep(time.Duration(mrand.Float64() * 1000) * time.Millisecond)
+			time.Sleep(time.Duration(mrand.Float64()*1000) * time.Millisecond)
 			continue
 		}
 
+		// process tasks one by one
 		if len(tasks) > 0 {
 			lastID = tasks[len(tasks)-1].ID
 
@@ -597,15 +497,17 @@ func ProcessTasks(ctx context.Context) {
 						}()
 
 						select {
+						// process task successfully or failed
 						case err := <-c:
 							if err != nil {
 								log.Errorf("ProcessTasks: process task %d error %v, retry", task.ID, err)
-								duration := time.Duration((mrand.Float64() * 3 + 2) * 1000)
+								duration := time.Duration((mrand.Float64()*3 + 2) * 1000)
 								time.Sleep(duration * time.Millisecond)
 							} else {
 								log.Infof("ProcessTasks: process task %d successfully", task.ID)
 								return
 							}
+						// process task timeout
 						case <-ctx1.Done():
 							err := ctx1.Err()
 							log.Errorf("ProcessTasks: process task %d timeout %v, finish", task.ID, err)
@@ -637,7 +539,7 @@ func ProcessTasks(ctx context.Context) {
 					}
 				}(ctx, task)
 
-				time.Sleep(time.Duration(mrand.Float64() * 1000) * time.Millisecond)
+				time.Sleep(time.Duration(mrand.Float64()*1000) * time.Millisecond)
 			}
 		}
 
