@@ -1,6 +1,7 @@
 package relay
 
 import (
+	"bytes"
 	"context"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
@@ -18,8 +19,6 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-
-	ethParams "github.com/ethereum/go-ethereum/params"
 )
 
 type GetTaskByCommitmentInput struct {
@@ -38,7 +37,7 @@ type CreateTaskInput struct {
 	TaskType         int      `json:"task_type"`
 	TaskVersion      string   `json:"task_version"`
 
-	TaskFee uint64 `json:"task_fee"`
+	TaskFee string `json:"task_fee"`
 }
 
 type ValidateTaskInput struct {
@@ -46,15 +45,19 @@ type ValidateTaskInput struct {
 	TaskID            string   `json:"task_id"`
 	TaskIDCommitments []string `json:"task_id_commitments"`
 	VrfProof          string   `json:"vrf_proof"`
+	Timestamp         int64    `json:"timestamp,omitempty"`
+	Signature         string   `json:"signature,omitempty"`
 }
 
 type CancelTaskInput struct {
 	TaskIDCommitment string `json:"task_id_commitment"`
 	AbortReason      int    `json:"abort_reason"`
+	Timestamp        int64  `json:"timestamp,omitempty"`
+	Signature        string `json:"signature,omitempty"`
 }
 
 type CheckBalanceInput struct {
-	PublicKey string `json:"public_key"`
+	Address string `json:"address"`
 }
 
 // Parse the "data" field of relay response, and store it in parsedData
@@ -160,12 +163,14 @@ func GetTaskByCommitment(ctx context.Context, taskIDCommitment string) (*models.
 		return nil, err
 	}
 
-	log.Infof("Relay: get task %s", taskIDCommitment)
+	log.Debugf("Relay: get task %s", taskIDCommitment)
 	return relayTask, nil
 }
 
 func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 	appConfig := config.GetConfig()
+
+	taskFee := utils.GweiToWei(big.NewInt(int64(task.TaskFee)))
 
 	params := &CreateTaskInput{
 		TaskIDCommitment: task.TaskIDCommitment,
@@ -178,7 +183,7 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 		TaskSize:         task.TaskSize,
 		TaskType:         int(task.TaskType),
 		TaskVersion:      task.TaskVersion,
-		TaskFee:          task.TaskFee,
+		TaskFee:          taskFee.String(),
 	}
 
 	timestamp, signature, err := SignData(params, appConfig.Blockchain.Account.PrivateKey)
@@ -192,13 +197,15 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 	form.Add("required_gpu", task.RequiredGPU)
 	form.Add("required_gpu_vram", strconv.FormatUint(task.RequiredGPUVram, 10))
 	form.Add("task_args", task.TaskArgs)
-	form.Add("task_model_ids", strings.Join(task.TaskModelIDs, ","))
 	form.Add("task_size", strconv.FormatUint(task.TaskSize, 10))
 	form.Add("task_type", strconv.Itoa(int(task.TaskType)))
 	form.Add("task_version", task.TaskVersion)
-	form.Add("task_fee", strconv.FormatUint(task.TaskFee, 10))
+	form.Add("task_fee", taskFee.String())
 	form.Add("timestamp", strconv.FormatInt(timestamp, 10))
 	form.Add("signature", signature)
+	for _, modelID := range task.TaskModelIDs {
+		form.Add("task_model_ids", modelID)
+	}
 	body := strings.NewReader(form.Encode())
 
 	taskIDCommitment := task.TaskIDCommitment
@@ -218,7 +225,7 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 		return err
 	}
 
-	log.Infof("Relay: create task %s", taskIDCommitment)
+	log.Debugf("Relay: create task %s", taskIDCommitment)
 	return nil
 }
 
@@ -258,22 +265,21 @@ func ValidateTask(ctx context.Context, tasks []*models.InferenceTask) error {
 	if err != nil {
 		return err
 	}
+	params.Timestamp = timestamp
+	params.Signature = signature
 
-	form := url.Values{}
-	form.Add("public_key", publicKey)
-	form.Add("task_id", taskID)
-	form.Add("task_id_commitments", strings.Join(taskIDCommitments, ","))
-	form.Add("vrf_proof", vrfProof)
-	form.Add("timestamp", strconv.FormatInt(timestamp, 10))
-	form.Add("signature", signature)
-	body := strings.NewReader(form.Encode())
+	bs, err := json.Marshal(params)
+	if err != nil {
+		return err
+	}
+	body := bytes.NewReader(bs)
 
 	reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/validate"
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	req, _ := http.NewRequestWithContext(timeoutCtx, "POST", reqUrl, body)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Type", "application/json")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
@@ -284,7 +290,7 @@ func ValidateTask(ctx context.Context, tasks []*models.InferenceTask) error {
 		return err
 	}
 
-	log.Infof("Relay: validate task %s success", taskIDCommitments)
+	log.Debugf("Relay: validate task %s success", taskIDCommitments)
 	return nil
 }
 
@@ -304,19 +310,20 @@ func CancelTask(ctx context.Context, task *models.InferenceTask, abortReason mod
 		return err
 	}
 
-	form := url.Values{}
-	form.Add("task_id_commitment", taskIDCommitment)
-	form.Add("abort_reason", strconv.Itoa(int(abortReason)))
-	form.Add("timestamp", strconv.FormatInt(timestamp, 10))
-	form.Add("signature", signature)
-	body := strings.NewReader(form.Encode())
+	params.Timestamp = timestamp
+	params.Signature = signature
+	bs, err := json.Marshal(params)
+	if err != nil {
+		return err
+	}
+	body := bytes.NewReader(bs)
 
-	reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/cancel"
+	reqUrl := appConfig.Relay.BaseURL + fmt.Sprintf("/v1/inference_tasks/%s/abort_reason", taskIDCommitment)
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	req, _ := http.NewRequestWithContext(timeoutCtx, "POST", reqUrl, body)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Type", "application/json")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
@@ -327,7 +334,7 @@ func CancelTask(ctx context.Context, task *models.InferenceTask, abortReason mod
 		return err
 	}
 
-	log.Infof("Relay: cancel task %s success", taskIDCommitment)
+	log.Debugf("Relay: cancel task %s success", taskIDCommitment)
 	return nil
 }
 
@@ -335,35 +342,13 @@ func CheckBalanceForTaskCreator(ctx context.Context) error {
 
 	appConfig := config.GetConfig()
 
-	privateKey := appConfig.Blockchain.Account.PrivateKey
-	publicKey, err := utils.GetPubKeyFromPrivKey(privateKey)
-	log.Infof("Relay: CheckBalanceForTaskCreator, publicKey: %s", publicKey)
-	if err != nil {
-		log.Errorf("Relay: CheckBalanceForTaskCreator error: %v", err)
-		return err
-	}
+	address := appConfig.Blockchain.Account.Address
 
-	params := &CheckBalanceInput{
-		PublicKey: publicKey,
-	}
-
-	timestamp, signature, err := SignData(params, appConfig.Blockchain.Account.PrivateKey)
-	if err != nil {
-		return err
-	}
-
-	form := url.Values{}
-	form.Add("public_key", publicKey)
-	form.Add("timestamp", strconv.FormatInt(timestamp, 10))
-	form.Add("signature", signature)
-	body := strings.NewReader(form.Encode())
-
-	reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/balanceOf"
+	reqUrl := appConfig.Relay.BaseURL + fmt.Sprintf("/v1/balance/%s", address)
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	req, _ := http.NewRequestWithContext(timeoutCtx, "POST", reqUrl, body)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req, _ := http.NewRequestWithContext(timeoutCtx, "GET", reqUrl, nil)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
@@ -380,14 +365,14 @@ func CheckBalanceForTaskCreator(ctx context.Context) error {
 	if err != nil {
 		log.Errorf("Relay: CheckBalanceForTaskCreator error: %v", err)
 	}
-	log.Infof("Relay: CheckBalanceForTaskCreator, balance: %s", *balanceStr)
+	log.Debugf("Relay: CheckBalanceForTaskCreator, balance: %s", *balanceStr)
 
-	balance, ok := new(big.Int).SetString(*balanceStr, 10)
+	balance, ok := big.NewInt(0).SetString(*balanceStr, 10)
 	if !ok {
 		return errors.New("failed to convert balance string to big.Int")
 	}
 
-	ethThreshold := new(big.Int).Mul(big.NewInt(500), big.NewInt(ethParams.Ether))
+	ethThreshold := utils.EtherToWei(big.NewInt(500))
 	if balance.Cmp(ethThreshold) != 1 {
 		return errors.New("not enough ETH left")
 	}
