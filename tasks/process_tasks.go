@@ -548,6 +548,7 @@ func ProcessTasks(ctx context.Context) {
 						}
 					}
 				}(ctx, task)
+			}
 		}
 
 		time.Sleep(time.Second)
