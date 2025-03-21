@@ -2,9 +2,9 @@ package tasks
 
 import (
 	"context"
-	"crynux_bridge/blockchain"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
+	"crynux_bridge/relay"
 	crand "crypto/rand"
 	"errors"
 	"fmt"
@@ -109,15 +109,14 @@ func autoCreateTasks(ctx context.Context) error {
 			time.Sleep(30 * time.Second)
 			continue
 		}
-		queuedTask, err := blockchain.GetQueuedTasks(ctx)
+		queuedTasks, err := relay.GetQueuedTasks(ctx)
 		if err != nil {
 			log.Errorf("AutoTask: cannot get queued tasks count %v", err)
 			time.Sleep(2 * time.Second)
 			continue
 		}
-		queuedTaskCnt := queuedTask.Uint64()
-		log.Infof("AutoTask: queued task count %d", queuedTaskCnt)
-		if queuedTask.Uint64() > appConfig.Task.PendingAutoTasksLimit {
+		log.Infof("AutoTask: queued task count %d", queuedTasks)
+		if uint64(queuedTasks) > appConfig.Task.PendingAutoTasksLimit {
 			time.Sleep(30 * time.Second)
 			continue
 		}
