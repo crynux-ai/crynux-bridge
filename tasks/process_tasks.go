@@ -548,9 +548,6 @@ func ProcessTasks(ctx context.Context) {
 						}
 					}
 				}(ctx, task)
-
-				time.Sleep(time.Duration(mrand.Float64()*1000) * time.Millisecond)
-			}
 		}
 
 		time.Sleep(time.Second)
