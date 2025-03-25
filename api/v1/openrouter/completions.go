@@ -5,6 +5,7 @@ import (
 	"crynux_bridge/api/v1/openrouter/structs"
 	"crynux_bridge/api/v1/openrouter/utils"
 	"crynux_bridge/api/v1/response"
+	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"encoding/json"
 	"errors"
@@ -14,6 +15,8 @@ import (
 
 // build TaskInput from CompletionsRequest, create task, wait for task to finish, get task result, then return CompletionsResponse
 func Completions(c *gin.Context, in *structs.CompletionsRequest) (*structs.CompletionsResponse, error) {
+	ctx := c.Request.Context()
+	db := config.GetDB()
 
 	/* 1. Build TaskInput from CompletionsRequest */
 	in.SetDefaultValues() // set default values for some fields
@@ -69,7 +72,7 @@ func Completions(c *gin.Context, in *structs.CompletionsRequest) (*structs.Compl
 	}
 
 	/* 2. Create task, wait until task finish and get task result. Implemented by function ProcessGPTTask */
-	gptTaskResponse, resultDownloadedTask, err := ProcessGPTTask(c, task)
+	gptTaskResponse, resultDownloadedTask, err := ProcessGPTTask(ctx, db, task)
 	if err != nil {
 		return nil, err
 	}

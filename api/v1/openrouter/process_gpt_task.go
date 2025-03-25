@@ -1,9 +1,11 @@
 package openrouter
 
 import (
+	"context"
 	"crynux_bridge/api/v1/inference_tasks"
 	"crynux_bridge/api/v1/openrouter/structs"
 	"crynux_bridge/api/v1/response"
+	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"encoding/json"
@@ -14,12 +16,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-func ProcessGPTTask(c *gin.Context, in *inference_tasks.TaskInput) (*structs.GPTTaskResponse, *models.InferenceTask, error) {
+// func ProcessGPTTask(c *gin.Context, in *inference_tasks.TaskInput) (*structs.GPTTaskResponse, *models.InferenceTask, error) {
+func ProcessGPTTask(ctx context.Context, db *gorm.DB, in *inference_tasks.TaskInput) (*structs.GPTTaskResponse, *models.InferenceTask, error) {
 	/* 1. Create GPT task by function CreateTask */
-	taskResponse, err := inference_tasks.CreateTask(c, in)
+	taskResponse, err := inference_tasks.DoCreateTask(ctx, in)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -27,7 +30,7 @@ func ProcessGPTTask(c *gin.Context, in *inference_tasks.TaskInput) (*structs.GPT
 	/* 2. Get tasks, wait until they are finished and the taks result is downloaded  */
 	tasks := taskResponse.Data.InferenceTasks
 	if len(tasks) == 0 {
-		err := errors.New("no tasks created")
+		err := errors.New("no task created")
 		return nil, nil, response.NewExceptionResponse(err)
 	}
 	// one goroutine for each task to monitor its status
@@ -40,11 +43,12 @@ func ProcessGPTTask(c *gin.Context, in *inference_tasks.TaskInput) (*structs.GPT
 
 	for _, t := range tasks {
 		waitGroup.Add(1)
+		task := t
 
 		go func(t *models.InferenceTask) {
 			defer waitGroup.Done()
 
-			status, err := waitForTaskFinish(c, t.Client.ClientId, t.ClientTaskID)
+			status, err := waitForTaskFinish(ctx, db, task.ClientID, task.ID)
 
 			// Store the result in the resultChan
 			resultChan <- struct {
@@ -52,7 +56,7 @@ func ProcessGPTTask(c *gin.Context, in *inference_tasks.TaskInput) (*structs.GPT
 				status models.TaskStatus
 				err    error
 			}{t, status, err}
-		}(&t)
+		}(&task)
 	}
 
 	// Wait for all goroutines to finish
@@ -65,7 +69,7 @@ func ProcessGPTTask(c *gin.Context, in *inference_tasks.TaskInput) (*structs.GPT
 	var resultDownloadedTask *models.InferenceTask = nil
 	for result := range resultChan {
 		if result.err != nil {
-			return nil, nil, result.err
+			return nil, nil, response.NewExceptionResponse(result.err)
 		}
 		if result.status == models.InferenceTaskResultDownloaded {
 			resultDownloadedTask = result.task
@@ -89,20 +93,16 @@ func ProcessGPTTask(c *gin.Context, in *inference_tasks.TaskInput) (*structs.GPT
 	return &gptTaskResponse, resultDownloadedTask, nil
 }
 
-func waitForTaskFinish(c *gin.Context, clientID string, clientTaskID uint) (models.TaskStatus, error) {
+func waitForTaskFinish(ctx context.Context, db *gorm.DB, clientID uint, inferenceTaskID uint) (models.TaskStatus, error) {
 	for {
 		// 1. get task by id
-		getTaskInput := &inference_tasks.GetTaskInput{
-			ClientID:     clientID,
-			ClientTaskID: clientTaskID,
-		}
-		getTaskResponse, err := inference_tasks.GetTaskById(c, getTaskInput)
+		task, err := tools.GetInferenceTask(ctx, db, clientID, inferenceTaskID)
 		if err != nil {
-			return models.InferenceTaskEndAborted, err
+			return task.Status, err
 		}
 
 		// 2. check task status
-		taskStatus := getTaskResponse.Data.Status
+		taskStatus := task.Status
 		// task end without result downloaded
 		if taskStatus == models.InferenceTaskEndInvalidated || taskStatus == models.InferenceTaskEndGroupRefund || taskStatus == models.InferenceTaskEndAborted {
 			return taskStatus, nil

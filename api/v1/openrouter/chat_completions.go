@@ -5,6 +5,7 @@ import (
 	"crynux_bridge/api/v1/openrouter/structs"
 	"crynux_bridge/api/v1/openrouter/utils"
 	"crynux_bridge/api/v1/response"
+	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"encoding/json"
 	"errors"
@@ -14,6 +15,8 @@ import (
 
 // build TaskInput from ChatCompletionsRequest, create task, wait for task to finish, get task result, then return ChatCompletionsResponse
 func ChatCompletions(c *gin.Context, in *structs.ChatCompletionsRequest) (*structs.ChatCompletionsResponse, error) {
+	ctx := c.Request.Context()
+	db := config.GetDB()
 
 	/* 1. Build TaskInput from ChatCompletionsRequest */
 	in.SetDefaultValues() // set default values for some fields
@@ -66,15 +69,15 @@ func ChatCompletions(c *gin.Context, in *structs.ChatCompletionsRequest) (*struc
 	}
 
 	/* 2. Create task, wait until task finish and get task result. Implemented by function ProcessGPTTask */
-	gptTaskResponse, resultDownloadedTask, err := ProcessGPTTask(c, task)
+	gptTaskResponse, resultDownloadedTask, err := ProcessGPTTask(ctx, db, task)
 	if err != nil {
 		return nil, err
 	}
 
 	/* 3. Wrap GPTTaskResponse into ChatCompletionsResponse and return */
 	choices := make([]structs.CCResChoice, len(gptTaskResponse.Choices))
-	for i, c := range gptTaskResponse.Choices {
-		choices[i] = utils.ResponseChoiceToCCResChoice(c)
+	for i, choice := range gptTaskResponse.Choices {
+		choices[i] = utils.ResponseChoiceToCCResChoice(choice)
 	}
 	ccResponse := &structs.ChatCompletionsResponse{
 		Id:      resultDownloadedTask.TaskID,

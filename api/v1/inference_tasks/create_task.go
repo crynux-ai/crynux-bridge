@@ -3,6 +3,7 @@ package inference_tasks
 import (
 	"context"
 	"crynux_bridge/api/v1/response"
+	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"crypto/rand"
@@ -16,14 +17,14 @@ import (
 )
 
 type TaskInput struct {
-	ClientID        string               `json:"client_id" description:"Client id" validate:"required"`
-	TaskArgs        string               `json:"task_args" description:"Task args" validate:"required"`
+	ClientID        string                `json:"client_id" description:"Client id" validate:"required"`
+	TaskArgs        string                `json:"task_args" description:"Task args" validate:"required"`
 	TaskType        *models.ChainTaskType `json:"task_type" description:"Task type. 0 - SD task, 1 - LLM task, 2 - SD Finetune task" validate:"required"`
-	TaskVersion     *string              `json:"task_version,omitempty" description:"Task version. Default is 2.5.0" validate:"omitempty"`
-	MinVram         *uint64              `json:"min_vram,omitempty" description:"Task minimal vram requirement" validate:"omitempty"`
-	RequiredGPU     string               `json:"required_gpu,omitempty" description:"Task required GPU name" validate:"omitempty"`
-	RequiredGPUVram uint64               `json:"required_gpu_vram,omitempty" description:"Task required GPU Vram" validate:"omitempty"`
-	RepeatNum       *int                 `json:"repeat_num,omitempty" description:"Task repeat number" validate:"omitempty"`
+	TaskVersion     *string               `json:"task_version,omitempty" description:"Task version. Default is 2.5.0" validate:"omitempty"`
+	MinVram         *uint64               `json:"min_vram,omitempty" description:"Task minimal vram requirement" validate:"omitempty"`
+	RequiredGPU     string                `json:"required_gpu,omitempty" description:"Task required GPU name" validate:"omitempty"`
+	RequiredGPUVram uint64                `json:"required_gpu_vram,omitempty" description:"Task required GPU Vram" validate:"omitempty"`
+	RepeatNum       *int                  `json:"repeat_num,omitempty" description:"Task repeat number" validate:"omitempty"`
 }
 
 type TaskResponse struct {
@@ -81,27 +82,7 @@ func getClientRateLimiter(clientID string) *rate.Limiter {
 	return limiter
 }
 
-func CreateTask(c *gin.Context, in *TaskInput) (*TaskResponse, error) {
-	appConfig := config.GetConfig()
-	client := models.Client{ClientId: in.ClientID}
-
-	limiter := getClientRateLimiter(in.ClientID)
-	if !limiter.Allow() {
-		err := errors.New("CREATE TASK TOO FREQUENTLY")
-		return nil, response.NewExceptionResponse(err)
-	}
-
-	err := func () error {
-		dbCtx, cancel := context.WithTimeout(c.Request.Context(), time.Second)
-		defer cancel()
-		return config.GetDB().WithContext(dbCtx).Where(&client).First(&client).Error
-	}()
-	if err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, response.NewExceptionResponse(err)
-		}
-	}
-
+func buildTasks(in *TaskInput, client *models.Client, clientTask *models.ClientTask, appConfig *config.AppConfig) ([]*models.InferenceTask, error) {
 	taskType := *in.TaskType
 
 	result, err := models.ValidateTaskArgsJsonStr(in.TaskArgs, taskType)
@@ -127,18 +108,6 @@ func CreateTask(c *gin.Context, in *TaskInput) (*TaskResponse, error) {
 		taskVersion = *in.TaskVersion
 	}
 
-	clientTask := models.ClientTask{
-		Client: client,
-	}
-	err = func () error {
-		dbCtx, cancel := context.WithTimeout(c.Request.Context(), time.Second)
-		defer cancel()
-		return config.GetDB().WithContext(dbCtx).Create(&clientTask).Error
-	}()
-	if err != nil {
-		return nil, response.NewExceptionResponse(err)
-	}
-
 	// task args has been validated, so there should be no error
 	taskSize, _ := getTaskSize(taskType, in.TaskArgs)
 	taskFee := getTaskFee(taskType, appConfig.Task.TaskFee, taskSize) // unit: GWei
@@ -160,26 +129,67 @@ func CreateTask(c *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	tasks := make([]*models.InferenceTask, 0)
 	for i := 0; i < repeatNum; i++ {
 		task := &models.InferenceTask{
-			Client:     client,
-			ClientTask: clientTask,
-			TaskArgs:   in.TaskArgs,
-			TaskType:   taskType,
-			TaskModelIDs: modelIDs,
-			TaskVersion: taskVersion,
-			TaskFee: taskFee,
-			MinVram: minVram,
-			RequiredGPU: in.RequiredGPU,
+			Client:          *client,
+			ClientTask:      *clientTask,
+			TaskArgs:        in.TaskArgs,
+			TaskType:        taskType,
+			TaskModelIDs:    modelIDs,
+			TaskVersion:     taskVersion,
+			TaskFee:         taskFee,
+			MinVram:         minVram,
+			RequiredGPU:     in.RequiredGPU,
 			RequiredGPUVram: in.RequiredGPUVram,
-			TaskSize: taskSize,
-			TaskID: taskID,
+			TaskSize:        taskSize,
+			TaskID:          taskID,
 		}
 		tasks = append(tasks, task)
 	}
 
-	err = models.SaveTasks(c.Request.Context(), config.GetDB(), tasks)
+	return tasks, nil
+}
+
+func DoCreateTask(ctx context.Context, in *TaskInput) (*TaskResponse, error) {
+	appConfig := config.GetConfig()
+	db := config.GetDB()
+
+	// check rate limit
+	limiter := getClientRateLimiter(in.ClientID)
+	if !limiter.Allow() {
+		err := errors.New("CREATE TASK TOO FREQUENTLY")
+		return nil, response.NewExceptionResponse(err)
+	}
+
+	// get Client, if not exist, create a new one
+	client, err := tools.GetClient(ctx, db, in.ClientID)
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, response.NewExceptionResponse(err)
+		}
+	}
+
+	// create ClientTask for client
+	clientTask, err := tools.CreateClientTask(ctx, db, client)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
 
-	return &TaskResponse{Data: &clientTask}, nil
+	// build interface tasks
+	tasks, err := buildTasks(in, client, clientTask, appConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	// save tasks to local db
+	err = models.SaveTasks(ctx, config.GetDB(), tasks)
+	if err != nil {
+		return nil, response.NewExceptionResponse(err)
+	}
+
+	return &TaskResponse{Data: clientTask}, nil
+}
+
+func CreateTask(c *gin.Context, in *TaskInput) (*TaskResponse, error) {
+	ctx := c.Request.Context()
+
+	return DoCreateTask(ctx, in)
 }
