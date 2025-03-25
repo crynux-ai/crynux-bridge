@@ -5,6 +5,7 @@ import (
 	"crynux_bridge/api/v1/openrouter/structs"
 	"crynux_bridge/api/v1/openrouter/utils"
 	"crynux_bridge/api/v1/response"
+	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"encoding/json"
@@ -22,6 +23,10 @@ func Completions(c *gin.Context, in *structs.CompletionsRequest) (*structs.Compl
 	in.SetDefaultValues() // set default values for some fields
 
 	clientID := "openrouter"
+	// if client does not exist, create a new client
+	if _, err := tools.CreateClientIfNotExist(ctx, db, clientID); err != nil {
+		return nil, response.NewExceptionResponse(err)
+	}
 
 	messages := make([]structs.Message, 1)
 	messages[0] = structs.Message{

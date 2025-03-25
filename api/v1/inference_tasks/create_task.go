@@ -159,7 +159,7 @@ func DoCreateTask(ctx context.Context, in *TaskInput) (*TaskResponse, error) {
 		return nil, response.NewExceptionResponse(err)
 	}
 
-	// get Client, if not exist, create a new one
+	// get Client
 	client, err := tools.GetClient(ctx, db, in.ClientID)
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
