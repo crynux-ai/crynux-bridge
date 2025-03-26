@@ -1,12 +1,11 @@
 package inference_tasks
 
 import (
-	"context"
 	"crynux_bridge/api/v1/response"
+	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"errors"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -23,14 +22,12 @@ type GetTaskResponse struct {
 }
 
 func GetTaskById(c *gin.Context, in *GetTaskInput) (*GetTaskResponse, error) {
+	ctx := c.Request.Context()
+	db := config.GetDB()
 
-	client := &models.Client{ClientId: in.ClientID}
-
-	if err := func() error {
-		dbCtx, cancel := context.WithTimeout(c.Request.Context(), time.Second)
-		defer cancel()
-		return config.GetDB().WithContext(dbCtx).Where(client).First(client).Error
-	}(); err != nil {
+	// get Client from local db
+	client, err := tools.GetClient(ctx, db, in.ClientID)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, response.NewValidationErrorResponse("client_id", "Client not found")
 		} else {
@@ -38,16 +35,9 @@ func GetTaskById(c *gin.Context, in *GetTaskInput) (*GetTaskResponse, error) {
 		}
 	}
 
-	clientTask := &models.ClientTask{
-		RootModel: models.RootModel{ID: in.ClientTaskID},
-		ClientID: client.ID,
-	}
-
-	if err := func() error {
-		dbCtx, cancel := context.WithTimeout(c.Request.Context(), time.Second)
-		defer cancel()
-		return config.GetDB().WithContext(dbCtx).Model(&clientTask).Where(&clientTask).Preload("InferenceTasks").First(&clientTask).Error
-	}(); err != nil {
+	// get ClientTask from local db
+	clientTask, err := tools.GetClientTask(ctx, db, client.ID, in.ClientTaskID)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, response.NewValidationErrorResponse("client_task_id", "Client task not found")
 		} else {
@@ -60,7 +50,7 @@ func GetTaskById(c *gin.Context, in *GetTaskInput) (*GetTaskResponse, error) {
 
 	task := clientTask.InferenceTasks[0]
 	for _, t := range clientTask.InferenceTasks[1:] {
-		if t.Status == models.InferenceTaskResultDownloaded  {
+		if t.Status == models.InferenceTaskResultDownloaded {
 			if task.Status != models.InferenceTaskResultDownloaded {
 				task = t
 			} else if task.UpdatedAt.Sub(t.UpdatedAt) > 0 {
