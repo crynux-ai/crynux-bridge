@@ -9,9 +9,23 @@ import (
 	"time"
 )
 
+func jsonRemarshal(bytes []byte) ([]byte, error) {
+    var ifce interface{}
+    err := json.Unmarshal(bytes, &ifce)
+    if err != nil {
+        return nil, err
+    }
+    return json.Marshal(ifce)
+}
+
 func SignData(data interface{}, privateKeyStr string) (timestamp int64, signature string, err error) {
 
 	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		return 0, "", err
+	}
+
+	dataBytes, err = jsonRemarshal(dataBytes)
 	if err != nil {
 		return 0, "", err
 	}

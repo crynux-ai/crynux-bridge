@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"errors"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -25,5 +26,5 @@ func GetPubKeyFromPrivKey(privKey string) (string, error) {
 	}
 	pubKeyBytes = pubKeyBytes[1:]
 
-	return string(pubKeyBytes), nil
+	return hexutil.Encode(pubKeyBytes), nil
 }

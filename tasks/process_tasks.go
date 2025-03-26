@@ -57,6 +57,7 @@ func createTask(ctx context.Context, task *models.InferenceTask) error {
 	defer cancel()
 	if err := relay.CreateTask(callCtx, task); err != nil {
 		log.Errorf("ProcessTasks: %d createTask failed: err: %v", task.ID, err)
+		return err
 	}
 	return nil
 }
@@ -83,6 +84,9 @@ func validateTaskGroup(ctx context.Context, task1, task2, task3 *models.Inferenc
 
 func syncTask(ctx context.Context, task *models.InferenceTask) (*models.RelayTask, error) {
 	if len(task.TaskIDCommitment) == 0 {
+		return nil, nil
+	}
+	if task.Status == models.InferenceTaskPending {
 		return nil, nil
 	}
 
@@ -283,6 +287,11 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 		// avoid generating validation tasks for validation tasks
 		if len(task.SamplingSeed) == 0 {
 			newTask.SamplingSeed = chainTask.SamplingSeed
+			samplingSeedBytes, err := hexutil.Decode(chainTask.SamplingSeed)
+			if err != nil {
+				log.Errorf("ProcessTasks: %d decode sampling seed failed: %v", task.ID, err)
+				return err
+			}
 			// generate vrf proof
 			appConfig := config.GetConfig()
 			pk := appConfig.Blockchain.Account.PrivateKey
@@ -291,7 +300,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 				log.Errorf("ProcessTasks: %d decode private key failed: %v", task.ID, err)
 				return err
 			}
-			vrfNum, vrfProof, err := vrfProve(privateKey, []byte(chainTask.SamplingSeed))
+			vrfNum, vrfProof, err := vrfProve(privateKey, samplingSeedBytes)
 			if err != nil {
 				log.Errorf("ProcessTasks: %d vrf prove failed: %v", task.ID, err)
 				return err
@@ -383,6 +392,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 				if readyCount == 3 {
 					break
 				}
+				time.Sleep(time.Second)
 				taskGroup, err = models.GetTaskGroup(ctx, config.GetDB(), task.TaskID)
 				if err != nil {
 					log.Errorf("ProcessTasks: get tasks of %s error: %v", task.TaskID, err)
@@ -538,8 +548,6 @@ func ProcessTasks(ctx context.Context) {
 						}
 					}
 				}(ctx, task)
-
-				time.Sleep(time.Duration(mrand.Float64()*1000) * time.Millisecond)
 			}
 		}
 
