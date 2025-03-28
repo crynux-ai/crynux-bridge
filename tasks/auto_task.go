@@ -20,21 +20,37 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	clientTask := models.ClientTask{Client: client}
 
 	var taskArgs string
-	var minVram uint64
+	var minVram uint64 = 0
+	var requiredGPU string = ""
+	var requiredGPUVram uint64 = 0
+	var taskType models.ChainTaskType
 	r := rand.Float64()
-	if r < 0.5 {
+	if r < 0.25 {
 		prompt := "Self-portrait oil painting,a beautiful cyborg with golden hair,8k"
 		seed := rand.Intn(100000000)
 		taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/sdxl-turbo", "variant": "fp16"},"prompt":"%s","negative_prompt":"","scheduler":{"method":"EulerAncestralDiscreteScheduler","args":{"timestep_spacing":"trailing"}},"task_config":{"num_images":1,"seed":%d,"steps":1,"cfg":0}}`, prompt, seed)
 		minVram = 14
-	} else {
+		taskType = models.TaskTypeSD
+	} else if r < 0.5 {
 		prompt := "best quality, ultra high res, photorealistic++++, 1girl, off-shoulder sweater, smiling, faded ash gray messy bun hair+, border light, depth of field, looking at viewer, closeup"
 		negativePrompt := "paintings, sketches, worst quality+++++, low quality+++++, normal quality+++++, lowres, normal quality, monochrome++, grayscale++, skin spots, acnes, skin blemishes, age spot, glans"
 		seed := rand.Intn(100000000)
 		taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/stable-diffusion-v1-5", "variant": "fp16"},"prompt":"%s","negative_prompt":"%s","task_config":{"num_images":1,"seed":%d,"steps":25,"cfg":0,"safety_checker":false}}`, prompt, negativePrompt, seed)
 		minVram = 4
+		taskType = models.TaskTypeSD
+	} else if r < 0.75 {
+		seed := rand.Intn(100000000)
+		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create a chat bot. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
+		requiredGPU = "NVIDIA GeForce RTX 4060"
+		requiredGPUVram = 8
+		taskType = models.TaskTypeLLM
+	} else {
+		seed := rand.Intn(100000000)
+		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create a chat bot. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16"}`, seed)
+		requiredGPU = "NVIDIA GeForce RTX 4090"
+		requiredGPUVram = 24
+		taskType = models.TaskTypeLLM
 	}
-	taskType := models.TaskTypeSD
 	taskModelIDs, _ := models.GetTaskConfigModelIDs(taskArgs, taskType)
 
 	appConfig := config.GetConfig()
@@ -45,16 +61,18 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	taskID := hexutil.Encode(taskIDBytes)
 
 	task := &models.InferenceTask{
-		Client:       client,
-		ClientTask:   clientTask,
-		TaskArgs:     taskArgs,
-		TaskType:     taskType,
-		TaskModelIDs: taskModelIDs,
-		TaskVersion:  "2.5.0",
-		MinVram:      minVram,
-		TaskFee:      taskFee,
-		TaskSize:     1,
-		TaskID:       taskID,
+		Client:          client,
+		ClientTask:      clientTask,
+		TaskArgs:        taskArgs,
+		TaskType:        taskType,
+		TaskModelIDs:    taskModelIDs,
+		TaskVersion:     "2.5.0",
+		MinVram:         minVram,
+		RequiredGPU:     requiredGPU,
+		RequiredGPUVram: requiredGPUVram,
+		TaskFee:         taskFee,
+		TaskSize:        1,
+		TaskID:          taskID,
 	}
 	return task
 }

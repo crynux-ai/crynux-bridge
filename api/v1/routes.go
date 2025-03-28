@@ -6,6 +6,7 @@ import (
 	"crynux_bridge/api/v1/inference_tasks"
 	"crynux_bridge/api/v1/models"
 	"crynux_bridge/api/v1/network"
+	"crynux_bridge/api/v1/openrouter"
 	"crynux_bridge/api/v1/response"
 
 	"github.com/loopfz/gadgeto/tonic"
@@ -62,4 +63,19 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Summary("Count the task in the recent period"),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(count.CountTask, 200))
+
+	// for openrouter, api: /completions and /chat/completions
+	openrouterGroup := v1g.Group("openrouter", "OpenRouter", "OpenRouter related APIs")
+
+	openrouterGroup.GET("/completions", []fizz.OperationOption{
+		fizz.Summary("Api for openrouter, /completions"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(openrouter.Completions, 200))
+
+	openrouterGroup.GET("/chat/completions", []fizz.OperationOption{
+		fizz.Summary("Api for openrouter, /chat/completions"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(openrouter.ChatCompletions, 200))
 }
