@@ -17,6 +17,8 @@ import (
 )
 
 func generateRandomTask(client models.Client) *models.InferenceTask {
+	appConfig := config.GetConfig()
+
 	clientTask := models.ClientTask{Client: client}
 
 	var taskArgs string
@@ -24,6 +26,7 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	var requiredGPU string = ""
 	var requiredGPUVram uint64 = 0
 	var taskType models.ChainTaskType
+	var taskFee uint64
 	r := rand.Float64()
 	if r < 0.4 {
 		prompt := "Self-portrait oil painting,a beautiful cyborg with golden hair,8k"
@@ -31,6 +34,7 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 		taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/sdxl-turbo", "variant": "fp16"},"prompt":"%s","negative_prompt":"","scheduler":{"method":"EulerAncestralDiscreteScheduler","args":{"timestep_spacing":"trailing"}},"task_config":{"num_images":1,"seed":%d,"steps":1,"cfg":0}}`, prompt, seed)
 		minVram = 14
 		taskType = models.TaskTypeSD
+		taskFee = appConfig.Task.TaskFee
 	} else if r < 0.8 {
 		prompt := "best quality, ultra high res, photorealistic++++, 1girl, off-shoulder sweater, smiling, faded ash gray messy bun hair+, border light, depth of field, looking at viewer, closeup"
 		negativePrompt := "paintings, sketches, worst quality+++++, low quality+++++, normal quality+++++, lowres, normal quality, monochrome++, grayscale++, skin spots, acnes, skin blemishes, age spot, glans"
@@ -38,23 +42,24 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 		taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/stable-diffusion-v1-5", "variant": "fp16"},"prompt":"%s","negative_prompt":"%s","task_config":{"num_images":1,"seed":%d,"steps":25,"cfg":0,"safety_checker":false}}`, prompt, negativePrompt, seed)
 		minVram = 4
 		taskType = models.TaskTypeSD
+		taskFee = appConfig.Task.TaskFee
 	} else if r < 0.9 {
 		seed := rand.Intn(100000000)
 		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create a chat bot. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
 		requiredGPU = "NVIDIA GeForce RTX 4060"
 		requiredGPUVram = 8
 		taskType = models.TaskTypeLLM
+		taskFee = appConfig.Task.TaskFee + 100000000
 	} else {
 		seed := rand.Intn(100000000)
 		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create a chat bot. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
 		requiredGPU = "NVIDIA GeForce RTX 4090"
 		requiredGPUVram = 24
 		taskType = models.TaskTypeLLM
+		taskFee = appConfig.Task.TaskFee + 200000000
 	}
 	taskModelIDs, _ := models.GetTaskConfigModelIDs(taskArgs, taskType)
 
-	appConfig := config.GetConfig()
-	taskFee := appConfig.Task.TaskFee
 
 	taskIDBytes := make([]byte, 32)
 	crand.Read(taskIDBytes)
