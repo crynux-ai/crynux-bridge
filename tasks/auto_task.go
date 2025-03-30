@@ -44,15 +44,13 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 		taskType = models.TaskTypeSD
 		taskFee = appConfig.Task.TaskFee
 	} else if r < 0.9 {
-		seed := rand.Intn(100000000)
-		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create a chat bot. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
+		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, 42)
 		requiredGPU = "NVIDIA GeForce RTX 4060"
 		requiredGPUVram = 8
 		taskType = models.TaskTypeLLM
 		taskFee = appConfig.Task.TaskFee + 100000000
 	} else {
-		seed := rand.Intn(100000000)
-		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create a chat bot. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
+		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create a AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, 24)
 		requiredGPU = "NVIDIA GeForce RTX 4090"
 		requiredGPUVram = 24
 		taskType = models.TaskTypeLLM
