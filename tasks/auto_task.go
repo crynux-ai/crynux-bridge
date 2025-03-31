@@ -44,13 +44,15 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 		taskType = models.TaskTypeSD
 		taskFee = appConfig.Task.TaskFee
 	} else if r < 0.9 {
-		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, 42)
+		seed := rand.New(rand.NewSource(time.Now().Unix() / 600)).Intn(100000000)
+		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
 		requiredGPU = "NVIDIA GeForce RTX 4060"
 		requiredGPUVram = 8
 		taskType = models.TaskTypeLLM
 		taskFee = appConfig.Task.TaskFee + 100000000
 	} else {
-		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create a AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, 24)
+		seed := rand.New(rand.NewSource(time.Now().Unix() / 600)).Intn(100000000)
+		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create a AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
 		requiredGPU = "NVIDIA GeForce RTX 4090"
 		requiredGPUVram = 24
 		taskType = models.TaskTypeLLM
