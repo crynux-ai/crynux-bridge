@@ -44,13 +44,13 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	} else if r < 0.75 {
 		seed := rand.New(rand.NewSource(time.Now().Unix() / 600)).Intn(100000000)
 		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
-		minVram = 8
+		minVram = 14
 		taskType = models.TaskTypeLLM
 		taskFee = appConfig.Task.TaskFee + 100000000
 	} else {
 		seed := rand.New(rand.NewSource(time.Now().Unix() / 600)).Intn(100000000)
 		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16"}`, seed)
-		minVram = 16
+		minVram = 20
 		taskType = models.TaskTypeLLM
 		taskFee = appConfig.Task.TaskFee + 200000000
 	}
