@@ -137,7 +137,7 @@ func GetTaskByCommitment(ctx context.Context, taskIDCommitment string) (*models.
 
 	reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/" + taskIDCommitment
 
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Minute)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	req, _ := http.NewRequestWithContext(timeoutCtx, "GET", reqUrl, nil)
 	query := req.URL.Query()

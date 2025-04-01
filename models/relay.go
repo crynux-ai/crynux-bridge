@@ -32,3 +32,25 @@ type RelayTask struct {
 	ValidatedTime      *time.Time      `json:"validated_time,omitempty"`
 	ResultUploadedTime *time.Time      `json:"result_uploaded_time,omitempty"`
 }
+
+type NodeStatus uint8
+
+const (
+	NodeStatusQuit = iota
+	NodeStatusAvailable
+	NodeStatusBusy
+	NodeStatusPendingPause
+	NodeStatusPendingQuit
+	NodeStatusPaused
+)
+
+type RelayNode struct {
+	Address       string     `json:"address" gorm:"index"`
+	Status        NodeStatus `json:"status" gorm:"index"`
+	GPUName       string     `json:"gpu_name" gorm:"index"`
+	GPUVram       uint64     `json:"gpu_vram" gorm:"index"`
+	QOSScore      uint64     `json:"qos_score"`
+	Version       string     `json:"version"`
+	InUseModelIDs []string   `json:"in_use_model_ids"`
+	ModelIDs      []string   `json:"model_ids"`
+}
