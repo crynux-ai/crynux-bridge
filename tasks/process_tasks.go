@@ -62,6 +62,13 @@ func createTask(ctx context.Context, task *models.InferenceTask) error {
 	return nil
 }
 
+func getNode(ctx context.Context, address string) (*models.RelayNode, error) {
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	return relay.GetNodeByAddress(callCtx, address)
+}
+
 func validateSingleTask(ctx context.Context, task *models.InferenceTask) error {
 	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
@@ -312,6 +319,27 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			r := big.NewInt(0).Mod(number, big.NewInt(10)).Uint64()
 			// if vrfNumber % 10 == 0, create 2 validation tasks
 			if r == 0 {
+				requiredGPU := task.RequiredGPU
+				requiredGPUVram := task.RequiredGPUVram
+				if task.TaskType == models.TaskTypeLLM {
+					// for LLM type task, need to wait the task is started to determine required gpu for sub tasks
+					for len(chainTask.SelectedNode) == 0 {
+						chainTask, err = getTask(ctx, task.TaskIDCommitment)
+						if err != nil {
+							return err
+						}
+						if len(chainTask.SelectedNode) > 0 {
+							break
+						}
+						time.Sleep(time.Second)
+					}
+					node, err := getNode(ctx, chainTask.SelectedNode)
+					if err != nil {
+						return err
+					}
+					requiredGPU = node.GPUName
+					requiredGPUVram = node.GPUVram
+				}
 				for i := 0; i < 2; i++ {
 					subTask := &models.InferenceTask{
 						ClientID:        task.ClientID,
@@ -322,8 +350,8 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 						TaskVersion:     task.TaskVersion,
 						TaskFee:         task.TaskFee,
 						MinVram:         task.MinVram,
-						RequiredGPU:     task.RequiredGPU,
-						RequiredGPUVram: task.RequiredGPUVram,
+						RequiredGPU:     requiredGPU,
+						RequiredGPUVram: requiredGPUVram,
 						TaskSize:        task.TaskSize,
 						TaskID:          task.TaskID,
 						SamplingSeed:    newTask.SamplingSeed,

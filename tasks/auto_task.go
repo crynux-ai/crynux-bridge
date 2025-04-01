@@ -23,8 +23,6 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 
 	var taskArgs string
 	var minVram uint64 = 0
-	var requiredGPU string = ""
-	var requiredGPUVram uint64 = 0
 	var taskType models.ChainTaskType
 	var taskFee uint64
 	r := rand.Float64()
@@ -46,15 +44,13 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	} else if r < 0.75 {
 		seed := rand.New(rand.NewSource(time.Now().Unix() / 600)).Intn(100000000)
 		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
-		requiredGPU = "NVIDIA GeForce RTX 4060"
-		requiredGPUVram = 8
+		minVram = 8
 		taskType = models.TaskTypeLLM
 		taskFee = appConfig.Task.TaskFee + 100000000
 	} else {
 		seed := rand.New(rand.NewSource(time.Now().Unix() / 600)).Intn(100000000)
-		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create a AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
-		requiredGPU = "NVIDIA GeForce RTX 4090"
-		requiredGPUVram = 24
+		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16"}`, seed)
+		minVram = 16
 		taskType = models.TaskTypeLLM
 		taskFee = appConfig.Task.TaskFee + 200000000
 	}
@@ -73,8 +69,6 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 		TaskModelIDs:    taskModelIDs,
 		TaskVersion:     "2.5.0",
 		MinVram:         minVram,
-		RequiredGPU:     requiredGPU,
-		RequiredGPUVram: requiredGPUVram,
 		TaskFee:         taskFee,
 		TaskSize:        1,
 		TaskID:          taskID,
