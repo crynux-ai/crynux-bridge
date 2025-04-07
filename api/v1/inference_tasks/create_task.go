@@ -25,6 +25,7 @@ type TaskInput struct {
 	RequiredGPU     string                `json:"required_gpu,omitempty" description:"Task required GPU name" validate:"omitempty"`
 	RequiredGPUVram uint64                `json:"required_gpu_vram,omitempty" description:"Task required GPU Vram" validate:"omitempty"`
 	RepeatNum       *int                  `json:"repeat_num,omitempty" description:"Task repeat number" validate:"omitempty"`
+	TaskFee         *uint64               `json:"task_fee,omitempty" description:"Task fee" validate:"omitempty"`
 }
 
 type TaskResponse struct {
@@ -110,7 +111,13 @@ func buildTasks(in *TaskInput, client *models.Client, clientTask *models.ClientT
 
 	// task args has been validated, so there should be no error
 	taskSize, _ := getTaskSize(taskType, in.TaskArgs)
-	taskFee := getTaskFee(taskType, appConfig.Task.TaskFee, taskSize) // unit: GWei
+	var baseTaskFee uint64
+	if in.TaskFee != nil {
+		baseTaskFee = *in.TaskFee
+	} else {
+		baseTaskFee = 5000000000
+	}
+	taskFee := getTaskFee(taskType, baseTaskFee, taskSize) // unit: GWei
 
 	repeatNum := appConfig.Task.RepeatNum
 	if in.RepeatNum != nil {
