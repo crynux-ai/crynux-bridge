@@ -65,7 +65,10 @@ type AppConfig struct {
 	} `mapstructure:"relay"`
 
 	Task struct {
-		TaskFee               uint64 `mapstructure:"task_fee"`
+		SDTaskFee             uint64 `mapstructure:"sd_task_fee"`
+		SDXLTaskFee           uint64 `mapstructure:"sd_xl_task_fee"`
+		LLMTaskFee            uint64 `mapstructure:"llm_task_fee"`
+		LLMQuantTaskFee       uint64 `mapstructure:"llm_quant_task_fee"`
 		RepeatNum             int    `mapstructure:"repeat_num"`
 		PendingAutoTasksLimit uint64 `mapstructure:"pending_auto_tasks_limit"`
 		AutoTasksBatchSize    uint64 `mapstructure:"auto_tasks_batch_size"`
