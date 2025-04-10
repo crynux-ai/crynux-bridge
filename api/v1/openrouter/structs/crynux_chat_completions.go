@@ -77,7 +77,7 @@ type GPTTaskArgs struct {
 	Tools            []map[string]interface{} `json:"tools,omitempty"`              // Optional
 	GenerationConfig *GPTGenerationConfig     `json:"generation_config,omitempty"`  // Optional
 	Seed             int                      `json:"seed"`                         // Optional, default 0
-	DType            DType                    `json:"dtype"`                        // Optional, default "auto"
+	DType            DType                    `json:"dtype,omitempty"`              // Optional, default "auto"
 	QuantizeBits     QuantizeBits             `json:"quantize_bits,omitempty"`      // Optional
 }
 
