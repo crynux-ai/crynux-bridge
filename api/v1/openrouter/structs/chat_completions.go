@@ -5,7 +5,7 @@ import "encoding/json"
 type ChatCompletionsRequest struct {
 	Messages           []CCReqMessage           `json:"messages" validate:"required"`
 	Model              string                   `json:"model" validate:"required"`
-	Audio              CCReqAudio               `json:"audio"`
+	Audio              *CCReqAudio              `json:"audio"`
 	FrequencyPenalty   float64                  `json:"frequency_penalty"`
 	LogitBias          map[string]float64       `json:"logit_bias"`
 	LogProbs           bool                     `json:"logprobs"`
@@ -14,7 +14,7 @@ type ChatCompletionsRequest struct {
 	Modalities         []string                 `json:"modalities"`
 	N                  int                      `json:"n"` // defaults to 1
 	ParallelToolCalls  bool                     `json:"parallel_tool_calls"`
-	Prediction         CCReqPrediction          `json:"prediction"`
+	Prediction         *CCReqPrediction         `json:"prediction"`
 	PresencePenalty    float64                  `json:"presence_penalty,omitempty"`
 	ReasoningEffort    string                   `json:"reasoning_effort"`
 	ResponseFormat     json.RawMessage          `json:"response_format"`
@@ -23,7 +23,7 @@ type ChatCompletionsRequest struct {
 	Stop               json.RawMessage          `json:"stop"`
 	Store              bool                     `json:"store"`
 	Stream             bool                     `json:"stream"`
-	StreamOptions      CCReqStreamOptions       `json:"stream_options"`
+	StreamOptions      *CCReqStreamOptions      `json:"stream_options"`
 	Temperature        float64                  `json:"temperature"`
 	ToolChoice         json.RawMessage          `json:"tool_choice"`
 	Tools              []map[string]interface{} `json:"tools"`
@@ -44,7 +44,7 @@ type CCReqMessage struct {
 	Role       ChatCompletionsRole    `json:"role" validate:"required"`
 	Content    json.RawMessage        `json:"content"`
 	Name       string                 `json:"name"`
-	Audio      CCReqMessageAudio      `json:"audio"`
+	Audio      *CCReqMessageAudio      `json:"audio"`
 	Refusal    string                 `json:"refusal"`
 	ToolCalls  []CCReqMessageToolCall `json:"tool_calls"`
 	ToolCallID string                 `json:"tool_call_id"`

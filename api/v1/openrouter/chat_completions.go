@@ -10,6 +10,7 @@ import (
 	"crynux_bridge/models"
 	"encoding/json"
 	"errors"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,13 +46,23 @@ func ChatCompletions(c *gin.Context, in *structs.ChatCompletionsRequest) (*struc
 		// TopK:               50,
 	}
 
+	var model string
+	var dtype structs.DType = structs.DTypeAuto
+	if strings.Contains(in.Model, "+") {
+		parts := strings.SplitN(in.Model, "+", 2)
+		model = parts[0]
+		dtype = structs.DType(parts[1])
+	} else {
+		model = in.Model
+	}
+
 	taskArgs := structs.GPTTaskArgs{
-		Model:            in.Model,
+		Model:            model,
 		Messages:         messages,
 		Tools:            in.Tools,
 		GenerationConfig: generationConfig,
 		Seed:             in.Seed,
-		// DType:            structs.DTypeAuto,
+		DType:            dtype,
 		// QuantizeBits:     structs.QuantizeBits8,
 	}
 	taskArgsStr, err := json.Marshal(taskArgs)
@@ -61,16 +72,19 @@ func ChatCompletions(c *gin.Context, in *structs.ChatCompletionsRequest) (*struc
 	}
 
 	taskType := models.TaskTypeLLM
+	minVram := uint64(24)
+	taskFee := uint64(6000000000)
 
 	task := &inference_tasks.TaskInput{
 		ClientID:        clientID,
 		TaskArgs:        string(taskArgsStr),
 		TaskType:        &taskType,
 		TaskVersion:     nil,
-		MinVram:         nil,
+		MinVram:         &minVram,
 		RequiredGPU:     "",
 		RequiredGPUVram: 0,
 		RepeatNum:       nil,
+		TaskFee:         &taskFee,
 	}
 
 	/* 2. Create task, wait until task finish and get task result. Implemented by function ProcessGPTTask */

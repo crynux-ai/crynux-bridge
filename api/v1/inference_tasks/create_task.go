@@ -47,7 +47,7 @@ func getDefaultMinVram(taskType models.ChainTaskType, taskArgs string) (uint64, 
 			return 10, nil
 		}
 	} else {
-		return 8, nil
+		return 24, nil
 	}
 }
 
@@ -190,6 +190,10 @@ func DoCreateTask(ctx context.Context, in *TaskInput) (*TaskResponse, error) {
 	err = models.SaveTasks(ctx, config.GetDB(), tasks)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
+	}
+	clientTask.InferenceTasks = make([]models.InferenceTask, len(tasks))
+	for i, t := range tasks {
+		clientTask.InferenceTasks[i] = *t
 	}
 
 	return &TaskResponse{Data: clientTask}, nil

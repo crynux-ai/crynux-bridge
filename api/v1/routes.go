@@ -67,13 +67,13 @@ func InitRoutes(r *fizz.Fizz) {
 	// for openrouter, api: /completions and /chat/completions
 	openrouterGroup := v1g.Group("openrouter", "OpenRouter", "OpenRouter related APIs")
 
-	openrouterGroup.GET("/completions", []fizz.OperationOption{
+	openrouterGroup.POST("/completions", []fizz.OperationOption{
 		fizz.Summary("Api for openrouter, /completions"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(openrouter.Completions, 200))
 
-	openrouterGroup.GET("/chat/completions", []fizz.OperationOption{
+	openrouterGroup.POST("/chat/completions", []fizz.OperationOption{
 		fizz.Summary("Api for openrouter, /chat/completions"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
