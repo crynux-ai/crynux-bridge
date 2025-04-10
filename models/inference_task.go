@@ -169,6 +169,16 @@ func (task *InferenceTask) Update(ctx context.Context, db *gorm.DB, newTask *Inf
 	return nil
 }
 
+func (task *InferenceTask) Sync(ctx context.Context, db *gorm.DB) error {
+	if task.ID == 0 {
+		return errors.New("InferenceTask.ID cannot be 0 when sync")
+	}
+	dbCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+
+	return db.WithContext(dbCtx).Model(task).Where("id = ?", task.ID).First(task).Error
+}
+
 func SaveTasks(ctx context.Context, db *gorm.DB, tasks []*InferenceTask) error {
 	dbCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()

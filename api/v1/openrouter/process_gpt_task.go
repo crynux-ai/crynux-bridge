@@ -5,7 +5,6 @@ import (
 	"crynux_bridge/api/v1/inference_tasks"
 	"crynux_bridge/api/v1/openrouter/structs"
 	"crynux_bridge/api/v1/response"
-	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"encoding/json"
@@ -48,7 +47,7 @@ func ProcessGPTTask(ctx context.Context, db *gorm.DB, in *inference_tasks.TaskIn
 		go func(t *models.InferenceTask) {
 			defer waitGroup.Done()
 
-			status, err := waitForTaskFinish(ctx, db, task.ClientID, task.ID)
+			status, err := waitForTaskFinish(ctx, db, t)
 
 			// Store the result in the resultChan
 			resultChan <- struct {
@@ -93,10 +92,10 @@ func ProcessGPTTask(ctx context.Context, db *gorm.DB, in *inference_tasks.TaskIn
 	return &gptTaskResponse, resultDownloadedTask, nil
 }
 
-func waitForTaskFinish(ctx context.Context, db *gorm.DB, clientID uint, inferenceTaskID uint) (models.TaskStatus, error) {
+func waitForTaskFinish(ctx context.Context, db *gorm.DB, task *models.InferenceTask) (models.TaskStatus, error) {
 	for {
 		// 1. get task by id
-		task, err := tools.GetInferenceTask(ctx, db, clientID, inferenceTaskID)
+		err := task.Sync(ctx, db)
 		if err != nil {
 			return task.Status, err
 		}
