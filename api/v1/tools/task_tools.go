@@ -74,18 +74,3 @@ func GetClientTask(ctx context.Context, db *gorm.DB, clientID uint, clientTaskID
 
 	return &clientTask, err
 }
-
-func GetInferenceTask(ctx context.Context, db *gorm.DB, clientID uint, inferenceTaskID uint) (*models.InferenceTask, error) {
-	inferenceTask := models.InferenceTask{
-		RootModel: models.RootModel{ID: inferenceTaskID},
-		ClientID:  clientID,
-	}
-
-	err := func() error {
-		dbCtx, cancel := context.WithTimeout(ctx, time.Second)
-		defer cancel()
-		return db.WithContext(dbCtx).Model(&inferenceTask).Where(&inferenceTask).First(&inferenceTask).Error
-	}()
-
-	return &inferenceTask, err
-}
