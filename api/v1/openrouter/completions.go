@@ -49,18 +49,13 @@ func Completions(c *gin.Context, in *structs.CompletionsRequest) (*structs.Compl
 		// TopK:               50,
 	}
 
-	var model string
 	var dtype structs.DType = structs.DTypeAuto
-	if strings.Contains(in.Model, "+") {
-		parts := strings.SplitN(in.Model, "+", 2)
-		model = parts[0]
-		dtype = structs.DType(parts[1])
-	} else {
-		model = in.Model
+	if strings.HasPrefix(in.Model, "Qwen/Qwen2.5") {
+		dtype = structs.DTypeBFloat16
 	}
 
 	taskArgs := structs.GPTTaskArgs{
-		Model:            model,
+		Model:            in.Model,
 		Messages:         messages,
 		GenerationConfig: generationConfig,
 		Seed:             in.Seed,
