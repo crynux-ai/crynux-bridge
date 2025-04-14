@@ -35,7 +35,7 @@ func ChatCompletions(c *gin.Context, in *structs.ChatCompletionsRequest) (*struc
 	}
 
 	generationConfig := &structs.GPTGenerationConfig{
-		MaxNewTokens:       in.MaxComletionTokens,
+		MaxNewTokens:       in.MaxCompletionTokens,
 		DoSample:           true,
 		Temperature:        in.Temperature,
 		TopP:               in.TopP,
