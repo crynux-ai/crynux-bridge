@@ -15,18 +15,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type CompletionsRequest struct {
+	structs.CompletionsRequest
+	APIKey string `header:"Authorization" validate:"required"`
+}
+
 // build TaskInput from CompletionsRequest, create task, wait for task to finish, get task result, then return CompletionsResponse
-func Completions(c *gin.Context, in *structs.CompletionsRequest) (*structs.CompletionsResponse, error) {
+func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsResponse, error) {
 	ctx := c.Request.Context()
 	db := config.GetDB()
+	appConfig := config.GetConfig()
 
 	/* 1. Build TaskInput from CompletionsRequest */
 	in.SetDefaultValues() // set default values for some fields
 
-	clientID := "openrouter"
-	// if client does not exist, create a new client
-	if _, err := tools.CreateClientIfNotExist(ctx, db, clientID); err != nil {
+	apiKey, err := tools.ValidateAPIKey(c.Request.Context(), config.GetDB(), in.APIKey)
+	if err != nil {
+		if errors.Is(err, tools.ErrAPIKeyExpired) {
+			return nil, response.NewValidationErrorResponse("api_key", "API key expired")
+		}
+		if errors.Is(err, tools.ErrAPIKeyInvalid) {
+			return nil, response.NewValidationErrorResponse("api_key", "API key invalid")
+		}
 		return nil, response.NewExceptionResponse(err)
+	}
+	clientID := apiKey.ClientID
+	if clientID != appConfig.Blockchain.Account.Address {
+		return nil, response.NewValidationErrorResponse("api_key", "API key unauthorized")
 	}
 
 	messages := make([]structs.Message, 1)
@@ -59,7 +74,7 @@ func Completions(c *gin.Context, in *structs.CompletionsRequest) (*structs.Compl
 		Messages:         messages,
 		GenerationConfig: generationConfig,
 		Seed:             in.Seed,
-		DType: dtype,
+		DType:            dtype,
 		// Tools:            in.Tools,
 		// QuantizeBits:     structs.QuantizeBits8,
 	}
