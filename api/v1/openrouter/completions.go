@@ -17,7 +17,7 @@ import (
 
 type CompletionsRequest struct {
 	structs.CompletionsRequest
-	APIKey string `header:"Authorization" validate:"required"`
+	Authorization string `header:"Authorization" validate:"required"`
 }
 
 // build TaskInput from CompletionsRequest, create task, wait for task to finish, get task result, then return CompletionsResponse
@@ -29,19 +29,23 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 	/* 1. Build TaskInput from CompletionsRequest */
 	in.SetDefaultValues() // set default values for some fields
 
-	apiKey, err := tools.ValidateAPIKey(c.Request.Context(), config.GetDB(), in.APIKey)
+	if !strings.HasPrefix(in.Authorization, "Bearer ") {
+		return nil, response.NewValidationErrorResponse("Authorization", "Authorization header must start with 'Bearer '")
+	}
+	apiKeyStr := in.Authorization[7:]
+	apiKey, err := tools.ValidateAPIKey(c.Request.Context(), config.GetDB(), apiKeyStr)
 	if err != nil {
 		if errors.Is(err, tools.ErrAPIKeyExpired) {
-			return nil, response.NewValidationErrorResponse("api_key", "API key expired")
+			return nil, response.NewValidationErrorResponse("Authorization", "expired")
 		}
 		if errors.Is(err, tools.ErrAPIKeyInvalid) {
-			return nil, response.NewValidationErrorResponse("api_key", "API key invalid")
+			return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
 		}
 		return nil, response.NewExceptionResponse(err)
 	}
 	clientID := apiKey.ClientID
 	if clientID != appConfig.Blockchain.Account.Address {
-		return nil, response.NewValidationErrorResponse("api_key", "API key unauthorized")
+		return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
 	}
 
 	messages := make([]structs.Message, 1)

@@ -81,9 +81,14 @@ func InitRoutes(r *fizz.Fizz) {
 	}, tonic.Handler(openrouter.ChatCompletions, 200))
 
 	apiKeyGroup := v1g.Group("api_key", "API Key", "API Key related APIs")
-	apiKeyGroup.POST("", []fizz.OperationOption{
+	apiKeyGroup.POST("/:client_id", []fizz.OperationOption{
 		fizz.Summary("Generate a new API key"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(apikey.CreateAPIKey, 200))
+	apiKeyGroup.DELETE("/:client_id", []fizz.OperationOption{
+		fizz.Summary("Delete an API key"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(apikey.DeleteAPIKey, 200))
 }

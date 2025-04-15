@@ -18,13 +18,13 @@ func GenerateAPIKey(ctx context.Context, db *gorm.DB, clientID string) (string, 
 	if err != nil {
 		return "", 0, err
 	}
-	apiKeyStr := base64.StdEncoding.EncodeToString(randKey)
+	apiKeyStr := base64.URLEncoding.EncodeToString(randKey)
 	keyPrefix := apiKeyStr[:8]
 	hashKey, err := bcrypt.GenerateFromPassword(randKey, bcrypt.DefaultCost)
 	if err != nil {
 		return "", 0, err
 	}
-	hashKeyStr := base64.StdEncoding.EncodeToString(hashKey)
+	hashKeyStr := base64.URLEncoding.EncodeToString(hashKey)
 
 	now := time.Now()
 	expiresAt := now.Add(time.Hour * 24 * 365) // 1 year expiration
@@ -61,7 +61,7 @@ var ErrAPIKeyInvalid = errors.New("API key is invalid")
 var ErrAPIKeyExpired = errors.New("API key is expired")
 
 func ValidateAPIKey(ctx context.Context, db *gorm.DB, apiKeyStr string) (*models.ClientAPIKey, error) {
-	rawKey, err := base64.StdEncoding.DecodeString(apiKeyStr)
+	rawKey, err := base64.URLEncoding.DecodeString(apiKeyStr)
 	if err != nil {
 		return nil, ErrAPIKeyInvalid
 	}
@@ -73,7 +73,7 @@ func ValidateAPIKey(ctx context.Context, db *gorm.DB, apiKeyStr string) (*models
 		}
 		return nil, err
 	}
-	hashKey, _ := base64.StdEncoding.DecodeString(apiKey.KeyHash)
+	hashKey, _ := base64.URLEncoding.DecodeString(apiKey.KeyHash)
 	if apiKey.ExpiresAt.Before(time.Now()) {
 		return nil, ErrAPIKeyExpired
 	}

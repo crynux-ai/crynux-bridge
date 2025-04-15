@@ -10,7 +10,7 @@ import (
 )
 
 type CreateAPIKeyInput struct {
-	ClientID string `form:"client_id" json:"client_id" description:"Client id" validate:"required"`
+	ClientID string `path:"client_id" json:"client_id" description:"Client id" validate:"required"`
 }
 
 type CreateAPIKeyInputWithSignature struct {
@@ -24,7 +24,12 @@ type CreateAPIKeyOutput struct {
 	ExpiresAt int64  `json:"expires_at" description:"API key expiration time"`
 }
 
-func CreateAPIKey(c *gin.Context, in *CreateAPIKeyInputWithSignature) (*CreateAPIKeyOutput, error) {
+type CreateAPIKeyResponse struct {
+	response.Response
+	Data *CreateAPIKeyOutput `json:"data"`
+}
+
+func CreateAPIKey(c *gin.Context, in *CreateAPIKeyInputWithSignature) (*CreateAPIKeyResponse, error) {
 	match, address, err := tools.ValidateSignature(in.CreateAPIKeyInput, in.Timestamp, in.Signature)
 
 	if err != nil || !match {
@@ -55,8 +60,10 @@ func CreateAPIKey(c *gin.Context, in *CreateAPIKeyInputWithSignature) (*CreateAP
 		log.Debugln("error in generate apikey: " + err.Error())
 		return nil, response.NewExceptionResponse(err)
 	}
-	return &CreateAPIKeyOutput{
-		APIKey:    apikey,
-		ExpiresAt: expiresAt,
+	return &CreateAPIKeyResponse{
+		Data: &CreateAPIKeyOutput{
+			APIKey:    apikey,
+			ExpiresAt: expiresAt,
+		},
 	}, nil
 }
