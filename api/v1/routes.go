@@ -1,6 +1,7 @@
 package v1
 
 import (
+	apikey "crynux_bridge/api/v1/api_key"
 	"crynux_bridge/api/v1/application"
 	"crynux_bridge/api/v1/count"
 	"crynux_bridge/api/v1/inference_tasks"
@@ -78,4 +79,16 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(openrouter.ChatCompletions, 200))
+
+	apiKeyGroup := v1g.Group("api_key", "API Key", "API Key related APIs")
+	apiKeyGroup.POST("/:client_id", []fizz.OperationOption{
+		fizz.Summary("Generate a new API key"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(apikey.CreateAPIKey, 200))
+	apiKeyGroup.DELETE("/:client_id", []fizz.OperationOption{
+		fizz.Summary("Delete an API key"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(apikey.DeleteAPIKey, 200))
 }

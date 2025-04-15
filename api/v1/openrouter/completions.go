@@ -15,18 +15,37 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type CompletionsRequest struct {
+	structs.CompletionsRequest
+	Authorization string `header:"Authorization" validate:"required"`
+}
+
 // build TaskInput from CompletionsRequest, create task, wait for task to finish, get task result, then return CompletionsResponse
-func Completions(c *gin.Context, in *structs.CompletionsRequest) (*structs.CompletionsResponse, error) {
+func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsResponse, error) {
 	ctx := c.Request.Context()
 	db := config.GetDB()
+	appConfig := config.GetConfig()
 
 	/* 1. Build TaskInput from CompletionsRequest */
 	in.SetDefaultValues() // set default values for some fields
 
-	clientID := "openrouter"
-	// if client does not exist, create a new client
-	if _, err := tools.CreateClientIfNotExist(ctx, db, clientID); err != nil {
+	if !strings.HasPrefix(in.Authorization, "Bearer ") {
+		return nil, response.NewValidationErrorResponse("Authorization", "Authorization header must start with 'Bearer '")
+	}
+	apiKeyStr := in.Authorization[7:]
+	apiKey, err := tools.ValidateAPIKey(c.Request.Context(), config.GetDB(), apiKeyStr)
+	if err != nil {
+		if errors.Is(err, tools.ErrAPIKeyExpired) {
+			return nil, response.NewValidationErrorResponse("Authorization", "expired")
+		}
+		if errors.Is(err, tools.ErrAPIKeyInvalid) {
+			return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
+		}
 		return nil, response.NewExceptionResponse(err)
+	}
+	clientID := apiKey.ClientID
+	if clientID != appConfig.Blockchain.Account.Address {
+		return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
 	}
 
 	messages := make([]structs.Message, 1)
@@ -59,7 +78,7 @@ func Completions(c *gin.Context, in *structs.CompletionsRequest) (*structs.Compl
 		Messages:         messages,
 		GenerationConfig: generationConfig,
 		Seed:             in.Seed,
-		DType: dtype,
+		DType:            dtype,
 		// Tools:            in.Tools,
 		// QuantizeBits:     structs.QuantizeBits8,
 	}
