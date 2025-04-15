@@ -33,8 +33,9 @@ func AddRole(c *gin.Context, in *AddRoleInputWithSignature) (*response.Response,
 		validationErr := response.NewValidationErrorResponse("signature", "Invalid signature")
 		return nil, validationErr
 	}
-	if in.ClientID != address {
-		validationErr := response.NewValidationErrorResponse("client_id", "Invalid client id")
+	appConfig := config.GetConfig()
+	if address != appConfig.Blockchain.Account.Address {
+		validationErr := response.NewValidationErrorResponse("client_id", "Invalid signer")
 		return nil, validationErr
 	}
 
