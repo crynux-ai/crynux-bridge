@@ -81,6 +81,10 @@ type AppConfig struct {
 		StableDiffusionFinetuneLora string `mapstructure:"stable_diffusion_finetune_lora"`
 	} `mapstructure:"task_schema"`
 
+	OpenRouter struct {
+		ModelsFile string `mapstructure:"models_file"`
+	}
+
 	Test struct {
 		RootAddress    string `mapstructure:"root_address"`
 		RootPrivateKey string `mapstructure:"root_private_key"`
