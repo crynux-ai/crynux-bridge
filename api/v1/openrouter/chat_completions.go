@@ -10,6 +10,7 @@ import (
 	"crynux_bridge/models"
 	"encoding/json"
 	"errors"
+	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,6 @@ type ChatCompletionsRequest struct {
 func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatCompletionsResponse, error) {
 	ctx := c.Request.Context()
 	db := config.GetDB()
-	appConfig := config.GetConfig()
 
 	/* 1. Build TaskInput from ChatCompletionsRequest */
 	in.SetDefaultValues() // set default values for some fields
@@ -43,8 +43,7 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 		}
 		return nil, response.NewExceptionResponse(err)
 	}
-	clientID := apiKey.ClientID
-	if clientID != appConfig.Blockchain.Account.Address {
+	if !slices.Contains(apiKey.Roles, models.RoleAdmin) && !slices.Contains(apiKey.Roles, models.RoleChat) {
 		return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
 	}
 
@@ -90,7 +89,7 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	taskFee := uint64(6000000000)
 
 	task := &inference_tasks.TaskInput{
-		ClientID:        clientID,
+		ClientID:        apiKey.ClientID,
 		TaskArgs:        string(taskArgsStr),
 		TaskType:        &taskType,
 		TaskVersion:     nil,

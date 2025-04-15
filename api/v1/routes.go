@@ -79,6 +79,10 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(openrouter.ChatCompletions, 200))
+	openrouterGroup.GET("/models", []fizz.OperationOption{
+		fizz.Summary("Get the list of the models"),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(openrouter.GetModels, 200))
 
 	apiKeyGroup := v1g.Group("api_key", "API Key", "API Key related APIs")
 	apiKeyGroup.POST("/:client_id", []fizz.OperationOption{
@@ -91,4 +95,9 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(apikey.DeleteAPIKey, 200))
+	apiKeyGroup.POST("/:client_id/role", []fizz.OperationOption{
+		fizz.Summary("Add a role to an API key"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(apikey.AddRole, 200))
 }

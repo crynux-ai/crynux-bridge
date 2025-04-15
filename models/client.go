@@ -2,7 +2,10 @@ package models
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -20,6 +23,46 @@ type ClientTask struct {
 	InferenceTasks []InferenceTask `json:"-"`
 }
 
+type Role string
+
+const (
+	RoleAdmin Role = "admin"
+	RoleChat  Role = "chat"
+)
+
+type Roles []Role
+
+func (roles *Roles) Scan(val interface{}) error {
+	var arrString string
+	switch v := val.(type) {
+	case string:
+		arrString = v
+	case []byte:
+		arrString = string(v)
+	case nil:
+		return nil
+	default:
+		return errors.New(fmt.Sprint("Unable to parse value to Roles: ", val))
+	}
+	arr := strings.Split(arrString, ",")
+	*roles = make([]Role, 0)
+	for _, v := range arr {
+		if len(v) > 0 {
+			*roles = append(*roles, Role(v))
+		}
+	}
+	return nil
+}
+
+func (roles Roles) Value() (driver.Value, error) {
+	arr := make([]string, len(roles))
+	for i, v := range roles {
+		arr[i] = string(v)
+	}
+	res := strings.Join(arr, ",")
+	return res, nil
+}
+
 type ClientAPIKey struct {
 	RootModel
 	ClientID   string    `json:"client_id"`
@@ -27,6 +70,7 @@ type ClientAPIKey struct {
 	KeyHash    string    `json:"key_hash"`
 	ExpiresAt  time.Time `json:"expires_at"`
 	LastUsedAt time.Time `json:"last_used_at"`
+	Roles      Roles     `json:"roles"`
 	Client     Client    `json:"-" gorm:"foreignKey:ClientID;references:ClientId"`
 }
 

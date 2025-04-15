@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"slices"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -103,4 +104,23 @@ func UpdateAPIKeyUsedAt(ctx context.Context, db *gorm.DB, clientID string) error
 	return apiKey.Update(ctx, db, &models.ClientAPIKey{
 		LastUsedAt: time.Now(),
 	})
+}
+
+func AddAPIKeyRole(ctx context.Context, db *gorm.DB, clientID string, role models.Role) error {
+	apiKey, err := models.GetAPIKeyByClientID(ctx, db, clientID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
+		}
+		return err
+	}
+	if slices.Contains(apiKey.Roles, role) {
+		return nil
+	}
+	newAPIKey := &models.ClientAPIKey{
+		Roles: apiKey.Roles,
+	}
+	newAPIKey.Roles = append(newAPIKey.Roles, role)
+	
+	return apiKey.Update(ctx, db, newAPIKey)
 }
