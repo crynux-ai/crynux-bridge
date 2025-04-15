@@ -10,23 +10,41 @@ import (
 	"crynux_bridge/models"
 	"encoding/json"
 	"errors"
+	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
+type CompletionsRequest struct {
+	structs.CompletionsRequest
+	Authorization string `header:"Authorization" validate:"required"`
+}
+
 // build TaskInput from CompletionsRequest, create task, wait for task to finish, get task result, then return CompletionsResponse
-func Completions(c *gin.Context, in *structs.CompletionsRequest) (*structs.CompletionsResponse, error) {
+func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsResponse, error) {
 	ctx := c.Request.Context()
 	db := config.GetDB()
 
 	/* 1. Build TaskInput from CompletionsRequest */
 	in.SetDefaultValues() // set default values for some fields
 
-	clientID := "openrouter"
-	// if client does not exist, create a new client
-	if _, err := tools.CreateClientIfNotExist(ctx, db, clientID); err != nil {
+	if !strings.HasPrefix(in.Authorization, "Bearer ") {
+		return nil, response.NewValidationErrorResponse("Authorization", "Authorization header must start with 'Bearer '")
+	}
+	apiKeyStr := in.Authorization[7:]
+	apiKey, err := tools.ValidateAPIKey(c.Request.Context(), config.GetDB(), apiKeyStr)
+	if err != nil {
+		if errors.Is(err, tools.ErrAPIKeyExpired) {
+			return nil, response.NewValidationErrorResponse("Authorization", "expired")
+		}
+		if errors.Is(err, tools.ErrAPIKeyInvalid) {
+			return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
+		}
 		return nil, response.NewExceptionResponse(err)
+	}
+	if !slices.Contains(apiKey.Roles, models.RoleAdmin) && !slices.Contains(apiKey.Roles, models.RoleChat) {
+		return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
 	}
 
 	messages := make([]structs.Message, 1)
@@ -49,22 +67,17 @@ func Completions(c *gin.Context, in *structs.CompletionsRequest) (*structs.Compl
 		// TopK:               50,
 	}
 
-	var model string
 	var dtype structs.DType = structs.DTypeAuto
-	if strings.Contains(in.Model, "+") {
-		parts := strings.SplitN(in.Model, "+", 2)
-		model = parts[0]
-		dtype = structs.DType(parts[1])
-	} else {
-		model = in.Model
+	if strings.HasPrefix(in.Model, "Qwen/Qwen2.5") {
+		dtype = structs.DTypeBFloat16
 	}
 
 	taskArgs := structs.GPTTaskArgs{
-		Model:            model,
+		Model:            in.Model,
 		Messages:         messages,
 		GenerationConfig: generationConfig,
 		Seed:             in.Seed,
-		DType: dtype,
+		DType:            dtype,
 		// Tools:            in.Tools,
 		// QuantizeBits:     structs.QuantizeBits8,
 	}
@@ -79,7 +92,7 @@ func Completions(c *gin.Context, in *structs.CompletionsRequest) (*structs.Compl
 	taskFee := uint64(6000000000)
 
 	task := &inference_tasks.TaskInput{
-		ClientID:        clientID,
+		ClientID:        apiKey.ClientID,
 		TaskArgs:        string(taskArgsStr),
 		TaskType:        &taskType,
 		TaskVersion:     nil,
