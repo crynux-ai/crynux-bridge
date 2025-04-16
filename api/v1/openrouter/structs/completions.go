@@ -1,26 +1,28 @@
 package structs
 
-import "encoding/json"
-
 type CompletionsRequest struct {
-	Model            string             `json:"model" validate:"required"`
-	Prompt           json.RawMessage    `json:"prompt" validate:"required"`
-	BestOf           int                `json:"best_of"` // defaults to 1
-	Echo             bool               `json:"echo"`
-	FrequencyPenalty float64            `json:"frequency_penalty"`
-	LogitBias        map[string]float64 `json:"logit_bias"`
-	LogProbs         int                `json:"logprobs"`
-	MaxTokens        int                `json:"max_tokens"`
-	N                int                `json:"n"`
-	PresencePenalty  float64            `json:"presence_penalty"`
-	Seed             int                `json:"seed"`
-	Stop             json.RawMessage    `json:"stop"`
-	Stream           bool               `json:"stream"`
-	StreamOptions    CReqStreamOptions  `json:"stream_options"`
-	Suffix           string             `json:"suffix"`
-	Temperature      float64            `json:"temperature"`
-	TopP             float64            `json:"top_p"`
-	User             string             `json:"user"`
+	Model             string             `json:"model" validate:"required"`
+	Prompt            string             `json:"prompt" validate:"required"`
+	BestOf            int                `json:"best_of"` // defaults to 1
+	Echo              bool               `json:"echo"`
+	FrequencyPenalty  *float64           `json:"frequency_penalty"`
+	LogitBias         map[string]float64 `json:"logit_bias"`
+	LogProbs          int                `json:"logprobs"`
+	MaxTokens         *int               `json:"max_tokens"`
+	N                 int                `json:"n" default:"1"`
+	PresencePenalty   *float64           `json:"presence_penalty"`
+	RepetitionPenalty *float64           `json:"repetition_penalty"`
+	Seed              int                `json:"seed"`
+	Stop              []string           `json:"stop"`
+	Stream            bool               `json:"stream"`
+	StreamOptions     CReqStreamOptions  `json:"stream_options"`
+	Suffix            string             `json:"suffix"`
+	Temperature       float64            `json:"temperature"`
+	TopP              *float64           `json:"top_p"`
+	TopK              *int               `json:"top_k"`
+	MinP              *float64           `json:"min_p"`
+	TopA              *float64           `json:"top_a"`
+	User              string             `json:"user"`
 }
 
 func (cr *CompletionsRequest) SetDefaultValues() {

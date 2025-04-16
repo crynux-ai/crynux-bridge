@@ -3,34 +3,38 @@ package structs
 import "encoding/json"
 
 type ChatCompletionsRequest struct {
-	Messages            []CCReqMessage           `json:"messages" validate:"required"`
-	Model               string                   `json:"model" validate:"required"`
-	Audio               *CCReqAudio              `json:"audio"`
-	FrequencyPenalty    float64                  `json:"frequency_penalty"`
-	LogitBias           map[string]float64       `json:"logit_bias"`
-	LogProbs            bool                     `json:"logprobs"`
-	MaxCompletionTokens int                      `json:"max_completion_tokens"`
-	MetaData            map[string]string        `json:"metadata"`
-	Modalities          []string                 `json:"modalities"`
-	N                   int                      `json:"n"` // defaults to 1
-	ParallelToolCalls   bool                     `json:"parallel_tool_calls"`
-	Prediction          *CCReqPrediction         `json:"prediction"`
-	PresencePenalty     float64                  `json:"presence_penalty,omitempty"`
-	ReasoningEffort     string                   `json:"reasoning_effort"`
-	ResponseFormat      json.RawMessage          `json:"response_format"`
-	Seed                int                      `json:"seed"`
-	ServiceTier         string                   `json:"service_tier"`
-	Stop                json.RawMessage          `json:"stop"`
-	Store               bool                     `json:"store"`
-	Stream              bool                     `json:"stream"`
-	StreamOptions       *CCReqStreamOptions      `json:"stream_options"`
-	Temperature         float64                  `json:"temperature"`
-	ToolChoice          json.RawMessage          `json:"tool_choice"`
-	Tools               []map[string]interface{} `json:"tools"`
-	TopLogprobs         int                      `json:"top_logprobs"`
-	TopP                float64                  `json:"top_p"`
-	User                string                   `json:"user"`
-	WebSearchOptions    json.RawMessage          `json:"web_search_options"`
+	Messages          []CCReqMessage           `json:"messages" validate:"required"`
+	Model             string                   `json:"model" validate:"required"`
+	Audio             *CCReqAudio              `json:"audio"`
+	FrequencyPenalty  *float64                 `json:"frequency_penalty"`
+	LogitBias         map[string]float64       `json:"logit_bias"`
+	LogProbs          bool                     `json:"logprobs"`
+	MaxTokens         *int                     `json:"max_tokens"`
+	MetaData          map[string]string        `json:"metadata"`
+	Modalities        []string                 `json:"modalities"`
+	N                 int                      `json:"n" default:"1"`
+	Prediction        *CCReqPrediction         `json:"prediction"`
+	PresencePenalty   *float64                 `json:"presence_penalty,omitempty"`
+	RepetitionPenalty *float64                 `json:"repetition_penalty"`
+	ReasoningEffort   string                   `json:"reasoning_effort"`
+	ResponseFormat    map[string]interface{}   `json:"response_format"`
+	StructuredOutputs bool                     `json:"structured_outputs"`
+	Seed              int                      `json:"seed"`
+	ServiceTier       string                   `json:"service_tier"`
+	Stop              []string                 `json:"stop"`
+	Store             bool                     `json:"store"`
+	Stream            bool                     `json:"stream"`
+	StreamOptions     *CCReqStreamOptions      `json:"stream_options"`
+	Temperature       float64                  `json:"temperature"`
+	ToolChoice        []map[string]interface{} `json:"tool_choice"`
+	Tools             []map[string]interface{} `json:"tools"`
+	TopLogprobs       int                      `json:"top_logprobs"`
+	TopP              *float64                 `json:"top_p"`
+	TopK              *int                     `json:"top_k"`
+	MinP              *float64                 `json:"min_p"`
+	TopA              *float64                 `json:"top_a"`
+	User              string                   `json:"user"`
+	WebSearchOptions  json.RawMessage          `json:"web_search_options"`
 }
 
 func (ccr *ChatCompletionsRequest) SetDefaultValues() {
@@ -42,7 +46,7 @@ func (ccr *ChatCompletionsRequest) SetDefaultValues() {
 // Chat Completions Request Message
 type CCReqMessage struct {
 	Role       ChatCompletionsRole    `json:"role" validate:"required"`
-	Content    json.RawMessage        `json:"content"`
+	Content    string                 `json:"content"`
 	Name       string                 `json:"name"`
 	Audio      *CCReqMessageAudio     `json:"audio"`
 	Refusal    string                 `json:"refusal"`

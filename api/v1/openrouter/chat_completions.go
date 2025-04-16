@@ -53,15 +53,27 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	}
 
 	generationConfig := &structs.GPTGenerationConfig{
-		MaxNewTokens:       in.MaxCompletionTokens,
 		DoSample:           true,
 		Temperature:        in.Temperature,
-		TopP:               in.TopP,
-		RepetitionPenalty:  in.FrequencyPenalty,
 		NumReturnSequences: in.N,
-		// NumBeams:           1,
-		// TypicalP:           0.95,
-		// TopK:               50,
+	}
+	if in.MaxTokens != nil {
+		generationConfig.MaxNewTokens = *in.MaxTokens
+	}
+	if in.TopP != nil {
+		generationConfig.TopP = *in.TopP
+	}
+	if in.TopK != nil {
+		generationConfig.TopK = *in.TopK
+	}
+	if in.MinP != nil {
+		generationConfig.MinP = *in.MinP
+	}
+	if in.RepetitionPenalty != nil {
+		generationConfig.RepetitionPenalty = *in.RepetitionPenalty
+	}
+	if len(in.Stop) > 0 {
+		generationConfig.StopStrings = in.Stop
 	}
 
 	var dtype structs.DType = structs.DTypeAuto

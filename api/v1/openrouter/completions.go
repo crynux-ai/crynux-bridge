@@ -50,21 +50,31 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 	messages := make([]structs.Message, 1)
 	messages[0] = structs.Message{
 		Role:    structs.RoleUser,
-		Content: utils.RawMessageToString(in.Prompt),
-		// ToolCallID: "",
-		// ToolCalls:  nil,
+		Content: in.Prompt,
 	}
 
 	generationConfig := &structs.GPTGenerationConfig{
-		MaxNewTokens:       in.MaxTokens,
 		DoSample:           true,
 		Temperature:        in.Temperature,
-		TopP:               in.TopP,
-		RepetitionPenalty:  in.FrequencyPenalty,
 		NumReturnSequences: in.N,
-		// NumBeams:           1,
-		// TypicalP:           0.95,
-		// TopK:               50,
+	}
+	if in.MaxTokens != nil {
+		generationConfig.MaxNewTokens = *in.MaxTokens
+	}
+	if in.TopP != nil {
+		generationConfig.TopP = *in.TopP
+	}
+	if in.TopK != nil {
+		generationConfig.TopK = *in.TopK
+	}
+	if in.MinP != nil {
+		generationConfig.MinP = *in.MinP
+	}
+	if in.RepetitionPenalty != nil {
+		generationConfig.RepetitionPenalty = *in.RepetitionPenalty
+	}
+	if len(in.Stop) > 0 {
+		generationConfig.StopStrings = in.Stop
 	}
 
 	var dtype structs.DType = structs.DTypeAuto

@@ -53,7 +53,7 @@ func CCReqMessageToolCallToToolCall(ccrMessagetoolCall structs.CCReqMessageToolC
 func CCReqMessageToMessage(ccrMessage structs.CCReqMessage) structs.Message {
 	var message structs.Message
 	message.Role = ChatCompletionsRoleToRole(ccrMessage.Role)
-	message.Content = RawMessageToString(ccrMessage.Content)
+	message.Content = ccrMessage.Content
 	message.ToolCallID = ccrMessage.ToolCallID
 
 	toolCalls := make([]map[string]interface{}, len(ccrMessage.ToolCalls))
