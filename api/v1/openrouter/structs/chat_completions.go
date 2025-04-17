@@ -2,37 +2,46 @@ package structs
 
 import "encoding/json"
 
+/* Request */
+
 type ChatCompletionsRequest struct {
-	Messages          []CCReqMessage           `json:"messages" validate:"required"`
-	Model             string                   `json:"model" validate:"required"`
+	Model             string             `json:"model" validate:"required"`
+	Messages          []CCReqMessage     `json:"messages" validate:"required"`
+	Stream            bool               `json:"stream"` // default to false
+	MaxTokens         *int               `json:"max_tokens"`
+	Temperature       float64            `json:"temperature"`
+	Seed              int                `json:"seed"`
+	TopP              *float64           `json:"top_p"`
+	TopK              *int               `json:"top_k"`
+	FrequencyPenalty  *float64           `json:"frequency_penalty"`
+	PresencePenalty   *float64           `json:"presence_penalty"`
+	RepetitionPenalty *float64           `json:"repetition_penalty"`
+	LogitBias         map[string]float64 `json:"logit_bias"`
+	TopLogprobs       int                `json:"top_logprobs"`
+	MinP              *float64           `json:"min_p"`
+	TopA              *float64           `json:"top_a"`
+
+	// Transforms []string `json:"transforms"` // openrouter only
+	// Models     []string `json:"models"`
+	// Provider   TODO     `json:"provider"`
+	// Reasoning  TODO     `json:"reasoning"`
+
+	Stop []string `json:"stop"`
+
 	Audio             *CCReqAudio              `json:"audio"`
-	FrequencyPenalty  *float64                 `json:"frequency_penalty"`
-	LogitBias         map[string]float64       `json:"logit_bias"`
 	LogProbs          bool                     `json:"logprobs"`
-	MaxTokens         *int                     `json:"max_tokens"`
 	MetaData          map[string]string        `json:"metadata"`
 	Modalities        []string                 `json:"modalities"`
 	N                 int                      `json:"n" default:"1"`
 	Prediction        *CCReqPrediction         `json:"prediction"`
-	PresencePenalty   *float64                 `json:"presence_penalty,omitempty"`
-	RepetitionPenalty *float64                 `json:"repetition_penalty"`
 	ReasoningEffort   string                   `json:"reasoning_effort"`
 	ResponseFormat    map[string]interface{}   `json:"response_format"`
 	StructuredOutputs bool                     `json:"structured_outputs"`
-	Seed              int                      `json:"seed"`
 	ServiceTier       string                   `json:"service_tier"`
-	Stop              []string                 `json:"stop"`
 	Store             bool                     `json:"store"`
-	Stream            bool                     `json:"stream"`
 	StreamOptions     *CCReqStreamOptions      `json:"stream_options"`
-	Temperature       float64                  `json:"temperature"`
 	ToolChoice        []map[string]interface{} `json:"tool_choice"`
 	Tools             []map[string]interface{} `json:"tools"`
-	TopLogprobs       int                      `json:"top_logprobs"`
-	TopP              *float64                 `json:"top_p"`
-	TopK              *int                     `json:"top_k"`
-	MinP              *float64                 `json:"min_p"`
-	TopA              *float64                 `json:"top_a"`
 	User              string                   `json:"user"`
 	WebSearchOptions  json.RawMessage          `json:"web_search_options"`
 }
@@ -46,7 +55,7 @@ func (ccr *ChatCompletionsRequest) SetDefaultValues() {
 // Chat Completions Request Message
 type CCReqMessage struct {
 	Role       ChatCompletionsRole    `json:"role" validate:"required"`
-	Content    string                 `json:"content"`
+	Content    string                 `json:"content" validate:"required"`
 	Name       string                 `json:"name"`
 	Audio      *CCReqMessageAudio     `json:"audio"`
 	Refusal    string                 `json:"refusal"`
@@ -102,6 +111,8 @@ type CCReqAudio struct {
 	Format string `json:"format" validate:"required"`
 	Voice  string `json:"voice" validate:"required"`
 }
+
+/* Response */
 
 type ChatCompletionsResponse struct {
 	Id          string        `json:"id"`

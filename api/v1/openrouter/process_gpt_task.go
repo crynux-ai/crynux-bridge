@@ -18,7 +18,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// func ProcessGPTTask(c *gin.Context, in *inference_tasks.TaskInput) (*structs.GPTTaskResponse, *models.InferenceTask, error) {
 func ProcessGPTTask(ctx context.Context, db *gorm.DB, in *inference_tasks.TaskInput) (*structs.GPTTaskResponse, *models.InferenceTask, error) {
 	/* 1. Create GPT task by function CreateTask */
 	taskResponse, err := inference_tasks.DoCreateTask(ctx, in)
