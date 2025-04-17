@@ -42,15 +42,17 @@ type Message struct {
 }
 
 type GPTGenerationConfig struct {
-	MaxNewTokens       int     `json:"max_new_tokens,omitempty"`
-	DoSample           bool    `json:"do_sample,omitempty"`
-	NumBeams           int     `json:"num_beams,omitempty"`
-	Temperature        float64 `json:"temperature,omitempty"`
-	TypicalP           float64 `json:"typical_p,omitempty"`
-	TopK               int     `json:"top_k,omitempty"`
-	TopP               float64 `json:"top_p,omitempty"`
-	RepetitionPenalty  float64 `json:"repetition_penalty,omitempty"`
-	NumReturnSequences int     `json:"num_return_sequences,omitempty"`
+	MaxNewTokens       int      `json:"max_new_tokens,omitempty"`
+	StopStrings        []string `json:"stop_strings,omitempty"`
+	DoSample           bool     `json:"do_sample,omitempty"`
+	NumBeams           int      `json:"num_beams,omitempty"`
+	Temperature        float64  `json:"temperature,omitempty"`
+	TypicalP           float64  `json:"typical_p,omitempty"`
+	TopK               int      `json:"top_k,omitempty"`
+	TopP               float64  `json:"top_p,omitempty"`
+	MinP               float64  `json:"min_p,omitempty"`
+	RepetitionPenalty  float64  `json:"repetition_penalty,omitempty"`
+	NumReturnSequences int      `json:"num_return_sequences,omitempty"`
 }
 
 type Usage struct {

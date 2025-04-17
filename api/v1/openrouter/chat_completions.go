@@ -5,12 +5,10 @@ import (
 	"crynux_bridge/api/v1/openrouter/structs"
 	"crynux_bridge/api/v1/openrouter/utils"
 	"crynux_bridge/api/v1/response"
-	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"encoding/json"
 	"errors"
-	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -29,22 +27,10 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	/* 1. Build TaskInput from ChatCompletionsRequest */
 	in.SetDefaultValues() // set default values for some fields
 
-	if !strings.HasPrefix(in.Authorization, "Bearer ") {
-		return nil, response.NewValidationErrorResponse("Authorization", "Authorization header must start with 'Bearer '")
-	}
-	apiKeyStr := in.Authorization[7:]
-	apiKey, err := tools.ValidateAPIKey(c.Request.Context(), config.GetDB(), apiKeyStr)
+	// validate request (apiKey)
+	apiKey, err := ValidateRequestApiKey(ctx, db, in.Authorization)
 	if err != nil {
-		if errors.Is(err, tools.ErrAPIKeyExpired) {
-			return nil, response.NewValidationErrorResponse("Authorization", "expired")
-		}
-		if errors.Is(err, tools.ErrAPIKeyInvalid) {
-			return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
-		}
-		return nil, response.NewExceptionResponse(err)
-	}
-	if !slices.Contains(apiKey.Roles, models.RoleAdmin) && !slices.Contains(apiKey.Roles, models.RoleChat) {
-		return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
+		return nil, err
 	}
 
 	messages := make([]structs.Message, len(in.Messages))
@@ -53,15 +39,27 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	}
 
 	generationConfig := &structs.GPTGenerationConfig{
-		MaxNewTokens:       in.MaxCompletionTokens,
 		DoSample:           true,
 		Temperature:        in.Temperature,
-		TopP:               in.TopP,
-		RepetitionPenalty:  in.FrequencyPenalty,
 		NumReturnSequences: in.N,
-		// NumBeams:           1,
-		// TypicalP:           0.95,
-		// TopK:               50,
+	}
+	if in.MaxTokens != nil {
+		generationConfig.MaxNewTokens = *in.MaxTokens
+	}
+	if in.TopP != nil {
+		generationConfig.TopP = *in.TopP
+	}
+	if in.TopK != nil {
+		generationConfig.TopK = *in.TopK
+	}
+	if in.MinP != nil {
+		generationConfig.MinP = *in.MinP
+	}
+	if in.RepetitionPenalty != nil {
+		generationConfig.RepetitionPenalty = *in.RepetitionPenalty
+	}
+	if len(in.Stop) > 0 {
+		generationConfig.StopStrings = in.Stop
 	}
 
 	var dtype structs.DType = structs.DTypeAuto

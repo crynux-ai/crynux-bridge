@@ -53,7 +53,7 @@ func CCReqMessageToolCallToToolCall(ccrMessagetoolCall structs.CCReqMessageToolC
 func CCReqMessageToMessage(ccrMessage structs.CCReqMessage) structs.Message {
 	var message structs.Message
 	message.Role = ChatCompletionsRoleToRole(ccrMessage.Role)
-	message.Content = RawMessageToString(ccrMessage.Content)
+	message.Content = ccrMessage.Content
 	message.ToolCallID = ccrMessage.ToolCallID
 
 	toolCalls := make([]map[string]interface{}, len(ccrMessage.ToolCalls))
@@ -109,8 +109,8 @@ func ResponseChoiceToCResChoice(responseChoice structs.ResponseChoice) (structs.
 	return cResChoice, nil
 }
 
-func UsageToCResUsage(usage structs.Usage) structs.CReqUsage {
-	var cResUsage structs.CReqUsage
+func UsageToCResUsage(usage structs.Usage) structs.CResUsage {
+	var cResUsage structs.CResUsage
 	cResUsage.PromptTokens = usage.PromptTokens
 	cResUsage.CompletionTokens = usage.CompletionTokens
 	cResUsage.TotalTokens = usage.TotalTokens
