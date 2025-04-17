@@ -5,12 +5,10 @@ import (
 	"crynux_bridge/api/v1/openrouter/structs"
 	"crynux_bridge/api/v1/openrouter/utils"
 	"crynux_bridge/api/v1/response"
-	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"encoding/json"
 	"errors"
-	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -29,22 +27,10 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	/* 1. Build TaskInput from ChatCompletionsRequest */
 	in.SetDefaultValues() // set default values for some fields
 
-	if !strings.HasPrefix(in.Authorization, "Bearer ") {
-		return nil, response.NewValidationErrorResponse("Authorization", "Authorization header must start with 'Bearer '")
-	}
-	apiKeyStr := in.Authorization[7:]
-	apiKey, err := tools.ValidateAPIKey(c.Request.Context(), config.GetDB(), apiKeyStr)
+	// validate request (apiKey)
+	apiKey, err := ValidateRequestApiKey(ctx, db, in.Authorization)
 	if err != nil {
-		if errors.Is(err, tools.ErrAPIKeyExpired) {
-			return nil, response.NewValidationErrorResponse("Authorization", "expired")
-		}
-		if errors.Is(err, tools.ErrAPIKeyInvalid) {
-			return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
-		}
-		return nil, response.NewExceptionResponse(err)
-	}
-	if !slices.Contains(apiKey.Roles, models.RoleAdmin) && !slices.Contains(apiKey.Roles, models.RoleChat) {
-		return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
+		return nil, err
 	}
 
 	messages := make([]structs.Message, len(in.Messages))

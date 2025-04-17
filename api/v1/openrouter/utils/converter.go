@@ -109,8 +109,8 @@ func ResponseChoiceToCResChoice(responseChoice structs.ResponseChoice) (structs.
 	return cResChoice, nil
 }
 
-func UsageToCResUsage(usage structs.Usage) structs.CReqUsage {
-	var cResUsage structs.CReqUsage
+func UsageToCResUsage(usage structs.Usage) structs.CResUsage {
+	var cResUsage structs.CResUsage
 	cResUsage.PromptTokens = usage.PromptTokens
 	cResUsage.CompletionTokens = usage.CompletionTokens
 	cResUsage.TotalTokens = usage.TotalTokens
