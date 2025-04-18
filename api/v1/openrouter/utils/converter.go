@@ -2,7 +2,6 @@ package utils
 
 import (
 	"crynux_bridge/api/v1/openrouter/structs"
-	"encoding/json"
 )
 
 func ChatCompletionsRoleToRole(role structs.ChatCompletionsRole) structs.Role {
@@ -99,11 +98,7 @@ func UsageToCCResUsage(usage structs.Usage) structs.CCResUsage {
 func ResponseChoiceToCResChoice(responseChoice structs.ResponseChoice) (structs.CResChoice, error) {
 	var cResChoice structs.CResChoice
 	cResChoice.Index = responseChoice.Index
-	text, err := json.Marshal(responseChoice.Message)
-	if err != nil {
-		return structs.CResChoice{}, err
-	}
-	cResChoice.Text = string(text)
+	cResChoice.Text = responseChoice.Message.Content
 	// ccResChoice.LogProbs = ""
 	cResChoice.FinishReason = string(responseChoice.FinishReason)
 	return cResChoice, nil
