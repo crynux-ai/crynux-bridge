@@ -5,7 +5,6 @@ import (
 	"crynux_bridge/api/v1/openrouter/structs"
 	"crynux_bridge/api/v1/openrouter/utils"
 	"crynux_bridge/api/v1/response"
-	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"encoding/json"
@@ -33,7 +32,7 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	if err != nil {
 		return nil, err
 	}
-	if err := tools.UseAPIKey(ctx, db, apiKey.ClientID); err != nil {
+	if err := apiKey.Use(ctx, db); err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
 

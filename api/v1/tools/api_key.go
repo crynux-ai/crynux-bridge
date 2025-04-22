@@ -97,17 +97,6 @@ func DeleteAPIKey(ctx context.Context, db *gorm.DB, clientID string) error {
 	return apiKey.Delete(ctx, db)
 }
 
-func UseAPIKey(ctx context.Context, db *gorm.DB, clientID string) error {
-	apiKey, err := models.GetAPIKeyByClientID(ctx, db, clientID)
-	if err != nil {
-		return err
-	}
-	return apiKey.Update(ctx, db, &models.ClientAPIKey{
-		UsedCount:  apiKey.UsedCount + 1,
-		LastUsedAt: time.Now(),
-	})
-}
-
 func AddAPIKeyRole(ctx context.Context, db *gorm.DB, clientID string, role models.Role) error {
 	apiKey, err := models.GetAPIKeyByClientID(ctx, db, clientID)
 	if err != nil {

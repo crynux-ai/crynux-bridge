@@ -99,6 +99,16 @@ func (key *ClientAPIKey) Update(ctx context.Context, db *gorm.DB, newKey *Client
 	})
 }
 
+func (key *ClientAPIKey) Use(ctx context.Context, db *gorm.DB) error {
+	dbCtx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	updates := map[string]interface{}{
+		"used_count": gorm.Expr("used_count + ?", 1),
+		"last_used_at": time.Now(),
+	}
+	return db.WithContext(dbCtx).Model(key).Updates(updates).Error
+}
+
 func (key *ClientAPIKey) Delete(ctx context.Context, db *gorm.DB) error {
 	if key.ID == 0 {
 		return errors.New("ClientAPIKey.ID cannot be 0 when update")
