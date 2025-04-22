@@ -31,6 +31,9 @@ func ValidateRequestApiKey(ctx context.Context, db *gorm.DB, authorization strin
 	if !slices.Contains(apiKey.Roles, models.RoleAdmin) && !slices.Contains(apiKey.Roles, models.RoleChat) {
 		return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
 	}
+	if apiKey.UseLimit > 0 && apiKey.UsedCount >= apiKey.UseLimit {
+		return nil, response.NewValidationErrorResponse("Authorization", "use limit exceeded")
+	}
 
 	return apiKey, nil
 }

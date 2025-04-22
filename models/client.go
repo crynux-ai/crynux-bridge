@@ -72,6 +72,8 @@ type ClientAPIKey struct {
 	LastUsedAt time.Time `json:"last_used_at"`
 	Roles      Roles     `json:"roles"`
 	Client     Client    `json:"-" gorm:"foreignKey:ClientID;references:ClientId"`
+	UsedCount  int64     `json:"used_count" gorm:"default:0"`
+	UseLimit   int64     `json:"use_limit" gorm:"default:20"`
 }
 
 func (key *ClientAPIKey) Save(ctx context.Context, db *gorm.DB) error {

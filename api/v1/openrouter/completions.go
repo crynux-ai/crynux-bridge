@@ -5,6 +5,7 @@ import (
 	"crynux_bridge/api/v1/openrouter/structs"
 	"crynux_bridge/api/v1/openrouter/utils"
 	"crynux_bridge/api/v1/response"
+	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"encoding/json"
@@ -31,6 +32,10 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 	apiKey, err := ValidateRequestApiKey(ctx, db, in.Authorization)
 	if err != nil {
 		return nil, err
+	}
+
+	if err := tools.UseAPIKey(ctx, db, apiKey.ClientID); err != nil {
+		return nil, response.NewExceptionResponse(err)
 	}
 
 	messages := make([]structs.Message, 1)
