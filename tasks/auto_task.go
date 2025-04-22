@@ -44,8 +44,8 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 		taskType = models.TaskTypeSD
 		taskFee = appConfig.Task.SDTaskFee
 	} else if r < 0.75 {
-		gpu_names := []string{"NVIDIA GeForce RTX 4090", "NVIDIA GeForce RTX 4080 SUPER", "NVIDIA GeForce RTX 4080", "NVIDIA GeForce RTX 4070 Ti SUPER", "NVIDIA GeForce RTX 3090"}
-		gpu_vrams := []uint64{24, 16, 16, 16, 24}
+		gpu_names := []string{"NVIDIA GeForce RTX 4080 SUPER", "NVIDIA GeForce RTX 4080", "NVIDIA GeForce RTX 4070 Ti SUPER"}
+		gpu_vrams := []uint64{16, 16, 16}
 		platforms := []string{"Windows", "docker"}
 		i := rand.Intn(len(gpu_names))
 		j := rand.Intn(len(platforms))
