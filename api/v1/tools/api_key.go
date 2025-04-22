@@ -39,6 +39,8 @@ func GenerateAPIKey(ctx context.Context, db *gorm.DB, clientID string) (string, 
 			KeyHash:    hashKeyStr,
 			LastUsedAt: now,
 			ExpiresAt:  expiresAt, // 1 year expiration
+			UsedCount:  0,
+			UseLimit:   20,
 		}
 		if err := apiKey.Save(ctx, db); err != nil {
 			return "", 0, err
@@ -50,6 +52,8 @@ func GenerateAPIKey(ctx context.Context, db *gorm.DB, clientID string) (string, 
 		apiKey.KeyHash = hashKeyStr
 		apiKey.LastUsedAt = now
 		apiKey.ExpiresAt = expiresAt
+		apiKey.UsedCount = 0
+		apiKey.UseLimit = 20
 		if err := apiKey.Save(ctx, db); err != nil {
 			return "", 0, err
 		}
@@ -93,19 +97,6 @@ func DeleteAPIKey(ctx context.Context, db *gorm.DB, clientID string) error {
 	return apiKey.Delete(ctx, db)
 }
 
-func UpdateAPIKeyUsedAt(ctx context.Context, db *gorm.DB, clientID string) error {
-	apiKey, err := models.GetAPIKeyByClientID(ctx, db, clientID)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil
-		}
-		return err
-	}
-	return apiKey.Update(ctx, db, &models.ClientAPIKey{
-		LastUsedAt: time.Now(),
-	})
-}
-
 func AddAPIKeyRole(ctx context.Context, db *gorm.DB, clientID string, role models.Role) error {
 	apiKey, err := models.GetAPIKeyByClientID(ctx, db, clientID)
 	if err != nil {
@@ -121,6 +112,16 @@ func AddAPIKeyRole(ctx context.Context, db *gorm.DB, clientID string, role model
 		Roles: apiKey.Roles,
 	}
 	newAPIKey.Roles = append(newAPIKey.Roles, role)
-	
+
 	return apiKey.Update(ctx, db, newAPIKey)
+}
+
+func ChangeUseLimit(ctx context.Context, db *gorm.DB, clientID string, useLimit int64) error {
+	apiKey, err := models.GetAPIKeyByClientID(ctx, db, clientID)
+	if err != nil {
+		return err
+	}
+	return apiKey.Update(ctx, db, &models.ClientAPIKey{
+		UseLimit: useLimit,
+	})
 }

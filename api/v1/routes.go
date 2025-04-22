@@ -100,4 +100,9 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(apikey.AddRole, 200))
+	apiKeyGroup.POST("/:client_id/use_limit", []fizz.OperationOption{
+		fizz.Summary("Change the use limit of an API key"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(apikey.ChangeUseLimit, 200))
 }

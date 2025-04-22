@@ -72,6 +72,8 @@ type ClientAPIKey struct {
 	LastUsedAt time.Time `json:"last_used_at"`
 	Roles      Roles     `json:"roles"`
 	Client     Client    `json:"-" gorm:"foreignKey:ClientID;references:ClientId"`
+	UsedCount  int64     `json:"used_count" gorm:"default:0"`
+	UseLimit   int64     `json:"use_limit" gorm:"default:20"`
 }
 
 func (key *ClientAPIKey) Save(ctx context.Context, db *gorm.DB) error {
@@ -95,6 +97,16 @@ func (key *ClientAPIKey) Update(ctx context.Context, db *gorm.DB, newKey *Client
 		}
 		return nil
 	})
+}
+
+func (key *ClientAPIKey) Use(ctx context.Context, db *gorm.DB) error {
+	dbCtx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	updates := map[string]interface{}{
+		"used_count": gorm.Expr("used_count + ?", 1),
+		"last_used_at": time.Now(),
+	}
+	return db.WithContext(dbCtx).Model(key).Updates(updates).Error
 }
 
 func (key *ClientAPIKey) Delete(ctx context.Context, db *gorm.DB) error {

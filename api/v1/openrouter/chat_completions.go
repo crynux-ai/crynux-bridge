@@ -32,6 +32,9 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	if err != nil {
 		return nil, err
 	}
+	if err := apiKey.Use(ctx, db); err != nil {
+		return nil, response.NewExceptionResponse(err)
+	}
 
 	messages := make([]structs.Message, len(in.Messages))
 	for i, m := range in.Messages {
@@ -120,5 +123,4 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	}
 
 	return ccResponse, nil
-
 }

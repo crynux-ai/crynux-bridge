@@ -33,6 +33,10 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 		return nil, err
 	}
 
+	if err := apiKey.Use(ctx, db); err != nil {
+		return nil, response.NewExceptionResponse(err)
+	}
+
 	messages := make([]structs.Message, 1)
 	messages[0] = structs.Message{
 		Role:    structs.RoleUser,
