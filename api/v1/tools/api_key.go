@@ -2,6 +2,7 @@ package tools
 
 import (
 	"context"
+	"crynux_bridge/api/ratelimit"
 	"crynux_bridge/models"
 	"crypto/rand"
 	"encoding/base64"
@@ -124,4 +125,18 @@ func ChangeUseLimit(ctx context.Context, db *gorm.DB, clientID string, useLimit 
 	return apiKey.Update(ctx, db, &models.ClientAPIKey{
 		UseLimit: useLimit,
 	})
+}
+
+func ChangeRateLimit(ctx context.Context, db *gorm.DB, clientID string, rateLimit int64) error {
+	apiKey, err := models.GetAPIKeyByClientID(ctx, db, clientID)
+	if err != nil {
+		return err
+	}
+	if err := apiKey.Update(ctx, db, &models.ClientAPIKey{
+		RateLimit: rateLimit,
+	}); err != nil {
+		return err
+	}
+
+	return ratelimit.APIRateLimiter.UpdateRateLimit(ctx, apiKey.ClientID, rateLimit, time.Second)
 }

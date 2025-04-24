@@ -2,17 +2,18 @@ package inference_tasks
 
 import (
 	"context"
+	"crynux_bridge/api/ratelimit"
 	"crynux_bridge/api/v1/response"
 	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/time/rate"
 	"gorm.io/gorm"
 )
 
@@ -69,18 +70,6 @@ func getTaskFee(taskType models.ChainTaskType, baseTaskFee, cap uint64) uint64 {
 	} else {
 		return baseTaskFee * cap
 	}
-}
-
-var clientRateLimiters map[string]*rate.Limiter = make(map[string]*rate.Limiter)
-
-func getClientRateLimiter(clientID string) *rate.Limiter {
-	limiter, ok := clientRateLimiters[clientID]
-	if !ok {
-		var interval time.Duration = time.Minute
-		limiter = rate.NewLimiter(rate.Every(interval), 20)
-		clientRateLimiters[clientID] = limiter
-	}
-	return limiter
 }
 
 func buildTasks(in *TaskInput, client *models.Client, clientTask *models.ClientTask, appConfig *config.AppConfig) ([]*models.InferenceTask, error) {
@@ -160,10 +149,12 @@ func DoCreateTask(ctx context.Context, in *TaskInput) (*TaskResponse, error) {
 	db := config.GetDB()
 
 	// check rate limit
-	limiter := getClientRateLimiter(in.ClientID)
-	if !limiter.Allow() {
-		err := errors.New("CREATE TASK TOO FREQUENTLY")
+	allowed, waitTime, err := ratelimit.APIRateLimiter.CheckRateLimit(ctx, in.ClientID, 20, time.Minute)
+	if err != nil {
 		return nil, response.NewExceptionResponse(err)
+	}
+	if !allowed {
+		return nil, response.NewValidationErrorResponse("rate_limit", fmt.Sprintf("rate limit exceeded, please wait %.2f seconds", waitTime))
 	}
 
 	// get Client
