@@ -1,6 +1,7 @@
 package openrouter
 
 import (
+	"crynux_bridge/api/ratelimit"
 	"crynux_bridge/api/v1/inference_tasks"
 	"crynux_bridge/api/v1/openrouter/structs"
 	"crynux_bridge/api/v1/openrouter/utils"
@@ -9,7 +10,9 @@ import (
 	"crynux_bridge/models"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,8 +35,14 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	if err != nil {
 		return nil, err
 	}
-	if err := apiKey.Use(ctx, db); err != nil {
+
+	// 检查速率限制
+	allowed, waitTime, err := ratelimit.APIRateLimiter.CheckRateLimit(ctx, apiKey.ClientID, apiKey.RateLimit, time.Second)
+	if err != nil {
 		return nil, response.NewExceptionResponse(err)
+	}
+	if !allowed {
+		return nil, response.NewValidationErrorResponse("rate_limit", fmt.Sprintf("rate limit exceeded, please wait %.2f seconds", waitTime))
 	}
 
 	messages := make([]structs.Message, len(in.Messages))
@@ -120,6 +129,10 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 		Usage:   utils.UsageToCCResUsage(gptTaskResponse.Usage),
 		// Object:  "text",
 		// ServiceTier: "",
+	}
+
+	if err := apiKey.Use(ctx, db); err != nil {
+		return nil, response.NewExceptionResponse(err)
 	}
 
 	return ccResponse, nil
