@@ -105,4 +105,9 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(apikey.ChangeUseLimit, 200))
+	apiKeyGroup.POST("/:client_id/rate_limit", []fizz.OperationOption{
+		fizz.Summary("Change the rate limit of an API key"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(apikey.ChangeRateLimit, 200))
 }
