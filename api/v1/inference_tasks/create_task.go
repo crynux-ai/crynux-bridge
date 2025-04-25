@@ -148,15 +148,6 @@ func DoCreateTask(ctx context.Context, in *TaskInput) (*TaskResponse, error) {
 	appConfig := config.GetConfig()
 	db := config.GetDB()
 
-	// check rate limit
-	allowed, waitTime, err := ratelimit.APIRateLimiter.CheckRateLimit(ctx, in.ClientID, 20, time.Minute)
-	if err != nil {
-		return nil, response.NewExceptionResponse(err)
-	}
-	if !allowed {
-		return nil, response.NewValidationErrorResponse("rate_limit", fmt.Sprintf("rate limit exceeded, please wait %.2f seconds", waitTime))
-	}
-
 	// get Client
 	client, err := tools.GetClient(ctx, db, in.ClientID)
 	if err != nil {
@@ -193,5 +184,14 @@ func DoCreateTask(ctx context.Context, in *TaskInput) (*TaskResponse, error) {
 func CreateTask(c *gin.Context, in *TaskInput) (*TaskResponse, error) {
 	ctx := c.Request.Context()
 
+	// check rate limit
+	allowed, waitTime, err := ratelimit.APIRateLimiter.CheckRateLimit(ctx, in.ClientID, 20, time.Minute)
+	if err != nil {
+		return nil, response.NewExceptionResponse(err)
+	}
+	if !allowed {
+		return nil, response.NewValidationErrorResponse("rate_limit", fmt.Sprintf("rate limit exceeded, please wait %.2f seconds", waitTime))
+	}
+	
 	return DoCreateTask(ctx, in)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 	"time"
+
 	"golang.org/x/time/rate"
 )
 
@@ -26,7 +27,7 @@ func (r *RateLimiter) CheckRateLimit(ctx context.Context, key string, limit int6
 	r.mu.Lock()
 	limiter, exists := r.limiters[key]
 	if !exists {
-		limiter = rate.NewLimiter(rate.Limit(limit) * rate.Every(period), int(limit))
+		limiter = rate.NewLimiter(rate.Limit(limit)*rate.Every(period), int(limit))
 		r.limiters[key] = limiter
 	}
 	r.mu.Unlock()
@@ -48,6 +49,13 @@ func (r *RateLimiter) UpdateRateLimit(ctx context.Context, key string, limit int
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.limiters[key] = rate.NewLimiter(rate.Limit(limit) * rate.Every(period), int(limit))
+	limiter, exists := r.limiters[key]
+	if !exists {
+		limiter = rate.NewLimiter(rate.Limit(limit)*rate.Every(period), int(limit))
+		r.limiters[key] = limiter
+	} else {
+		limiter.SetLimit(rate.Limit(limit)*rate.Every(period))
+	}
+
 	return nil
 }

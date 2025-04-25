@@ -37,7 +37,7 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	}
 
 	// 检查速率限制
-	allowed, waitTime, err := ratelimit.APIRateLimiter.CheckRateLimit(ctx, apiKey.ClientID, apiKey.RateLimit, time.Second)
+	allowed, waitTime, err := ratelimit.APIRateLimiter.CheckRateLimit(ctx, apiKey.ClientID, apiKey.RateLimit, time.Minute)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
