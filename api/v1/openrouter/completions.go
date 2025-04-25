@@ -37,7 +37,7 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 	}
 
 	// 检查速率限制
-	allowed, waitTime, err := ratelimit.APIRateLimiter.CheckRateLimit(ctx, apiKey.ClientID, apiKey.RateLimit, time.Second)
+	allowed, waitTime, err := ratelimit.APIRateLimiter.CheckRateLimit(ctx, apiKey.ClientID, apiKey.RateLimit, time.Minute)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
