@@ -5,10 +5,10 @@ import (
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"crynux_bridge/relay"
+	"crynux_bridge/utils"
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"math/big"
 	mrand "math/rand"
 	"os"
 	"path"
@@ -315,10 +315,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			newTask.VRFProof = hexutil.Encode(vrfProof)
 			newTask.VRFNumber = hexutil.Encode(vrfNum)
 
-			number := big.NewInt(0).SetBytes(vrfNum)
-			r := big.NewInt(0).Mod(number, big.NewInt(10)).Uint64()
-			// if vrfNumber % 10 == 0, create 2 validation tasks
-			if r == 0 {
+			if utils.VrfNeedValidation(vrfNum) {
 				requiredGPU := task.RequiredGPU
 				requiredGPUVram := task.RequiredGPUVram
 				if task.TaskType == models.TaskTypeLLM {
