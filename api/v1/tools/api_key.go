@@ -138,5 +138,5 @@ func ChangeRateLimit(ctx context.Context, db *gorm.DB, clientID string, rateLimi
 		return err
 	}
 
-	return ratelimit.APIRateLimiter.UpdateRateLimit(ctx, apiKey.ClientID, rateLimit, time.Second)
+	return ratelimit.APIRateLimiter.UpdateRateLimit(ctx, apiKey.ClientID, rateLimit, time.Minute)
 }
