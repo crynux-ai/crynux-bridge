@@ -28,14 +28,14 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	var requiredGPU string
 	var requiredGPUVram uint64
 	r := rand.Float64()
-	if r < 0.3 {
+	if r < 0.5 {
 		prompt := "Self-portrait oil painting,a beautiful cyborg with golden hair,8k"
 		seed := rand.Intn(100000000)
 		taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/sdxl-turbo", "variant": "fp16"},"prompt":"%s","negative_prompt":"","scheduler":{"method":"EulerAncestralDiscreteScheduler","args":{"timestep_spacing":"trailing"}},"task_config":{"num_images":1,"seed":%d,"steps":1,"cfg":0}}`, prompt, seed)
 		minVram = 14
 		taskType = models.TaskTypeSD
 		taskFee = appConfig.Task.SDXLTaskFee
-	} else if r < 0.6 {
+	} else if r < 0.85 {
 		prompt := "best quality, ultra high res, photorealistic++++, 1girl, off-shoulder sweater, smiling, faded ash gray messy bun hair+, border light, depth of field, looking at viewer, closeup"
 		negativePrompt := "paintings, sketches, worst quality+++++, low quality+++++, normal quality+++++, lowres, normal quality, monochrome++, grayscale++, skin spots, acnes, skin blemishes, age spot, glans"
 		seed := rand.Intn(100000000)
@@ -43,7 +43,7 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 		minVram = 4
 		taskType = models.TaskTypeSD
 		taskFee = appConfig.Task.SDTaskFee
-	} else if r < 0.9 {
+	} else if r < 0.95 {
 		gpu_names := []string{"NVIDIA GeForce RTX 4090", "NVIDIA GeForce RTX 3090"}
 		platforms := []string{"Windows", "docker"}
 		i := rand.Intn(len(gpu_names))
