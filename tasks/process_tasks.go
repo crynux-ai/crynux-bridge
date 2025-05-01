@@ -247,6 +247,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 	if err != nil {
 		return err
 	}
+	log.Infof("ProcessTasks: task %d status %d", task.ID, task.Status)
 
 	// 1. Generate taskIDCommitment if not exist
 	// 2. Create task
@@ -406,7 +407,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			for {
 				readyCount := 0
 				for _, subTask := range taskGroup {
-					if subTask.Status == models.InferenceTaskScoreReady || subTask.Status == models.InferenceTaskErrorReported || subTask.Status == models.InferenceTaskEndAborted {
+					if subTask.Status >= models.InferenceTaskScoreReady {
 						readyCount += 1
 					}
 				}
@@ -420,11 +421,15 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 					return err
 				}
 			}
+			validateTaskIDCommitment := ""
 			for _, subTask := range taskGroup {
 				if subTask.Status == models.InferenceTaskScoreReady || subTask.Status == models.InferenceTaskErrorReported {
-					needValidate = true
+					validateTaskIDCommitment = subTask.TaskIDCommitment
 					break
 				}
+			}
+			if validateTaskIDCommitment == task.TaskIDCommitment {
+				needValidate = true
 			}
 		}
 
@@ -439,7 +444,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 				if err := validateTaskGroup(ctx, &taskGroup[0], &taskGroup[1], &taskGroup[2]); err != nil {
 					return err
 				}
-				log.Infof("ProcessTasks: validate task group task %d, %d, %d", taskGroup[0].ID, taskGroup[1].ID, taskGroup[2].ID)
+				log.Infof("ProcessTasks: %d validate task group task %d, %d, %d", task.ID, taskGroup[0].ID, taskGroup[1].ID, taskGroup[2].ID)
 			}
 		}
 
@@ -449,7 +454,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			if err != nil {
 				return err
 			}
-			if task.Status == models.InferenceTaskValidated || task.Status == models.InferenceTaskEndSuccess || task.Status == models.InferenceTaskEndInvalidated || task.Status == models.InferenceTaskEndGroupRefund || task.Status == models.InferenceTaskEndAborted {
+			if task.Status >= models.InferenceTaskValidated {
 				break
 			}
 			time.Sleep(time.Second)
