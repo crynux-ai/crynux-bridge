@@ -35,7 +35,7 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 		minVram = 14
 		taskType = models.TaskTypeSD
 		taskFee = appConfig.Task.SDXLTaskFee
-	} else if r < 0.85 {
+	} else {
 		prompt := "best quality, ultra high res, photorealistic++++, 1girl, off-shoulder sweater, smiling, faded ash gray messy bun hair+, border light, depth of field, looking at viewer, closeup"
 		negativePrompt := "paintings, sketches, worst quality+++++, low quality+++++, normal quality+++++, lowres, normal quality, monochrome++, grayscale++, skin spots, acnes, skin blemishes, age spot, glans"
 		seed := rand.Intn(100000000)
@@ -43,31 +43,32 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 		minVram = 4
 		taskType = models.TaskTypeSD
 		taskFee = appConfig.Task.SDTaskFee
-	} else if r < 0.95 {
-		gpu_names := []string{"NVIDIA GeForce RTX 4090", "NVIDIA GeForce RTX 3090"}
-		platforms := []string{"Windows", "docker"}
-		i := rand.Intn(len(gpu_names))
-		j := rand.Intn(len(platforms))
-		requiredGPU = gpu_names[i] + "+" + platforms[j]
-		requiredGPUVram = 24
-		seed := rand.New(rand.NewSource(time.Now().Unix() / 600)).Intn(100000000)
-		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16"}`, seed)
-		taskType = models.TaskTypeLLM
-		taskFee = appConfig.Task.LLMTaskFee
-	} else {
-		gpu_names := []string{"NVIDIA GeForce RTX 4080 SUPER", "NVIDIA GeForce RTX 4080", "NVIDIA GeForce RTX 4070 Ti SUPER"}
-		gpu_vrams := []uint64{16, 16, 16}
-		platforms := []string{"Windows", "docker"}
-		i := rand.Intn(len(gpu_names))
-		j := rand.Intn(len(platforms))
-		requiredGPU = gpu_names[i] + "+" + platforms[j]
-		requiredGPUVram = gpu_vrams[i]
-		seed := rand.New(rand.NewSource(time.Now().Unix() / 600)).Intn(100000000)
-		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
-		taskType = models.TaskTypeLLM
-		taskFee = appConfig.Task.LLMQuantTaskFee
-
 	}
+	// } else if r < 0.95 {
+	// 	gpu_names := []string{"NVIDIA GeForce RTX 4090", "NVIDIA GeForce RTX 3090"}
+	// 	platforms := []string{"Windows", "docker"}
+	// 	i := rand.Intn(len(gpu_names))
+	// 	j := rand.Intn(len(platforms))
+	// 	requiredGPU = gpu_names[i] + "+" + platforms[j]
+	// 	requiredGPUVram = 24
+	// 	seed := rand.New(rand.NewSource(time.Now().Unix() / 600)).Intn(100000000)
+	// 	taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16"}`, seed)
+	// 	taskType = models.TaskTypeLLM
+	// 	taskFee = appConfig.Task.LLMTaskFee
+	// } else {
+	// 	gpu_names := []string{"NVIDIA GeForce RTX 4080 SUPER", "NVIDIA GeForce RTX 4080", "NVIDIA GeForce RTX 4070 Ti SUPER"}
+	// 	gpu_vrams := []uint64{16, 16, 16}
+	// 	platforms := []string{"Windows", "docker"}
+	// 	i := rand.Intn(len(gpu_names))
+	// 	j := rand.Intn(len(platforms))
+	// 	requiredGPU = gpu_names[i] + "+" + platforms[j]
+	// 	requiredGPUVram = gpu_vrams[i]
+	// 	seed := rand.New(rand.NewSource(time.Now().Unix() / 600)).Intn(100000000)
+	// 	taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16","quantize_bits":4}`, seed)
+	// 	taskType = models.TaskTypeLLM
+	// 	taskFee = appConfig.Task.LLMQuantTaskFee
+
+	// }
 	taskModelIDs, _ := models.GetTaskConfigModelIDs(taskArgs, taskType)
 
 	taskIDBytes := make([]byte, 32)
