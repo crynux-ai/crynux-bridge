@@ -381,7 +381,7 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			if err != nil {
 				return err
 			}
-			if task.Status == models.InferenceTaskScoreReady || task.Status == models.InferenceTaskErrorReported {
+			if task.Status == models.InferenceTaskScoreReady || task.Status == models.InferenceTaskErrorReported || task.Status == models.InferenceTaskEndAborted{
 				break
 			}
 			time.Sleep(time.Second)
@@ -403,15 +403,11 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			needValidate = true
 		} else if len(taskGroup) == 3 {
 			// wait all tasks in group be in status score ready, error reported or aborted
-			validateTaskIDCommitment := ""
 			for {
 				readyCount := 0
 				for _, subTask := range taskGroup {
 					if subTask.Status == models.InferenceTaskScoreReady || subTask.Status == models.InferenceTaskErrorReported || subTask.Status == models.InferenceTaskEndAborted {
 						readyCount += 1
-						if subTask.Status != models.InferenceTaskEndAborted && len(validateTaskIDCommitment) == 0 {
-							validateTaskIDCommitment = subTask.TaskIDCommitment
-						}
 					}
 				}
 				if readyCount == 3 {
@@ -424,8 +420,11 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 					return err
 				}
 			}
-			if task.TaskIDCommitment == validateTaskIDCommitment {
-				needValidate = true
+			for _, subTask := range taskGroup {
+				if subTask.Status == models.InferenceTaskScoreReady || subTask.Status == models.InferenceTaskErrorReported {
+					needValidate = true
+					break
+				}
 			}
 		}
 
@@ -450,7 +449,21 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 			if err != nil {
 				return err
 			}
-			if task.Status == models.InferenceTaskEndInvalidated || task.Status == models.InferenceTaskEndSuccess || task.Status == models.InferenceTaskEndGroupRefund || task.Status == models.InferenceTaskEndAborted {
+			if task.Status == models.InferenceTaskValidated || task.Status == models.InferenceTaskEndSuccess || task.Status == models.InferenceTaskEndInvalidated || task.Status == models.InferenceTaskEndGroupRefund || task.Status == models.InferenceTaskEndAborted {
+				break
+			}
+			time.Sleep(time.Second)
+		}
+		log.Infof("ProcessTasks: task %d status %d", task.ID, task.Status)
+	}
+
+	if task.Status == models.InferenceTaskValidated {
+		for {
+			_, err := syncTask(ctx, task)
+			if err != nil {
+				return err
+			}
+			if task.Status == models.InferenceTaskEndSuccess || task.Status == models.InferenceTaskEndAborted {
 				break
 			}
 			time.Sleep(time.Second)
