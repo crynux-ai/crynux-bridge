@@ -69,12 +69,14 @@ func InitRoutes(r *fizz.Fizz) {
 	openrouterGroup := v1g.Group("openrouter", "OpenRouter", "OpenRouter related APIs")
 
 	openrouterGroup.POST("/completions", []fizz.OperationOption{
+		fizz.ID("openrouter_completions"),
 		fizz.Summary("Api for openrouter, /completions"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(openrouter.Completions, 200))
 
 	openrouterGroup.POST("/chat/completions", []fizz.OperationOption{
+		fizz.ID("openrouter_chat_completions"),
 		fizz.Summary("Api for openrouter, /chat/completions"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
@@ -86,12 +88,14 @@ func InitRoutes(r *fizz.Fizz) {
 
 	llmGroup := v1g.Group("llm", "LLM", "LLM related APIs")
 	llmGroup.POST("/completions", []fizz.OperationOption{
+		fizz.ID("llm_completions"),
 		fizz.Summary("Api for openrouter, /completions"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(openrouter.Completions, 200))
 
 	llmGroup.POST("/chat/completions", []fizz.OperationOption{
+		fizz.ID("llm_chat_completions"),
 		fizz.Summary("Api for openrouter, /chat/completions"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
