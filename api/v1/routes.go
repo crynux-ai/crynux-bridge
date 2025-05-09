@@ -84,6 +84,19 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(openrouter.GetModels, 200))
 
+	llmGroup := v1g.Group("llm", "LLM", "LLM related APIs")
+	llmGroup.POST("/completions", []fizz.OperationOption{
+		fizz.Summary("Api for openrouter, /completions"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(openrouter.Completions, 200))
+
+	llmGroup.POST("/chat/completions", []fizz.OperationOption{
+		fizz.Summary("Api for openrouter, /chat/completions"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(openrouter.ChatCompletions, 200))
+
 	apiKeyGroup := v1g.Group("api_key", "API Key", "API Key related APIs")
 	apiKeyGroup.POST("/:client_id", []fizz.OperationOption{
 		fizz.Summary("Generate a new API key"),
