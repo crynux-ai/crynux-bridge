@@ -80,7 +80,7 @@ func ResponseChoiceToCCResChoice(responseChoice structs.ResponseChoice) structs.
 	var ccResChoice structs.CCResChoice
 	ccResChoice.Index = responseChoice.Index
 	ccResChoice.Message = MessageToCCResMessage(responseChoice.Message)
-	// ccResChoice.LogProbs = ""
+	ccResChoice.LogProbs = nil
 	ccResChoice.FinishReason = string(responseChoice.FinishReason)
 	return ccResChoice
 }
