@@ -127,7 +127,7 @@ type ChatCompletionsResponse struct {
 type CCResChoice struct {
 	Index        int          `json:"index"`
 	Message      CCResMessage `json:"message"`
-	LogProbs     string       `json:"logprobs"`
+	LogProbs     interface{}  `json:"logprobs"`
 	FinishReason string       `json:"finish_reason"`
 }
 
