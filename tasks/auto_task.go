@@ -111,37 +111,39 @@ func autoCreateTasks(ctx context.Context) error {
 
 	for {
 		batchSize := int(appConfig.Task.AutoTasksBatchSize)
-		tasks := make([]*models.InferenceTask, batchSize)
-		cnt, err := getPendingAutoTasksCount(ctx, client)
-		if err != nil {
-			log.Errorf("AutoTask: cannot get pending auto tasks count %v", err)
-			time.Sleep(2 * time.Second)
-			continue
-		}
-		log.Infof("AutoTask: pending auto tasks count: %d", cnt)
-		if cnt > appConfig.Task.PendingAutoTasksLimit {
-			time.Sleep(30 * time.Second)
-			continue
-		}
-		queuedTasks, err := relay.GetQueuedTasks(ctx)
-		if err != nil {
-			log.Errorf("AutoTask: cannot get queued tasks count %v", err)
-			time.Sleep(2 * time.Second)
-			continue
-		}
-		log.Infof("AutoTask: queued task count %d", queuedTasks)
-		if uint64(queuedTasks) > appConfig.Task.PendingAutoTasksLimit {
-			time.Sleep(30 * time.Second)
-			continue
-		}
-
-		for i := 0; i < batchSize; i++ {
-			task := generateRandomTask(client)
-			tasks[i] = task
-		}
-		if err := models.SaveTasks(ctx, config.GetDB(), tasks); err != nil {
-			log.Errorf("AutoTask: cannot save auto tasks: %v", err)
-			return err
+		if batchSize > 0 {
+			tasks := make([]*models.InferenceTask, batchSize)
+			cnt, err := getPendingAutoTasksCount(ctx, client)
+			if err != nil {
+				log.Errorf("AutoTask: cannot get pending auto tasks count %v", err)
+				time.Sleep(2 * time.Second)
+				continue
+			}
+			log.Infof("AutoTask: pending auto tasks count: %d", cnt)
+			if cnt > appConfig.Task.PendingAutoTasksLimit {
+				time.Sleep(30 * time.Second)
+				continue
+			}
+			queuedTasks, err := relay.GetQueuedTasks(ctx)
+			if err != nil {
+				log.Errorf("AutoTask: cannot get queued tasks count %v", err)
+				time.Sleep(2 * time.Second)
+				continue
+			}
+			log.Infof("AutoTask: queued task count %d", queuedTasks)
+			if uint64(queuedTasks) > appConfig.Task.PendingAutoTasksLimit {
+				time.Sleep(30 * time.Second)
+				continue
+			}
+	
+			for i := 0; i < batchSize; i++ {
+				task := generateRandomTask(client)
+				tasks[i] = task
+			}
+			if err := models.SaveTasks(ctx, config.GetDB(), tasks); err != nil {
+				log.Errorf("AutoTask: cannot save auto tasks: %v", err)
+				return err
+			}
 		}
 		time.Sleep(5 * time.Second)
 	}

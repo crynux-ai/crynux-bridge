@@ -1,4 +1,4 @@
-package openrouter
+package models
 
 import (
 	"crynux_bridge/config"
@@ -56,7 +56,7 @@ type ModelListResponse struct {
 	Data []Model `json:"data"`
 }
 
-func GetModels(c *gin.Context) (*ModelListResponse, error) {
+func GetOpenrouterModels(c *gin.Context) (*ModelListResponse, error) {
 	appConfig := config.GetConfig()
 	models, err := getModels(appConfig.OpenRouter.ModelsFile)
 	if err != nil {

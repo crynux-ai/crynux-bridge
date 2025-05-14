@@ -1,36 +1,37 @@
 package utils
 
 import (
-	"crynux_bridge/api/v1/openrouter/structs"
+	"crynux_bridge/api/v1/llm/structs"
+	"crynux_bridge/models"
 )
 
-func ChatCompletionsRoleToRole(role structs.ChatCompletionsRole) structs.Role {
+func ChatCompletionsRoleToRole(role structs.ChatCompletionsRole) models.LLMRole {
 	switch role {
 	case structs.ChatCompletionsRoleDeveloper:
-		return structs.RoleUnknown
+		return models.LLMRoleUnknown
 	case structs.ChatCompletionsRoleSystem:
-		return structs.RoleSystem
+		return models.LLMRoleSystem
 	case structs.ChatCompletionsRoleUser:
-		return structs.RoleUser
+		return models.LLMRoleUser
 	case structs.ChatCompletionsRoleAssistant:
-		return structs.RoleAssistant
+		return models.LLMRoleAssistant
 	case structs.ChatCompletionsRoleTool:
-		return structs.RoleTool
+		return models.LLMRoleTool
 	}
-	return structs.RoleUnknown
+	return models.LLMRoleUnknown
 }
 
-func RoleToChatCompletionsRole(role structs.Role) structs.ChatCompletionsRole {
+func RoleToChatCompletionsRole(role models.LLMRole) structs.ChatCompletionsRole {
 	switch role {
-	case structs.RoleUnknown:
+	case models.LLMRoleUnknown:
 		return structs.ChatCompletionsRoleUnknown
-	case structs.RoleSystem:
+	case models.LLMRoleSystem:
 		return structs.ChatCompletionsRoleSystem
-	case structs.RoleUser:
+	case models.LLMRoleUser:
 		return structs.ChatCompletionsRoleUser
-	case structs.RoleAssistant:
+	case models.LLMRoleAssistant:
 		return structs.ChatCompletionsRoleAssistant
-	case structs.RoleTool:
+	case models.LLMRoleTool:
 		return structs.ChatCompletionsRoleTool
 	}
 	return structs.ChatCompletionsRoleUnknown
@@ -49,8 +50,8 @@ func CCReqMessageToolCallToToolCall(ccrMessagetoolCall structs.CCReqMessageToolC
 	return toolCall
 }
 
-func CCReqMessageToMessage(ccrMessage structs.CCReqMessage) structs.Message {
-	var message structs.Message
+func CCReqMessageToMessage(ccrMessage structs.CCReqMessage) models.Message {
+	var message models.Message
 	message.Role = ChatCompletionsRoleToRole(ccrMessage.Role)
 	message.Content = ccrMessage.Content
 	message.ToolCallID = ccrMessage.ToolCallID
@@ -64,7 +65,7 @@ func CCReqMessageToMessage(ccrMessage structs.CCReqMessage) structs.Message {
 	return message
 }
 
-func MessageToCCResMessage(message structs.Message) structs.CCResMessage {
+func MessageToCCResMessage(message models.Message) structs.CCResMessage {
 	var ccResMessage structs.CCResMessage
 	ccResMessage.Role = RoleToChatCompletionsRole(message.Role)
 	ccResMessage.Content = message.Content
@@ -76,7 +77,7 @@ func MessageToCCResMessage(message structs.Message) structs.CCResMessage {
 	return ccResMessage
 }
 
-func ResponseChoiceToCCResChoice(responseChoice structs.ResponseChoice) structs.CCResChoice {
+func ResponseChoiceToCCResChoice(responseChoice models.ResponseChoice) structs.CCResChoice {
 	var ccResChoice structs.CCResChoice
 	ccResChoice.Index = responseChoice.Index
 	ccResChoice.Message = MessageToCCResMessage(responseChoice.Message)
@@ -85,7 +86,7 @@ func ResponseChoiceToCCResChoice(responseChoice structs.ResponseChoice) structs.
 	return ccResChoice
 }
 
-func UsageToCCResUsage(usage structs.Usage) structs.CCResUsage {
+func UsageToCCResUsage(usage models.Usage) structs.CCResUsage {
 	var ccResUsage structs.CCResUsage
 	ccResUsage.PromptTokens = usage.PromptTokens
 	ccResUsage.CompletionTokens = usage.CompletionTokens
@@ -95,7 +96,7 @@ func UsageToCCResUsage(usage structs.Usage) structs.CCResUsage {
 	return ccResUsage
 }
 
-func ResponseChoiceToCResChoice(responseChoice structs.ResponseChoice) (structs.CResChoice, error) {
+func ResponseChoiceToCResChoice(responseChoice models.ResponseChoice) (structs.CResChoice, error) {
 	var cResChoice structs.CResChoice
 	cResChoice.Index = responseChoice.Index
 	cResChoice.Text = responseChoice.Message.Content
@@ -104,7 +105,7 @@ func ResponseChoiceToCResChoice(responseChoice structs.ResponseChoice) (structs.
 	return cResChoice, nil
 }
 
-func UsageToCResUsage(usage structs.Usage) structs.CResUsage {
+func UsageToCResUsage(usage models.Usage) structs.CResUsage {
 	var cResUsage structs.CResUsage
 	cResUsage.PromptTokens = usage.PromptTokens
 	cResUsage.CompletionTokens = usage.CompletionTokens

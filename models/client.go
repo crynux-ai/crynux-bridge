@@ -28,6 +28,7 @@ type Role string
 const (
 	RoleAdmin Role = "admin"
 	RoleChat  Role = "chat"
+	RoleImage Role = "image"
 )
 
 type Roles []Role
