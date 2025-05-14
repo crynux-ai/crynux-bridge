@@ -3,11 +3,13 @@ package tools
 import (
 	"context"
 	"crynux_bridge/api/ratelimit"
+	"crynux_bridge/api/v1/response"
 	"crynux_bridge/models"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"slices"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -139,4 +141,30 @@ func ChangeRateLimit(ctx context.Context, db *gorm.DB, clientID string, rateLimi
 	}
 
 	return ratelimit.APIRateLimiter.UpdateRateLimit(ctx, apiKey.ClientID, rateLimit, time.Minute)
+}
+
+// validate api key
+func ValidateRequestApiKey(ctx context.Context, db *gorm.DB, authorization string) (*models.ClientAPIKey, error) {
+	if !strings.HasPrefix(authorization, "Bearer ") {
+		return nil, response.NewValidationErrorResponse("Authorization", "Authorization header must start with 'Bearer '")
+	}
+	apiKeyStr := authorization[7:]
+	apiKey, err := ValidateAPIKey(ctx, db, apiKeyStr)
+	if err != nil {
+		if errors.Is(err, ErrAPIKeyExpired) {
+			return nil, response.NewValidationErrorResponse("Authorization", "expired")
+		}
+		if errors.Is(err, ErrAPIKeyInvalid) {
+			return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
+		}
+		return nil, response.NewExceptionResponse(err)
+	}
+	if !slices.Contains(apiKey.Roles, models.RoleAdmin) && !slices.Contains(apiKey.Roles, models.RoleChat) {
+		return nil, response.NewValidationErrorResponse("Authorization", "unauthorized")
+	}
+	if apiKey.UseLimit > 0 && apiKey.UsedCount >= apiKey.UseLimit {
+		return nil, response.NewValidationErrorResponse("Authorization", "use limit exceeded")
+	}
+
+	return apiKey, nil
 }

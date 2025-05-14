@@ -1,11 +1,12 @@
-package openrouter
+package llm
 
 import (
 	"crynux_bridge/api/ratelimit"
 	"crynux_bridge/api/v1/inference_tasks"
-	"crynux_bridge/api/v1/openrouter/structs"
-	"crynux_bridge/api/v1/openrouter/utils"
+	"crynux_bridge/api/v1/llm/structs"
+	"crynux_bridge/api/v1/llm/utils"
 	"crynux_bridge/api/v1/response"
+	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"encoding/json"
@@ -31,12 +32,11 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 	in.SetDefaultValues() // set default values for some fields
 
 	// validate request (apiKey)
-	apiKey, err := ValidateRequestApiKey(ctx, db, in.Authorization)
+	apiKey, err := tools.ValidateRequestApiKey(ctx, db, in.Authorization)
 	if err != nil {
 		return nil, err
 	}
 
-	// 检查速率限制
 	allowed, waitTime, err := ratelimit.APIRateLimiter.CheckRateLimit(ctx, apiKey.ClientID, apiKey.RateLimit, time.Minute)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
@@ -45,13 +45,13 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 		return nil, response.NewValidationErrorResponse("rate_limit", fmt.Sprintf("rate limit exceeded, please wait %.2f seconds", waitTime))
 	}
 
-	messages := make([]structs.Message, 1)
-	messages[0] = structs.Message{
-		Role:    structs.RoleUser,
+	messages := make([]models.Message, 1)
+	messages[0] = models.Message{
+		Role:    models.LLMRoleUser,
 		Content: in.Prompt,
 	}
 
-	generationConfig := &structs.GPTGenerationConfig{
+	generationConfig := &models.GPTGenerationConfig{
 		DoSample:           true,
 		Temperature:        in.Temperature,
 		NumReturnSequences: in.N,
@@ -75,12 +75,12 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 		generationConfig.StopStrings = in.Stop
 	}
 
-	var dtype structs.DType = structs.DTypeAuto
+	var dtype models.DType = models.DTypeAuto
 	if strings.HasPrefix(in.Model, "Qwen/Qwen2.5") {
-		dtype = structs.DTypeBFloat16
+		dtype = models.DTypeBFloat16
 	}
 
-	taskArgs := structs.GPTTaskArgs{
+	taskArgs := models.GPTTaskArgs{
 		Model:            in.Model,
 		Messages:         messages,
 		GenerationConfig: generationConfig,
@@ -112,7 +112,7 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 	}
 
 	/* 2. Create task, wait until task finish and get task result. Implemented by function ProcessGPTTask */
-	gptTaskResponse, resultDownloadedTask, err := ProcessGPTTask(ctx, db, task)
+	gptTaskResponse, resultDownloadedTask, err := inference_tasks.ProcessGPTTask(ctx, db, task)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 		choices[i] = choice
 	}
 	ccResponse := &structs.CompletionsResponse{
-		Id:      resultDownloadedTask.TaskID,
+		Id:      resultDownloadedTask.TaskIDCommitment,
 		Created: resultDownloadedTask.CreatedAt.Unix(),
 		Model:   gptTaskResponse.Model,
 		Choices: choices,

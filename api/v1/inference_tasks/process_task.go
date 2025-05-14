@@ -1,9 +1,7 @@
-package openrouter
+package inference_tasks
 
 import (
 	"context"
-	"crynux_bridge/api/v1/inference_tasks"
-	"crynux_bridge/api/v1/openrouter/structs"
 	"crynux_bridge/api/v1/response"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
@@ -20,9 +18,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func ProcessGPTTask(ctx context.Context, db *gorm.DB, in *inference_tasks.TaskInput) (*structs.GPTTaskResponse, *models.InferenceTask, error) {
+func ProcessGPTTask(ctx context.Context, db *gorm.DB, in *TaskInput) (*models.GPTTaskResponse, *models.InferenceTask, error) {
 	/* 1. Create GPT task by function CreateTask */
-	taskResponse, err := inference_tasks.DoCreateTask(ctx, in)
+	taskResponse, err := DoCreateTask(ctx, in)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -52,6 +50,37 @@ func ProcessGPTTask(ctx context.Context, db *gorm.DB, in *inference_tasks.TaskIn
 	gptTaskResponse := results[0]
 
 	return &gptTaskResponse, resultDownloadedTask, nil
+}
+
+func ProcessSDTask(ctx context.Context, db *gorm.DB, in *TaskInput) ([]string, *models.InferenceTask, error) {
+	/* 1. Create SD task by function CreateTask */
+	taskResponse, err := DoCreateTask(ctx, in)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	/* 2. Get tasks, wait until they are finished and the taks result is downloaded  */
+	tasks := taskResponse.Data.InferenceTasks
+	if len(tasks) == 0 {
+		err := errors.New("no task created")
+		return nil, nil, response.NewExceptionResponse(err)
+	}
+	taskGroups, err := waitAllTaskGroup(ctx, db, tasks)
+	if err != nil {
+		return nil, nil, response.NewExceptionResponse(err)
+	}
+	resultDownloadedTask, err := waitResultTask(ctx, db, taskGroups)
+	if err != nil {
+		return nil, nil, response.NewExceptionResponse(err)
+	}
+
+	/* 3. Read task result and return */
+	results, err := readSDTaskResults(resultDownloadedTask)
+	if err != nil {
+		return nil, nil, response.NewExceptionResponse(err)
+	}
+
+	return results, resultDownloadedTask, nil
 }
 
 func waitTaskGroup(ctx context.Context, db *gorm.DB, task *models.InferenceTask) ([]models.InferenceTask, error) {
@@ -197,7 +226,7 @@ func waitResultTask(ctx context.Context, db *gorm.DB, tasks []models.InferenceTa
 	return nil, errors.New("all tasks end without result downloaded")
 }
 
-func readGPTTaskResults(task *models.InferenceTask) ([]structs.GPTTaskResponse, error) {
+func readGPTTaskResults(task *models.InferenceTask) ([]models.GPTTaskResponse, error) {
 	if task.TaskType != models.TaskTypeLLM {
 		err := errors.New("unsupported task type")
 		return nil, err
@@ -208,14 +237,14 @@ func readGPTTaskResults(task *models.InferenceTask) ([]structs.GPTTaskResponse, 
 	ext := "json"
 
 	// 1. create a results array
-	results := make([]structs.GPTTaskResponse, task.TaskSize)
+	results := make([]models.GPTTaskResponse, task.TaskSize)
 	var wg sync.WaitGroup
 	errCh := make(chan error, int(task.TaskSize))
 
 	// 2. read all result files in parallel
-	for i := uint64(0); i < task.TaskSize; i++ {
+	for i := 0; i < int(task.TaskSize); i++ {
 		wg.Add(1)
-		go func(index uint64) {
+		go func(index int) {
 			defer wg.Done()
 
 			filename := path.Join(taskFolder, fmt.Sprintf("%d.%s", index, ext))
@@ -225,7 +254,7 @@ func readGPTTaskResults(task *models.InferenceTask) ([]structs.GPTTaskResponse, 
 				return
 			}
 
-			var result structs.GPTTaskResponse
+			var result models.GPTTaskResponse
 
 			if err := json.Unmarshal(data, &result); err != nil {
 				errCh <- fmt.Errorf("failed to unmarshal json file %s, error: %w", filename, err)
@@ -247,3 +276,23 @@ func readGPTTaskResults(task *models.InferenceTask) ([]structs.GPTTaskResponse, 
 
 	return results, nil
 }
+
+func readSDTaskResults(task *models.InferenceTask) ([]string, error) {
+	if task.TaskType != models.TaskTypeSD {
+		err := errors.New("unsupported task type")
+		return nil, err
+	}
+
+	appConfig := config.GetConfig()
+	taskFolder := path.Join(appConfig.DataDir.InferenceTasks, task.TaskIDCommitment)
+	ext := "png"
+
+	results := make([]string, task.TaskSize)
+	for i := 0; i < int(task.TaskSize); i++ {
+		filename := path.Join(taskFolder, fmt.Sprintf("%d.%s", i, ext))
+		results[i] = filename
+	}
+
+	return results, nil
+}
+

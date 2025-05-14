@@ -21,7 +21,7 @@ type ChatCompletionsRequest struct {
 	MinP              *float64           `json:"min_p"`
 	TopA              *float64           `json:"top_a"`
 
-	// Transforms []string `json:"transforms"` // openrouter only
+	// Transforms []string `json:"transforms"` // llm only
 	// Models     []string `json:"models"`
 	// Provider   TODO     `json:"provider"`
 	// Reasoning  TODO     `json:"reasoning"`

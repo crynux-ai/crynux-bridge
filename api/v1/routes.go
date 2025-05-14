@@ -5,10 +5,11 @@ import (
 	"crynux_bridge/api/v1/application"
 	"crynux_bridge/api/v1/count"
 	"crynux_bridge/api/v1/inference_tasks"
+	"crynux_bridge/api/v1/llm"
 	"crynux_bridge/api/v1/models"
 	"crynux_bridge/api/v1/network"
-	"crynux_bridge/api/v1/openrouter"
 	"crynux_bridge/api/v1/response"
+	"crynux_bridge/api/v1/sd"
 
 	"github.com/loopfz/gadgeto/tonic"
 	"github.com/wI2L/fizz"
@@ -73,33 +74,41 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Summary("Api for openrouter, /completions"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
-	}, tonic.Handler(openrouter.Completions, 200))
+	}, tonic.Handler(llm.Completions, 200))
 
 	openrouterGroup.POST("/chat/completions", []fizz.OperationOption{
 		fizz.ID("openrouter_chat_completions"),
 		fizz.Summary("Api for openrouter, /chat/completions"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
-	}, tonic.Handler(openrouter.ChatCompletions, 200))
+	}, tonic.Handler(llm.ChatCompletions, 200))
 	openrouterGroup.GET("/models", []fizz.OperationOption{
 		fizz.Summary("Get the list of the models"),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
-	}, tonic.Handler(openrouter.GetModels, 200))
+	}, tonic.Handler(models.GetOpenrouterModels, 200))
 
 	llmGroup := v1g.Group("llm", "LLM", "LLM related APIs")
 	llmGroup.POST("/completions", []fizz.OperationOption{
 		fizz.ID("llm_completions"),
-		fizz.Summary("Api for openrouter, /completions"),
+		fizz.Summary("Api for llm, /completions"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
-	}, tonic.Handler(openrouter.Completions, 200))
+	}, tonic.Handler(llm.Completions, 200))
 
 	llmGroup.POST("/chat/completions", []fizz.OperationOption{
 		fizz.ID("llm_chat_completions"),
 		fizz.Summary("Api for openrouter, /chat/completions"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
-	}, tonic.Handler(openrouter.ChatCompletions, 200))
+	}, tonic.Handler(llm.ChatCompletions, 200))
+
+	sdGroup := v1g.Group("sd", "Stable Diffusion", "Stable Diffusion related APIs")
+	sdGroup.POST("/images/generations", []fizz.OperationOption{
+		fizz.ID("sd_images_generations"),
+		fizz.Summary("Api for sd image generations, /images/generations"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(sd.CreateImage, 200))
 
 	apiKeyGroup := v1g.Group("api_key", "API Key", "API Key related APIs")
 	apiKeyGroup.POST("/:client_id", []fizz.OperationOption{

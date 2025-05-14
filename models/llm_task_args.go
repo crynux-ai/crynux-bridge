@@ -1,13 +1,13 @@
-package structs
+package models
 
-type Role string
+type LLMRole string
 
 const (
-	RoleSystem    Role = "system"
-	RoleUser      Role = "user"
-	RoleAssistant Role = "assistant"
-	RoleTool      Role = "tool"
-	RoleUnknown   Role = "unknown role" // default value
+	LLMRoleSystem    LLMRole = "system"
+	LLMRoleUser      LLMRole = "user"
+	LLMRoleAssistant LLMRole = "assistant"
+	LLMRoleTool      LLMRole = "tool"
+	LLMRoleUnknown   LLMRole = "unknown role" // default value
 )
 
 type FinishReason string
@@ -35,7 +35,7 @@ const (
 )
 
 type Message struct {
-	Role       Role                     `json:"role" validate:"required"` // Required
+	Role       LLMRole                  `json:"role" validate:"required"` // Required
 	Content    string                   `json:"content,omitempty"`        // Optional
 	ToolCallID string                   `json:"tool_call_id,omitempty"`   // Optional
 	ToolCalls  []map[string]interface{} `json:"tool_calls,omitempty"`     // Optional
