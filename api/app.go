@@ -23,7 +23,10 @@ func GetHttpApplication(appConfig *config.AppConfig) *gin.Engine {
 	gin.SetMode(appConfig.Environment)
 
 	engine := gin.New()
-	engine.Use(cors.Default())
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AddAllowHeaders("Authorization")
+	engine.Use(cors.New(corsConfig))
 	engine.Use(ginlogrus.Logger(log.StandardLogger()), gin.Recovery())
 	engine.Use(APIVersion())
 
