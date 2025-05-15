@@ -20,7 +20,7 @@ import (
 
 type ChatCompletionsRequest struct {
 	structs.ChatCompletionsRequest
-	Authorization string `header:"Authorization" validate:"required"`
+	Authorization string `header:"Authorization" validate:"required" description:"API key"`
 }
 
 // build TaskInput from ChatCompletionsRequest, create task, wait for task to finish, get task result, then return ChatCompletionsResponse

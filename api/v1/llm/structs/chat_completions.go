@@ -5,21 +5,21 @@ import "encoding/json"
 /* Request */
 
 type ChatCompletionsRequest struct {
-	Model             string             `json:"model" validate:"required"`
-	Messages          []CCReqMessage     `json:"messages" validate:"required"`
-	Stream            bool               `json:"stream"` // default to false
-	MaxTokens         *int               `json:"max_tokens"`
-	Temperature       float64            `json:"temperature"`
-	Seed              int                `json:"seed"`
-	TopP              *float64           `json:"top_p"`
-	TopK              *int               `json:"top_k"`
-	FrequencyPenalty  *float64           `json:"frequency_penalty"`
-	PresencePenalty   *float64           `json:"presence_penalty"`
-	RepetitionPenalty *float64           `json:"repetition_penalty"`
-	LogitBias         map[string]float64 `json:"logit_bias"`
-	TopLogprobs       int                `json:"top_logprobs"`
-	MinP              *float64           `json:"min_p"`
-	TopA              *float64           `json:"top_a"`
+	Model             string             `json:"model" validate:"required" description:"Huggingface model ID used to generate the response"`
+	Messages          []CCReqMessage     `json:"messages" validate:"required" description:"A list of messages comprising the conversation so far. "`
+	Stream            bool               `json:"stream" description:"Enable streaming of results."` // default to false
+	MaxTokens         *int               `json:"max_tokens" description:"Maximum number of tokens "`
+	Temperature       float64            `json:"temperature" description:"Sampling temperature (range: [0, 2])."`
+	Seed              int                `json:"seed" description:"Seed for deterministic outputs."`
+	TopP              *float64           `json:"top_p" description:"Top-p sampling value (range: (0, 1]). "`
+	TopK              *int               `json:"top_k" description:"Top-k sampling value (range: [1, Infinity)). "`
+	FrequencyPenalty  *float64           `json:"frequency_penalty" description:"Frequency penalty (range: [-2, 2]). "`
+	PresencePenalty   *float64           `json:"presence_penalty" description:"Presence penalty (range: [-2, 2]). "`
+	RepetitionPenalty *float64           `json:"repetition_penalty" description:"Repetition penalty (range: [0, 2]). "`
+	LogitBias         map[string]float64 `json:"logit_bias" description:"Mapping of token IDs to bias values."`
+	TopLogprobs       int                `json:"top_logprobs" description:"Number of top log probabilities to return."`
+	MinP              *float64           `json:"min_p" description:"Minimum probability threshold (range: [0, 1])."`
+	TopA              *float64           `json:"top_a" description:"Alternate top sampling parameter (range: [0, 1])."`
 
 	// Transforms []string `json:"transforms"` // llm only
 	// Models     []string `json:"models"`
@@ -28,22 +28,22 @@ type ChatCompletionsRequest struct {
 
 	Stop []string `json:"stop"`
 
-	Audio             *CCReqAudio              `json:"audio"`
-	LogProbs          bool                     `json:"logprobs"`
-	MetaData          map[string]string        `json:"metadata"`
-	Modalities        []string                 `json:"modalities"`
-	N                 int                      `json:"n" default:"1"`
-	Prediction        *CCReqPrediction         `json:"prediction"`
-	ReasoningEffort   string                   `json:"reasoning_effort"`
-	ResponseFormat    map[string]interface{}   `json:"response_format"`
-	StructuredOutputs bool                     `json:"structured_outputs"`
-	ServiceTier       string                   `json:"service_tier"`
-	Store             bool                     `json:"store"`
-	StreamOptions     *CCReqStreamOptions      `json:"stream_options"`
-	ToolChoice        []map[string]interface{} `json:"tool_choice"`
-	Tools             []map[string]interface{} `json:"tools"`
-	User              string                   `json:"user"`
-	WebSearchOptions  json.RawMessage          `json:"web_search_options"`
+	Audio             *CCReqAudio              `json:"audio" description:"Parameters for audio output. No use for now."`
+	LogProbs          bool                     `json:"logprobs" description:"Whether to return log probabilities of the output tokens or not. No use for now."`
+	MetaData          map[string]string        `json:"metadata" description:"No use for now. For compatibility with Openai."`
+	Modalities        []string                 `json:"modalities" description:"No use for now. For compatibility with Openai."`
+	N                 int                      `json:"n" default:"1" description:"Number of completions to generate."`
+	Prediction        *CCReqPrediction         `json:"prediction" description:"No use for now. For compatibility with Openai."`
+	ReasoningEffort   string                   `json:"reasoning_effort" description:"No use for now. For compatibility with Openai."`
+	ResponseFormat    map[string]interface{}   `json:"response_format" description:"No use for now. For compatibility with Openai."`
+	StructuredOutputs bool                     `json:"structured_outputs" description:"No use for now. For compatibility with Openai."`
+	ServiceTier       string                   `json:"service_tier" description:"No use for now. For compatibility with Openai."`
+	Store             bool                     `json:"store" description:"No use for now. For compatibility with Openai."`
+	StreamOptions     *CCReqStreamOptions      `json:"stream_options" description:"No use for now. For compatibility with Openai."`
+	ToolChoice        []map[string]interface{} `json:"tool_choice" description:"Controls which (if any) tool is called by the model. "`
+	Tools             []map[string]interface{} `json:"tools" description:"A list of tools the model may call. "`
+	User              string                   `json:"user" description:"No use for now. For compatibility with Openai."`
+	WebSearchOptions  json.RawMessage          `json:"web_search_options" description:"No use for now. For compatibility with Openai."`
 }
 
 func (ccr *ChatCompletionsRequest) SetDefaultValues() {

@@ -3,21 +3,21 @@ package structs
 /* Request */
 
 type CompletionsRequest struct {
-	Model             string             `json:"model" validate:"required"`
-	Prompt            string             `json:"prompt" validate:"required"`
-	Stream            bool               `json:"stream"` // default to false
-	MaxTokens         *int               `json:"max_tokens"`
-	Temperature       float64            `json:"temperature"`
-	Seed              int                `json:"seed"`
-	TopP              *float64           `json:"top_p"`
-	TopK              *int               `json:"top_k"`
-	FrequencyPenalty  *float64           `json:"frequency_penalty"`
-	PresencePenalty   *float64           `json:"presence_penalty"`
-	RepetitionPenalty *float64           `json:"repetition_penalty"`
-	LogitBias         map[string]float64 `json:"logit_bias"`
-	TopLogprobs       int                `json:"top_logprobs"`
-	MinP              *float64           `json:"min_p"`
-	TopA              *float64           `json:"top_a"`
+	Model             string             `json:"model" validate:"required" description:"Huggingface model ID used to generate the response"`
+	Prompt            string             `json:"prompt" validate:"required" description:"The prompt to generate a completion for"`
+	Stream            bool               `json:"stream" description:"Enable streaming of results."` // default to false
+	MaxTokens         *int               `json:"max_tokens" description:"Maximum number of tokens "`
+	Temperature       float64            `json:"temperature" description:"Sampling temperature (range: [0, 2])."`
+	Seed              int                `json:"seed" description:"Seed for deterministic outputs."`
+	TopP              *float64           `json:"top_p" description:"Top-p sampling value (range: (0, 1])."`
+	TopK              *int               `json:"top_k" description:"Top-k sampling value (range: [1, Infinity))."`
+	FrequencyPenalty  *float64           `json:"frequency_penalty" description:"Frequency penalty (range: [-2, 2])."`
+	PresencePenalty   *float64           `json:"presence_penalty" description:"Presence penalty (range: [-2, 2])."`
+	RepetitionPenalty *float64           `json:"repetition_penalty" description:"Repetition penalty (range: [0, 2])."`
+	LogitBias         map[string]float64 `json:"logit_bias" description:"Mapping of token IDs to bias values."`
+	TopLogprobs       int                `json:"top_logprobs" description:"Number of top log probabilities to return."`
+	MinP              *float64           `json:"min_p" description:"Minimum probability threshold (range: [0, 1])."`
+	TopA              *float64           `json:"top_a" description:"Alternate top sampling parameter (range: [0, 1])."`
 
 	// Transforms []string `json:"transforms"` // openrouter only
 	// Models     []string `json:"models"`
@@ -26,13 +26,13 @@ type CompletionsRequest struct {
 
 	Stop []string `json:"stop"`
 
-	BestOf        int               `json:"best_of"` // defaults to 1
-	Echo          bool              `json:"echo"`
-	LogProbs      int               `json:"logprobs"`
-	N             int               `json:"n" default:"1"`
-	StreamOptions CReqStreamOptions `json:"stream_options"`
-	Suffix        string            `json:"suffix"`
-	User          string            `json:"user"`
+	BestOf        int               `json:"best_of" description:"No use for now. For compatibility with Openai."` // defaults to 1
+	Echo          bool              `json:"echo" description:"No use for now. For compatibility with Openai."`
+	LogProbs      int               `json:"logprobs" description:"No use for now. For compatibility with Openai."`
+	N             int               `json:"n" default:"1" description:"Number of completions to generate."`
+	StreamOptions CReqStreamOptions `json:"stream_options" description:"No use for now. For compatibility with Openai."`
+	Suffix        string            `json:"suffix" description:"No use for now. For compatibility with Openai."`
+	User          string            `json:"user" description:"No use for now. For compatibility with Openai."`
 }
 
 func (cr *CompletionsRequest) SetDefaultValues() {
