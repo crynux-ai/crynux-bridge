@@ -4,12 +4,14 @@ import (
 	"crynux_bridge/api/v1/response"
 	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
+	"errors"
+
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
 
 type ChangeUseLimitInput struct {
-	ClientID string `path:"client_id" json:"client_id" description:"Client id" validate:"required"`
+	APIKey   string `path:"api_key" json:"api_key" description:"API key" validate:"required"`
 	UseLimit int64  `json:"use_limit" description:"Use limit" validate:"required"`
 }
 
@@ -37,7 +39,18 @@ func ChangeUseLimit(c *gin.Context, in *ChangeUseLimitInputWithSignature) (*resp
 		return nil, validationErr
 	}
 
-	if err := tools.ChangeUseLimit(c.Request.Context(), config.GetDB(), in.ClientID, in.UseLimit); err != nil {
+	apiKey, err := tools.ValidateAPIKey(c.Request.Context(), config.GetDB(), in.APIKey)
+	if err != nil {
+		if errors.Is(err, tools.ErrAPIKeyExpired) {
+			return nil, response.NewValidationErrorResponse("api_key", "expired")
+		}
+		if errors.Is(err, tools.ErrAPIKeyInvalid) {
+			return nil, response.NewValidationErrorResponse("api_key", "invalid")
+		}
+		return nil, response.NewExceptionResponse(err)
+	}
+
+	if err := tools.ChangeUseLimit(c.Request.Context(), config.GetDB(), apiKey, in.UseLimit); err != nil {
 		log.Debugln("error in change use limit: " + err.Error())
 		return nil, response.NewExceptionResponse(err)
 	}

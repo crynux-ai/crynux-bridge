@@ -5,13 +5,14 @@ import (
 	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
 	"crynux_bridge/models"
+	"errors"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
 
 type AddRoleInput struct {
-	ClientID string      `path:"client_id" json:"client_id" description:"Client id" validate:"required"`
+	APIKey   string      `path:"api_key" json:"api_key" description:"API key" validate:"required"`
 	Role     models.Role `json:"role" enum:"admin,chat" description:"Role to add" validate:"required"`
 }
 
@@ -39,7 +40,18 @@ func AddRole(c *gin.Context, in *AddRoleInputWithSignature) (*response.Response,
 		return nil, validationErr
 	}
 
-	if err := tools.AddAPIKeyRole(c.Request.Context(), config.GetDB(), in.ClientID, in.Role); err != nil {
+	apiKey, err := tools.ValidateAPIKey(c.Request.Context(), config.GetDB(), in.APIKey)
+	if err != nil {
+		if errors.Is(err, tools.ErrAPIKeyExpired) {
+			return nil, response.NewValidationErrorResponse("api_key", "expired")
+		}
+		if errors.Is(err, tools.ErrAPIKeyInvalid) {
+			return nil, response.NewValidationErrorResponse("api_key", "invalid")
+		}
+		return nil, response.NewExceptionResponse(err)
+	}
+
+	if err := tools.AddAPIKeyRole(c.Request.Context(), config.GetDB(), apiKey, in.Role); err != nil {
 		log.Debugln("error in add api key role: " + err.Error())
 		return nil, response.NewExceptionResponse(err)
 	}

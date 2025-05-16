@@ -131,7 +131,7 @@ func CreateImage(c *gin.Context, in *CreateImageRequest) (*CreateImageResponse, 
 	db := config.GetDB()
 
 	// validate request (apiKey)
-	apiKey, err := tools.ValidateRequestApiKey(ctx, db, in.Authorization)
+	apiKey, err := tools.ValidateAuthorization(ctx, db, in.Authorization)
 	if err != nil {
 		return nil, err
 	}

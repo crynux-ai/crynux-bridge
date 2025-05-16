@@ -32,7 +32,7 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 	in.SetDefaultValues() // set default values for some fields
 
 	// validate request (apiKey)
-	apiKey, err := tools.ValidateRequestApiKey(ctx, db, in.Authorization)
+	apiKey, err := tools.ValidateAuthorization(ctx, db, in.Authorization)
 	if err != nil {
 		return nil, err
 	}
