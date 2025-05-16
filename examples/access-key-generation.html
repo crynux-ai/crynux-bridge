@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crynux Bridge - Create API Key</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
         .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
@@ -70,8 +70,7 @@
                 if (!privkey.startsWith('0x')) {
                     throw new Error("Private key must be a hex string prefixed with '0x'.");
                 }
-                this.web3 = new Web3();
-                this.account = this.web3.eth.accounts.privateKeyToAccount(privkey);
+                this.signKey = new ethers.utils.SigningKey(privkey);
             }
 
             async sign(inputDict) {
@@ -84,27 +83,24 @@
                 const inputBytes = new TextEncoder().encode(inputStr);
                 const tBytes = new TextEncoder().encode(String(timestamp));
 
-                const concatenatedBytes = new Uint8Array(inputBytes.length + tBytes.length);
-                concatenatedBytes.set(inputBytes, 0);
-                concatenatedBytes.set(tBytes, inputBytes.length);
-
-                let hexInput = '0x';
-                for (let i = 0; i < concatenatedBytes.length; i++) {
-                    hexInput += concatenatedBytes[i].toString(16).padStart(2, '0');
-                }
-
-                const dataHash = this.web3.utils.keccak256(hexInput);
-
-                const signatureObj = this.account.sign(dataHash);
-                let signatureHex = signatureObj.signature;
-
-                let v = parseInt(signatureHex.slice(-2), 16);
-                if (v >= 27) {
-                    v -= 27;
-                }
-                signatureHex = signatureHex.slice(0, -2) + v.toString(16).padStart(2, '0');
-
-                return { timestamp, signature: signatureHex };
+                // Concatenate bytes
+                const dataBytes = new Uint8Array([...inputBytes, ...tBytes]);
+                
+                // Convert bytes to hex string
+                const dataHex = ethers.utils.hexlify(dataBytes);
+                
+                // Calculate keccak256 hash of the data
+                const dataHash = ethers.utils.keccak256(dataHex);
+                
+                // Sign the data
+                const signature = this.signKey.signDigest(dataHash);
+                
+                // Convert signature to Uint8Array and adjust the last byte
+                const sigHex = ethers.utils.joinSignature(signature); // Remove '0x' prefix
+                const sigBytes = ethers.utils.arrayify(sigHex);
+                sigBytes[64] = sigBytes[64] - 27;
+                
+                return { timestamp, signature: ethers.utils.hexlify(sigBytes) };
             }
         }
 
