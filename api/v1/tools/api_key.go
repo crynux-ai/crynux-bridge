@@ -92,22 +92,11 @@ func ValidateAPIKey(ctx context.Context, db *gorm.DB, apiKeyStr string) (*models
 	return apiKey, nil
 }
 
-func DeleteAPIKey(ctx context.Context, db *gorm.DB, clientID string) error {
-	apiKey, err := models.GetAPIKeyByClientID(ctx, db, clientID)
-	if err != nil {
-		return err
-	}
+func DeleteAPIKey(ctx context.Context, db *gorm.DB, apiKey *models.ClientAPIKey) error {
 	return apiKey.Delete(ctx, db)
 }
 
-func AddAPIKeyRole(ctx context.Context, db *gorm.DB, clientID string, role models.Role) error {
-	apiKey, err := models.GetAPIKeyByClientID(ctx, db, clientID)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil
-		}
-		return err
-	}
+func AddAPIKeyRole(ctx context.Context, db *gorm.DB, apiKey *models.ClientAPIKey, role models.Role) error {
 	if slices.Contains(apiKey.Roles, role) {
 		return nil
 	}
@@ -119,21 +108,13 @@ func AddAPIKeyRole(ctx context.Context, db *gorm.DB, clientID string, role model
 	return apiKey.Update(ctx, db, newAPIKey)
 }
 
-func ChangeUseLimit(ctx context.Context, db *gorm.DB, clientID string, useLimit int64) error {
-	apiKey, err := models.GetAPIKeyByClientID(ctx, db, clientID)
-	if err != nil {
-		return err
-	}
+func ChangeUseLimit(ctx context.Context, db *gorm.DB, apiKey *models.ClientAPIKey, useLimit int64) error {
 	return apiKey.Update(ctx, db, &models.ClientAPIKey{
 		UseLimit: useLimit,
 	})
 }
 
-func ChangeRateLimit(ctx context.Context, db *gorm.DB, clientID string, rateLimit int64) error {
-	apiKey, err := models.GetAPIKeyByClientID(ctx, db, clientID)
-	if err != nil {
-		return err
-	}
+func ChangeRateLimit(ctx context.Context, db *gorm.DB, apiKey *models.ClientAPIKey, rateLimit int64) error {
 	if err := apiKey.Update(ctx, db, &models.ClientAPIKey{
 		RateLimit: rateLimit,
 	}); err != nil {
@@ -144,7 +125,7 @@ func ChangeRateLimit(ctx context.Context, db *gorm.DB, clientID string, rateLimi
 }
 
 // validate api key
-func ValidateRequestApiKey(ctx context.Context, db *gorm.DB, authorization string) (*models.ClientAPIKey, error) {
+func ValidateAuthorization(ctx context.Context, db *gorm.DB, authorization string) (*models.ClientAPIKey, error) {
 	if !strings.HasPrefix(authorization, "Bearer ") {
 		return nil, response.NewValidationErrorResponse("Authorization", "Authorization header must start with 'Bearer '")
 	}

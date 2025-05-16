@@ -111,27 +111,27 @@ func InitRoutes(r *fizz.Fizz) {
 	}, tonic.Handler(sd.CreateImage, 200))
 
 	apiKeyGroup := v1g.Group("api_key", "API Key", "API Key related APIs")
-	apiKeyGroup.POST("/:client_id", []fizz.OperationOption{
+	apiKeyGroup.POST("", []fizz.OperationOption{
 		fizz.Summary("Generate a new API key"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(apikey.CreateAPIKey, 200))
-	apiKeyGroup.DELETE("/:client_id", []fizz.OperationOption{
+	apiKeyGroup.DELETE("/:api_key", []fizz.OperationOption{
 		fizz.Summary("Delete an API key"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(apikey.DeleteAPIKey, 200))
-	apiKeyGroup.POST("/:client_id/role", []fizz.OperationOption{
+	apiKeyGroup.POST("/:api_key/role", []fizz.OperationOption{
 		fizz.Summary("Add a role to an API key"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(apikey.AddRole, 200))
-	apiKeyGroup.POST("/:client_id/use_limit", []fizz.OperationOption{
+	apiKeyGroup.POST("/:api_key/use_limit", []fizz.OperationOption{
 		fizz.Summary("Change the use limit of an API key"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(apikey.ChangeUseLimit, 200))
-	apiKeyGroup.POST("/:client_id/rate_limit", []fizz.OperationOption{
+	apiKeyGroup.POST("/:api_key/rate_limit", []fizz.OperationOption{
 		fizz.Summary("Change the rate limit of an API key"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
