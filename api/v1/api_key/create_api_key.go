@@ -40,7 +40,7 @@ func CreateAPIKey(c *gin.Context, in *CreateAPIKeyInput) (*CreateAPIKeyResponse,
 
 	appConfig := config.GetConfig()
 	if address != appConfig.Blockchain.Account.Address {
-		validationErr := response.NewValidationErrorResponse("client_id", "Invalid client id")
+		validationErr := response.NewValidationErrorResponse("signature", "Invalid signer")
 		return nil, validationErr
 	}
 
