@@ -48,10 +48,14 @@
         <select id="role">
             <option value="chat">Chat</option>
             <option value="admin">Admin</option>
+            <option value="image">Image</option>
         </select>
 
         <label for="rateLimit">Rate Limit (requests per minute):</label>
         <input type="number" id="rateLimit" value="60">
+
+        <label for="useLimit">Use Limit (total requests):</label>
+        <input type="number" id="useLimit" value="1000">
 
         <button onclick="generateAndConfigureApiKey()">Create Access Token</button>
 
@@ -74,6 +78,7 @@
                 const timestamp = Math.floor(Date.now() / 1000);
 
                 const sortedKeys = Object.keys(inputDict).sort();
+                // Ensure separators are (",", ":") and ensure_ascii=false equivalent by default in JS
                 const inputStr = JSON.stringify(inputDict, sortedKeys);
 
                 const inputBytes = new TextEncoder().encode(inputStr);
@@ -103,21 +108,15 @@
             }
         }
 
-        async function makeApiCall(baseUrl, endpoint, clientId, bodyParams, signer, method = 'POST') {
-            const url = `http://${baseUrl}/v1/api_key/${clientId}${endpoint}`;
-            let payload = {};
-            let signedData;
+        async function makeApiCall(baseUrl, endpoint, apiKeyInPath, inputDictForSigning, actualBodyParams, signer, method = 'POST') {
+            const url = `http://${baseUrl}/v1/api_key/${apiKeyInPath}${endpoint}`;
 
-            if (method === 'POST') {
-                signedData = await signer.sign(bodyParams);
-                payload = {
-                    ...bodyParams,
-                    timestamp: signedData.timestamp,
-                    signature: signedData.signature
-                };
-            } else {
-                 signedData = await signer.sign({});
-            }
+            const signedData = await signer.sign(inputDictForSigning);
+            const payload = {
+                ...actualBodyParams,
+                timestamp: signedData.timestamp,
+                signature: signedData.signature
+            };
 
             const response = await fetch(url, {
                 method: method,
@@ -130,17 +129,17 @@
 
             const responseData = await response.json();
             if (!response.ok) {
-                throw new Error(`API Error (${response.status}): ${responseData.message || JSON.stringify(responseData)}`);
+                throw new Error(`API Error (${response.status}) for ${url}: ${responseData.message || JSON.stringify(responseData)}`);
             }
             return responseData;
         }
 
-        async function generateNewApiKey(baseUrl, clientId, signer) {
-            const url = `http://${baseUrl}/v1/api_key/${clientId}`;
-            const inputDictForSigning = {};
+        async function generateNewApiKey(baseUrl, signer) {
+            const url = `http://${baseUrl}/v1/api_key`; // No client_id in path
+            const inputDictForSigning = {}; // Sign an empty object
             const signedData = await signer.sign(inputDictForSigning);
 
-            const payload = {
+            const payload = { // Body only contains timestamp and signature
                 timestamp: signedData.timestamp,
                 signature: signedData.signature
             };
@@ -163,14 +162,14 @@
 
         async function generateAndConfigureApiKey() {
             const domain = document.getElementById('domain').value;
-            const clientId = document.getElementById('clientId').value;
             const privateKey = document.getElementById('privateKey').value;
             const role = document.getElementById('role').value;
             const rateLimit = parseInt(document.getElementById('rateLimit').value, 10);
+            const useLimit = parseInt(document.getElementById('useLimit').value, 10); // Get Use Limit
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = '<p>Processing...</p>';
 
-            if (!domain || !clientId || !privateKey || !role || isNaN(rateLimit)) {
+            if (!domain || !privateKey || !role || isNaN(rateLimit) || isNaN(useLimit)) { // Check useLimit
                 resultDiv.innerHTML = '<p class="error">Please fill in all fields correctly.</p>';
                 return;
             }
@@ -183,26 +182,41 @@
                 const signer = new Signer(privateKey);
                 let resultsHTML = '';
 
+                // 1. Generate API Key
                 try {
-                    const apiKeyResponse = await generateNewApiKey(domain, clientId, signer);
+                    const apiKeyResponse = await generateNewApiKey(domain, signer);
                     const generatedApiKey = apiKeyResponse.data.api_key;
                     resultsHTML += `<p class="success">API Key generated successfully: ${generatedApiKey}</p>`;
                     resultsHTML += `<p>Expires at: ${new Date(apiKeyResponse.data.expires_at * 1000).toLocaleString()}</p>`;
 
+                    // 2. Add Role
                     try {
-                        const roleParams = { role: role };
-                        const roleResponse = await makeApiCall(domain, `/role`, clientId, roleParams, signer);
+                        const roleInputForSigning = { api_key: generatedApiKey, role: role };
+                        const roleBodyParams = { role: role };
+                        const roleResponse = await makeApiCall(domain, `/role`, generatedApiKey, roleInputForSigning, roleBodyParams, signer);
                         resultsHTML += `<p class="success">Role '${role}' added successfully: ${roleResponse.message || 'OK'}</p>`;
                     } catch (roleError) {
                         resultsHTML += `<p class="error">Error adding role: ${roleError.message}</p>`;
                     }
 
+                    // 3. Set Rate Limit
                     try {
-                        const rateLimitParams = { rate_limit: rateLimit };
-                        const rateLimitResponse = await makeApiCall(domain, `/rate_limit`, clientId, rateLimitParams, signer);
+                        const rateLimitInputForSigning = { api_key: generatedApiKey, rate_limit: rateLimit };
+                        const rateLimitBodyParams = { rate_limit: rateLimit };
+                        const rateLimitResponse = await makeApiCall(domain, `/rate_limit`, generatedApiKey, rateLimitInputForSigning, rateLimitBodyParams, signer);
                         resultsHTML += `<p class="success">Rate limit set to ${rateLimit} successfully: ${rateLimitResponse.message || 'OK'}</p>`;
                     } catch (rateLimitError) {
                         resultsHTML += `<p class="error">Error setting rate limit: ${rateLimitError.message}</p>`;
+                    }
+
+                    // 4. Set Use Limit
+                    try {
+                        const useLimitInputForSigning = { api_key: generatedApiKey, use_limit: useLimit };
+                        const useLimitBodyParams = { use_limit: useLimit };
+                        const useLimitResponse = await makeApiCall(domain, `/use_limit`, generatedApiKey, useLimitInputForSigning, useLimitBodyParams, signer);
+                        resultsHTML += `<p class="success">Use limit set to ${useLimit} successfully: ${useLimitResponse.message || 'OK'}</p>`;
+                    } catch (useLimitError) {
+                        resultsHTML += `<p class="error">Error setting use limit: ${useLimitError.message}</p>`;
                     }
 
                 } catch (apiKeyError) {
