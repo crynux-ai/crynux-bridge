@@ -1,5 +1,9 @@
 package models
 
+import (
+	"crynux_bridge/api/v1/llm/structs"
+)
+
 type LLMRole string
 
 const (
@@ -13,8 +17,9 @@ const (
 type FinishReason string
 
 const (
-	FinishReasonStop   FinishReason = "stop"
-	FinishReasonLength FinishReason = "length"
+	FinishReasonStop      FinishReason = "stop"
+	FinishReasonLength    FinishReason = "length"
+	FinishReasonToolCalls FinishReason = "tool_calls"
 )
 
 type DType string
@@ -35,10 +40,10 @@ const (
 )
 
 type Message struct {
-	Role       LLMRole                  `json:"role" validate:"required"` // Required
-	Content    string                   `json:"content,omitempty"`        // Optional
-	ToolCallID string                   `json:"tool_call_id,omitempty"`   // Optional
-	ToolCalls  []map[string]interface{} `json:"tool_calls,omitempty"`     // Optional
+	Role       LLMRole            `json:"role" validate:"required"` // Required
+	Content    string             `json:"content,omitempty"`        // Optional
+	ToolCallID string             `json:"tool_call_id,omitempty"`   // Optional
+	ToolCalls  []structs.ToolCall `json:"tool_calls,omitempty"`     // Optional, uses structs.ToolCall
 }
 
 type GPTGenerationConfig struct {

@@ -56,11 +56,19 @@ func CCReqMessageToMessage(ccrMessage structs.CCReqMessage) models.Message {
 	message.Content = ccrMessage.Content
 	message.ToolCallID = ccrMessage.ToolCallID
 
-	toolCalls := make([]map[string]interface{}, len(ccrMessage.ToolCalls))
-	for i, toolCall := range ccrMessage.ToolCalls {
-		toolCalls[i] = CCReqMessageToolCallToToolCall(toolCall)
+	if len(ccrMessage.ToolCalls) > 0 {
+		message.ToolCalls = make([]structs.ToolCall, len(ccrMessage.ToolCalls))
+		for i, reqToolCall := range ccrMessage.ToolCalls {
+			message.ToolCalls[i] = structs.ToolCall{
+				Id:   reqToolCall.ID,
+				Type: reqToolCall.Type,
+				Function: structs.FunctionCall{
+					Name:      reqToolCall.Function.Name,
+					Arguments: reqToolCall.Function.Arguments,
+				},
+			}
+		}
 	}
-	message.ToolCalls = toolCalls
 
 	return message
 }

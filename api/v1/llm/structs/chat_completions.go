@@ -40,7 +40,7 @@ type ChatCompletionsRequest struct {
 	ServiceTier       string                   `json:"service_tier" description:"No use for now. For compatibility with Openai."`
 	Store             bool                     `json:"store" description:"No use for now. For compatibility with Openai."`
 	StreamOptions     *CCReqStreamOptions      `json:"stream_options" description:"No use for now. For compatibility with Openai."`
-	ToolChoice        []map[string]interface{} `json:"tool_choice" description:"Controls which (if any) tool is called by the model. "`
+	ToolChoice        any 					   `json:"tool_choice" description:"Controls which (if any) tool is called by the model. "`
 	Tools             []map[string]interface{} `json:"tools" description:"A list of tools the model may call. "`
 	User              string                   `json:"user" description:"No use for now. For compatibility with Openai."`
 	WebSearchOptions  json.RawMessage          `json:"web_search_options" description:"No use for now. For compatibility with Openai."`
@@ -137,7 +137,18 @@ type CCResMessage struct {
 	Refusal     string                   `json:"refusal"`
 	Annotations []interface{}            `json:"annotations"`
 	Audio       interface{}              `json:"audio"`
-	ToolCalls   []map[string]interface{} `json:"tool_calls"`
+	ToolCalls   []ToolCall `json:"tool_calls,omitempty"`
+}
+
+type FunctionCall struct {
+	Name      string `json:"name"`
+	Arguments string `json:"arguments"`
+}
+
+type ToolCall struct {
+	Id       string       `json:"id"`
+	Type     string       `json:"type"`
+	Function FunctionCall `json:"function"`
 }
 
 type CCResUsage struct {

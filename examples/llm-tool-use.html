@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>LLM Chat with Tool Use</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+          "Helvetica Neue", sans-serif;
+      }
+
+      body {
+        background-color: #f5f7fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 800px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      h1 {
+        color: #2d3748;
+        font-size: 24px;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+
+      .description {
+        color: #718096;
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        align-items: center;
+      }
+
+      textarea {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        resize: none;
+        min-height: 120px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: #4299e1;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+      }
+
+      button {
+        background-color: #4299e1;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0 24px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+        height: 48px;
+        /*   align-self: flex-end; */
+      }
+
+      button:hover {
+        background-color: #3182ce;
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      button:disabled {
+        background-color: #a0aec0;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .status {
+        font-size: 14px;
+        color: #718096;
+        text-align: center;
+        min-height: 20px;
+        flex: 1;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .result-container {
+        position: relative;
+      }
+
+      .tools-section {
+        background-color: #f9fafb;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #e2e8f0;
+      }
+
+      .tools-section h2 {
+        font-size: 16px;
+        color: #333; /* Darker color for heading */
+        margin-bottom: 12px; /* Increased margin */
+        font-weight: 600;
+        border-bottom: 1px solid #e2e8f0; /* Separator line */
+        padding-bottom: 8px; /* Space for separator */
+      }
+
+      .tool-info {
+        margin-bottom: 12px; /* Increased margin */
+        padding-bottom: 12px; /* Increased padding */
+        border-bottom: 1px dashed #e2e8f0; /* Softer separator for individual tools */
+      }
+      .tool-info:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .tool-info > strong { /* Target direct child strong for tool name */
+        color: #2d3748;
+        font-size: 15px; /* Slightly larger tool name */
+        display: block; /* Make it block for better spacing */
+        margin-bottom: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>LLM Chat with Tool Use</h1>
+      <p class="description">
+        Interact with an LLM that can use predefined tools to answer your questions or perform actions.
+        For example, try asking: "What's the weather in London?"
+      </p>
+
+      <div id="toolsDisplaySection" class="tools-section">
+        <!-- Tools will be listed here by JavaScript -->
+      </div>
+
+      <textarea
+        id="promptInput"
+        placeholder="Input your prompt here."
+      >What's the weather in London?</textarea>
+
+      <div class="input-group">
+        <button id="sendBtn">Send</button>
+        <div class="status" id="status"></div>
+      </div>
+      <textarea
+        id="resultOutput"
+        placeholder="The API call result will be displayed here."
+        readonly
+      ></textarea>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const promptInput = document.getElementById("promptInput");
+        const sendBtn = document.getElementById("sendBtn");
+        const resultOutput = document.getElementById("resultOutput");
+        const statusEl = document.getElementById("status");
+
+        const availableTools = [
+          {
+            type: "function",
+            function: {
+              name: "getCurrentWeather",
+              description: "Get the current weather in a given location",
+              parameters: {
+                type: "object",
+                properties: {
+                  location: {
+                    type: "string",
+                    description:
+                      "The city and state, e.g. San Francisco, CA",
+                  },
+                  unit: {
+                    type: "string",
+                    enum: ["celsius", "fahrenheit"],
+                    default: "fahrenheit",
+                  },
+                },
+                required: ["location"],
+              },
+            },
+          },
+        ];
+
+        // --- Function to display available tools ---
+        function displayAvailableTools() {
+          const toolsDisplayDiv = document.getElementById("toolsDisplaySection");
+          if (!toolsDisplayDiv) {
+            console.error("Tools display section not found!");
+            return;
+          }
+
+          let content = '<h2>Available Tools:</h2>';
+          if (!availableTools || availableTools.length === 0) {
+            content += "<p>No tools are currently available.</p>";
+            toolsDisplayDiv.innerHTML = content;
+            return;
+          }
+
+          let toolsHTML = '<ul style="list-style-type: none; padding-left: 0;">';
+          availableTools.forEach(tool => {
+            if (tool.type === "function" && tool.function) {
+              toolsHTML += `<li class="tool-info">`;
+              toolsHTML += `<strong>${tool.function.name}</strong>`;
+              if (tool.function.description) {
+                toolsHTML += `<p style="margin: 2px 0 8px 0px; font-size: 13px; color: #555;">${tool.function.description}</p>`;
+              }
+              if (tool.function.parameters && tool.function.parameters.properties && Object.keys(tool.function.parameters.properties).length > 0) {
+                toolsHTML += `<div style="margin-left:10px; font-size: 12px; color: #4a5568;"><strong>Parameters:</strong><ul style="list-style-type: disc; padding-left: 20px; margin-top: 4px;">`;
+                for (const paramName in tool.function.parameters.properties) {
+                  const param = tool.function.parameters.properties[paramName];
+                  let details = [];
+                  if (param.type) details.push(`type: ${param.type}`);
+                  if (typeof param.default !== 'undefined') details.push(`default: ${param.default}`);
+                  if (param.enum) details.push(`options: ${param.enum.join(', ')}`);
+
+                  let fullDescription = param.description || '';
+                  if (tool.function.parameters.required?.includes(paramName)) {
+                    fullDescription += ` <em style="color: #c53030; font-style: normal;">(required)</em>`;
+                  }
+
+                  toolsHTML += `<li><strong>${paramName}</strong> (${details.join(', ')})` + (fullDescription ? ` - ${fullDescription}` : '') + `</li>`;
+                }
+                toolsHTML += `</ul></div>`;
+              } else if (tool.function.parameters && (!tool.function.parameters.properties || Object.keys(tool.function.parameters.properties).length === 0)) {
+                 toolsHTML += `<div style="margin-left:10px; font-size: 12px; color: #4a5568;"><p>This function takes no parameters.</p></div>`;
+              }
+              toolsHTML += `</li>`;
+            }
+          });
+          toolsHTML += "</ul>";
+          toolsDisplayDiv.innerHTML = content + toolsHTML;
+        }
+        displayAvailableTools();
+        // --- End of function to display available tools ---
+
+        // call Crynux API
+        async function callAPI(messages, tools = null) {
+          console.log("start calling API with messages:", messages, "and tools:", tools);
+          const body = {
+            model: "Qwen/Qwen2.5-7B", // You might want to use a model known for good tool-use capabilities
+            messages: messages,
+            stream: false,
+          };
+          if (tools) {
+            body.tools = tools;
+            body.tool_choice = "auto"; // or specify a tool
+          }
+
+          const response = await fetch(
+//            "https://bridge.crynux.ai/v1/llm/chat/completions",
+            "http://localhost:5028/v1/llm/chat/completions",
+{
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization:
+                  "Bearer wo19nkaeWy4ly34iexE7DKtNIY6fZWErCAU8l--735U=", // Replace with your actual token
+              },
+              body: JSON.stringify(body),
+            }
+          );
+          console.log("callAPI finished.");
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: response.statusText }));
+            throw new Error(`API request failed with status ${response.status}: ${errorData.message}`);
+          }
+          return await response.json();
+        }
+
+        // Simulate executing a tool
+        function executeTool(toolName, toolArgs) {
+          if (toolName === "getCurrentWeather") {
+            const { location, unit } = toolArgs;
+            // In a real scenario, you'd call a weather API here.
+            // For this example, we'll return mock data.
+            return JSON.stringify({
+              location: location,
+              temperature: Math.floor(Math.random() * 30 + (unit === "celsius" ? 0 : 32)), // Random temp
+              unit: unit || "fahrenheit",
+              forecast: ["sunny", "cloudy", "rainy"][Math.floor(Math.random() * 3)],
+            });
+          }
+          return JSON.stringify({ error: "Unknown tool" });
+        }
+
+        let conversationHistory = [];
+
+        // sendBtn on click
+        sendBtn.addEventListener("click", async function () {
+          const userPrompt = promptInput.value.trim();
+
+          if (!userPrompt) {
+            statusEl.textContent = "Please enter your prompt.";
+            statusEl.style.color = "#e53e3e";
+            return;
+          }
+
+          sendBtn.disabled = true;
+          statusEl.innerHTML = '<span class="loading"></span>Thinking...';
+          statusEl.style.color = "#4a5568";
+          resultOutput.value = ""; // Clear previous results
+
+          if (conversationHistory.length === 0) { // New conversation
+            conversationHistory.push({
+              role: "user",
+              content: userPrompt,
+            });
+          } else { // Follow-up, could be from a previous tool call response or continued chat
+             // For this example, if there's history, we assume it's a new prompt for simplicity,
+             // rather than trying to continue from a tool call within the same click.
+             // A more robust implementation would manage this state more carefully.
+             conversationHistory = [{ role: "user", content: userPrompt }];
+          }
+
+
+          try {
+            console.log("Initial API call with prompt:", userPrompt);
+            // First API call: send prompt and tools
+            let response = await callAPI(conversationHistory, availableTools);
+            console.log("API Response 1:", response);
+
+            let assistantMessage = response.choices[0].message;
+
+            // Loop to handle potential multiple tool calls, though OpenAI typically does one set per turn
+            while (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
+              conversationHistory.push(assistantMessage); // Add assistant's turn (requesting tool call)
+
+              statusEl.innerHTML = '<span class="loading"></span>Executing tools...';
+              await new Promise(resolve => setTimeout(resolve, 500)); // simulate a small delay
+
+              for (const toolCall of assistantMessage.tool_calls) {
+                if (toolCall.type === "function") {
+                  const functionName = toolCall.function.name;
+                  const functionArgs = JSON.parse(toolCall.function.arguments);
+
+                  console.log(`Attempting to execute tool: ${functionName} with args:`, functionArgs);
+                  const toolResult = executeTool(functionName, functionArgs);
+                  console.log(`Tool ${functionName} result:`, toolResult);
+
+                  conversationHistory.push({
+                    tool_call_id: toolCall.id,
+                    role: "tool",
+                    name: functionName,
+                    content: toolResult,
+                  });
+                }
+              }
+
+              statusEl.innerHTML = '<span class="loading"></span>Getting final response from LLM...';
+              console.log("Secondary API call with tool results:", conversationHistory);
+              // Second API call: send tool results back to LLM
+              response = await callAPI(conversationHistory); // No tools needed for the follow-up
+              console.log("API Response 2 (after tool execution):", response);
+              assistantMessage = response.choices[0].message;
+            }
+
+            // If we are here, the assistantMessage should have content
+            if (assistantMessage.content) {
+              resultOutput.value = assistantMessage.content;
+              statusEl.textContent = "LLM finished.";
+              statusEl.style.color = "#38a169";
+              conversationHistory.push({ role: "assistant", content: assistantMessage.content });
+            } else if (!assistantMessage.tool_calls) {
+              // This case should ideally not happen if the API behaves like OpenAI's
+              resultOutput.value = "Received an unexpected response format from the LLM.";
+              statusEl.textContent = "Error: Unexpected response";
+              statusEl.style.color = "#e53e3e";
+              console.error("Unexpected API response:", response);
+            }
+             // If assistantMessage.tool_calls is still present, it means the LLM wants to call another tool
+             // but the loop condition exited. This indicates a potential issue or a model that wants
+             // to chain many tools without intermediate text, which this basic loop doesn't fully handle iteratively
+             // within a single click event. For simplicity, we stop here.
+
+          } catch (error) {
+            console.error("Operation failed:", error);
+            statusEl.textContent = `Error: ${error.message}`;
+            statusEl.style.color = "#e53e3e";
+            resultOutput.value = `Request failed: ${error.message}`;
+            conversationHistory = []; // Reset history on error
+          } finally {
+            sendBtn.disabled = false;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

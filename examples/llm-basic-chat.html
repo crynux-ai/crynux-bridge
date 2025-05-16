@@ -1,0 +1,226 @@
+!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>LLM Chat</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+          "Helvetica Neue", sans-serif;
+      }
+
+      body {
+        background-color: #f5f7fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 800px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      h1 {
+        color: #2d3748;
+        font-size: 24px;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+
+      .description {
+        color: #718096;
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        align-items: center;
+      }
+
+      textarea {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        resize: none;
+        min-height: 120px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: #4299e1;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+      }
+
+      button {
+        background-color: #4299e1;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0 24px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+        height: 48px;
+        /*   align-self: flex-end; */
+      }
+
+      button:hover {
+        background-color: #3182ce;
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      button:disabled {
+        background-color: #a0aec0;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .status {
+        font-size: 14px;
+        color: #718096;
+        text-align: center;
+        min-height: 20px;
+        flex: 1;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .result-container {
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <textarea
+        id="promptInput"
+        placeholder="Input your prompt here."
+      ></textarea>
+
+      <div class="input-group">
+        <button id="sendBtn">send</button>
+        <div class="status" id="status"></div>
+      </div>
+      <textarea
+        id="resultOutput"
+        placeholder="The API call result will be displayed here."
+        readonly
+      ></textarea>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const promptInput = document.getElementById("promptInput");
+        const sendBtn = document.getElementById("sendBtn");
+        const resultOutput = document.getElementById("resultOutput");
+        const statusEl = document.getElementById("status");
+
+        // call Crynux API
+        async function callAPI(prompt) {
+          console.log("start calling API");
+          const response = await fetch(
+            "https://bridge.crynux.ai/v1/llm/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization:
+                  "Bearer wo19nkaeWy4ly34iexE7DKtNIY6fZWErCAU8l--735U=",
+              },
+              body: JSON.stringify({
+                model: "Qwen/Qwen2.5-7B",
+                messages: [
+                  {
+                    role: "user",
+                    content: prompt,
+                  },
+                ],
+                stream: false,
+              }),
+            }
+          );
+          console.log("callAPI finished.");
+          return await response.json();
+        }
+
+        // sendBtn on click
+        sendBtn.addEventListener("click", async function () {
+          const prompt = promptInput.value.trim();
+
+          if (!prompt) {
+            statusEl.textContent = "Please enter your prompt.";
+            statusEl.style.color = "#e53e3e";
+            return;
+          }
+
+          try {
+            // disable the button temporarily
+            console.log("start try");
+            sendBtn.disabled = true;
+            statusEl.innerHTML = '<span class="loading"></span>running LLM...';
+            statusEl.style.color = "#4a5568";
+
+            // invoke API
+            console.log("invoke callAPI fucntion.");
+            const response = await callAPI(prompt);
+            console.log("invoke callAPI finished.");
+
+            // for debugging
+            console.log("API Response:", response);
+
+            resultOutput.value = response.choices[0].message.content;
+            statusEl.textContent = "LLM finished.";
+            statusEl.style.color = "#38a169";
+          } catch (error) {
+            console.error("API call failed:", error);
+            statusEl.textContent = `error: ${error.message}`;
+            statusEl.style.color = "#e53e3e";
+            resultOutput.value = `request failed: ${error.message}`;
+          } finally {
+            sendBtn.disabled = false;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

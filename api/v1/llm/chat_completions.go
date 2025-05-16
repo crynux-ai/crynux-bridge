@@ -12,11 +12,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
+
+var toolCallRegex = regexp.MustCompile(`<tool_call>\s*({[\s\S]*?})\s*</tool_call>`)
+
+type parsedLlmToolCallArgs struct {
+	Name      string          `json:"name"`
+	Arguments json.RawMessage `json:"arguments"` // Keep arguments as raw JSON to convert back to string easily
+}
 
 type ChatCompletionsRequest struct {
 	structs.ChatCompletionsRequest
@@ -119,6 +127,38 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	/* 3. Wrap GPTTaskResponse into ChatCompletionsResponse and return */
 	choices := make([]structs.CCResChoice, len(gptTaskResponse.Choices))
 	for i, choice := range gptTaskResponse.Choices {
+		matches := toolCallRegex.FindStringSubmatch(choice.Message.Content)
+		if len(matches) > 1 {
+			potentialJsonString := matches[1]
+			var parsedArgs parsedLlmToolCallArgs
+			if err := json.Unmarshal([]byte(potentialJsonString), &parsedArgs); err == nil {
+				// Successfully parsed the LLM's tool call structure
+				choice.Message.Content = "" // Clear content for tool calls
+				choice.FinishReason = models.FinishReasonToolCalls
+
+				toolCallInstance := structs.ToolCall{
+					Id:   fmt.Sprintf("call_%s_choice%d_tool0", resultDownloadedTask.TaskIDCommitment, i),
+					Type: "function",
+					Function: structs.FunctionCall{
+						Name:      parsedArgs.Name,
+						Arguments: string(parsedArgs.Arguments),
+					},
+				}
+				choice.Message.ToolCalls = []structs.ToolCall{toolCallInstance}
+			} else {
+				// JSON parsing failed, treat as regular text. Original content is already there.
+				// Set a default finish reason if not already set by LLM response processing for non-tool-call cases
+				if choice.FinishReason == "" {
+					choice.FinishReason = models.FinishReasonStop
+				}
+			}
+		} else {
+			// No tool call tag found, ensure default finish reason
+			if choice.FinishReason == "" {
+				choice.FinishReason = models.FinishReasonStop
+			}
+		}
+
 		choices[i] = utils.ResponseChoiceToCCResChoice(choice)
 	}
 	ccResponse := &structs.ChatCompletionsResponse{

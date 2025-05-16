@@ -87,7 +87,7 @@ func checkBlockchainAccount() error {
 	address := crypto.PubkeyToAddress(*publicKeyECDSA).Hex()
 
 	if address != appConfig.Blockchain.Account.Address {
-		return errors.New("account address and private key mismatch")
+		return errors.New("account address and private key mismatch.\nAccount address: " + appConfig.Blockchain.Account.Address + "\nPrivate key derived address: " + address + "\n")
 	}
 
 	return nil
