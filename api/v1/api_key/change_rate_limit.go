@@ -4,12 +4,14 @@ import (
 	"crynux_bridge/api/v1/response"
 	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
+	"errors"
+
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
 
 type ChangeRateLimitInput struct {
-	ClientID  string `path:"client_id" json:"client_id" description:"Client id" validate:"required"`
+	APIKey    string `path:"api_key" json:"api_key" description:"API key" validate:"required"`
 	RateLimit int64  `json:"rate_limit" description:"Rate limit" validate:"required"`
 }
 
@@ -36,8 +38,18 @@ func ChangeRateLimit(c *gin.Context, in *ChangeRateLimitInputWithSignature) (*re
 		validationErr := response.NewValidationErrorResponse("client_id", "Invalid signer")
 		return nil, validationErr
 	}
+	apiKey, err := tools.ValidateAPIKey(c.Request.Context(), config.GetDB(), in.APIKey)
+	if err != nil {
+		if errors.Is(err, tools.ErrAPIKeyExpired) {
+			return nil, response.NewValidationErrorResponse("api_key", "expired")
+		}
+		if errors.Is(err, tools.ErrAPIKeyInvalid) {
+			return nil, response.NewValidationErrorResponse("api_key", "invalid")
+		}
+		return nil, response.NewExceptionResponse(err)
+	}
 
-	if err := tools.ChangeRateLimit(c.Request.Context(), config.GetDB(), in.ClientID, in.RateLimit); err != nil {
+	if err := tools.ChangeRateLimit(c.Request.Context(), config.GetDB(), apiKey, in.RateLimit); err != nil {
 		log.Debugln("error in change rate limit: " + err.Error())
 		return nil, response.NewExceptionResponse(err)
 	}

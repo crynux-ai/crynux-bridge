@@ -4,19 +4,20 @@ import (
 	"crynux_bridge/api/v1/response"
 	"crynux_bridge/api/v1/tools"
 	"crynux_bridge/config"
+	"errors"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
 
 type DeleteAPIKeyInput struct {
-	ClientID string `path:"client_id" json:"client_id" description:"Client id" validate:"required"`
+	APIKey string `path:"api_key" json:"api_key" description:"API key" validate:"required"`
 }
 
 type DeleteAPIKeyInputWithSignature struct {
 	DeleteAPIKeyInput
-	Timestamp int64  `form:"timestamp" json:"timestamp" description:"Signature timestamp" validate:"required"`
-	Signature string `form:"signature" json:"signature" description:"Signature" validate:"required"`
+	Timestamp int64  `query:"timestamp" json:"timestamp" description:"Signature timestamp" validate:"required"`
+	Signature string `query:"signature" json:"signature" description:"Signature" validate:"required"`
 }
 
 func DeleteAPIKey(c *gin.Context, in *DeleteAPIKeyInputWithSignature) (*response.Response, error) {
@@ -31,12 +32,25 @@ func DeleteAPIKey(c *gin.Context, in *DeleteAPIKeyInputWithSignature) (*response
 		validationErr := response.NewValidationErrorResponse("signature", "Invalid signature")
 		return nil, validationErr
 	}
-	if in.ClientID != address {
+	appConfig := config.GetConfig()
+	if address != appConfig.Blockchain.Account.Address {
 		validationErr := response.NewValidationErrorResponse("client_id", "Invalid client id")
 		return nil, validationErr
 	}
+
+	apiKey, err := tools.ValidateAPIKey(c.Request.Context(), config.GetDB(), in.APIKey)
+	if err != nil {
+		if errors.Is(err, tools.ErrAPIKeyExpired) {
+			return nil, response.NewValidationErrorResponse("api_key", "expired")
+		}
+		if errors.Is(err, tools.ErrAPIKeyInvalid) {
+			return nil, response.NewValidationErrorResponse("api_key", "invalid")
+		}
+		return nil, response.NewExceptionResponse(err)
+	}
+
 	// delete the API key
-	if err := tools.DeleteAPIKey(c.Request.Context(), config.GetDB(), in.ClientID); err != nil {
+	if err := tools.DeleteAPIKey(c.Request.Context(), config.GetDB(), apiKey); err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
 	return &response.Response{}, nil

@@ -6,15 +6,11 @@ import (
 	"crynux_bridge/config"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
 
 type CreateAPIKeyInput struct {
-	ClientID string `path:"client_id" json:"client_id" description:"Client id" validate:"required"`
-}
-
-type CreateAPIKeyInputWithSignature struct {
-	CreateAPIKeyInput
 	Timestamp int64  `form:"timestamp" json:"timestamp" description:"Signature timestamp" validate:"required"`
 	Signature string `form:"signature" json:"signature" description:"Signature" validate:"required"`
 }
@@ -29,8 +25,8 @@ type CreateAPIKeyResponse struct {
 	Data *CreateAPIKeyOutput `json:"data"`
 }
 
-func CreateAPIKey(c *gin.Context, in *CreateAPIKeyInputWithSignature) (*CreateAPIKeyResponse, error) {
-	match, address, err := tools.ValidateSignature(in.CreateAPIKeyInput, in.Timestamp, in.Signature)
+func CreateAPIKey(c *gin.Context, in *CreateAPIKeyInput) (*CreateAPIKeyResponse, error) {
+	match, address, err := tools.ValidateSignature(map[string]interface{}{}, in.Timestamp, in.Signature)
 
 	if err != nil || !match {
 
@@ -42,20 +38,16 @@ func CreateAPIKey(c *gin.Context, in *CreateAPIKeyInputWithSignature) (*CreateAP
 		return nil, validationErr
 	}
 
-	if in.ClientID != address {
+	appConfig := config.GetConfig()
+	if address != appConfig.Blockchain.Account.Address {
 		validationErr := response.NewValidationErrorResponse("client_id", "Invalid client id")
 		return nil, validationErr
 	}
 
-	_, err = tools.CreateClientIfNotExist(c, config.GetDB(), in.ClientID)
-
-	if err != nil {
-		log.Debugln("error in create client: " + err.Error())
-		return nil, response.NewExceptionResponse(err)
-	}
+	clientID := uuid.New().String()
 
 	// generate a new API key
-	apikey, expiresAt, err := tools.GenerateAPIKey(c.Request.Context(), config.GetDB(), in.ClientID)
+	apikey, expiresAt, err := tools.GenerateAPIKey(c.Request.Context(), config.GetDB(), clientID)
 	if err != nil {
 		log.Debugln("error in generate apikey: " + err.Error())
 		return nil, response.NewExceptionResponse(err)
