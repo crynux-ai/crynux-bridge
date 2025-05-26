@@ -127,6 +127,9 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 	/* 3. Wrap GPTTaskResponse into ChatCompletionsResponse and return */
 	choices := make([]structs.CCResChoice, len(gptTaskResponse.Choices))
 	for i, choice := range gptTaskResponse.Choices {
+
+		fmt.Println("choice.Message.Content", choice.Message.Content)
+
 		matches := toolCallRegex.FindStringSubmatch(choice.Message.Content)
 		if len(matches) > 1 {
 			potentialJsonString := matches[1]
@@ -136,12 +139,26 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 				choice.Message.Content = "" // Clear content for tool calls
 				choice.FinishReason = models.FinishReasonToolCalls
 
+				var finalArgumentsString string
+				var tempStr string
+				// Attempt to unmarshal Arguments as a JSON string first.
+				// This handles cases where arguments are double-encoded as a string.
+				if err := json.Unmarshal(parsedArgs.Arguments, &tempStr); err == nil {
+					// If successful, parsedArgs.Arguments was a JSON string,
+					// and tempStr is its unescaped content.
+					finalArgumentsString = tempStr
+				} else {
+					// If not a JSON string (e.g., it's a JSON object/array directly),
+					// use its direct string representation.
+					finalArgumentsString = string(parsedArgs.Arguments)
+				}
+
 				toolCallInstance := structs.ToolCall{
 					Id:   fmt.Sprintf("call_%s_choice%d_tool0", resultDownloadedTask.TaskIDCommitment, i),
 					Type: "function",
 					Function: structs.FunctionCall{
 						Name:      parsedArgs.Name,
-						Arguments: string(parsedArgs.Arguments),
+						Arguments: finalArgumentsString,
 					},
 				}
 				choice.Message.ToolCalls = []structs.ToolCall{toolCallInstance}
