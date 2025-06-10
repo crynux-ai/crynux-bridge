@@ -211,6 +211,36 @@ func doDownloadTaskResult(ctx context.Context, taskIDCommitment string, index ui
 	}
 }
 
+func doDownloadTaskResultCheckpoint(ctx context.Context, taskIDCommitment string, filename string) error {
+	for {
+		err := func() error {
+			file, err := os.Create(filename)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			if err := relay.DownloadTaskResultCheckpoint(ctx, taskIDCommitment, file); err != nil {
+				return err
+			}
+			return nil
+		}()
+		if err != nil {
+			var relayErr relay.RelayError
+			if errors.As(err, &relayErr) && relayErr.StatusCode == 400 {
+				log.Errorf("ProcessTasks: cannot get result checkpoint of %s, error %v, retry", taskIDCommitment, err)
+				time.Sleep(time.Second)
+				continue
+			} else {
+				log.Errorf("ProcessTasks: cannot get result checkpoint of %s, error %v", taskIDCommitment, err)
+				return err
+			}
+		}
+		return nil
+	}
+
+}
+
 func downloadTaskResult(ctx context.Context, task *models.InferenceTask) error {
 	appConfig := config.GetConfig()
 
@@ -224,31 +254,41 @@ func downloadTaskResult(ctx context.Context, task *models.InferenceTask) error {
 		return err
 	}
 
-	ext := "png"
-	if task.TaskType == models.TaskTypeLLM {
-		ext = "json"
-	}
-
 	ctx1, cancel := context.WithCancel(ctx)
 	defer cancel()
-	var wg sync.WaitGroup
-	errCh := make(chan error, int(task.TaskSize))
-	for i := uint64(0); i < task.TaskSize; i++ {
-		filename := path.Join(taskFolder, fmt.Sprintf("%d.%s", i, ext))
-		wg.Add(1)
-		go func(ctx context.Context, taskIDCommitment string, index uint64, filename string) {
-			defer wg.Done()
-			errCh <- doDownloadTaskResult(ctx, taskIDCommitment, index, filename)
-		}(ctx1, task.TaskIDCommitment, i, filename)
-	}
-	wg.Wait()
-	for i := 0; i < int(task.TaskSize); i++ {
-		err := <-errCh
-		if err != nil {
+
+	if task.TaskType == models.TaskTypeSDFTLora {
+		filename := path.Join(taskFolder, "checkpoint.zip")
+		if err := doDownloadTaskResultCheckpoint(ctx1, task.TaskIDCommitment, filename); err != nil {
 			return err
 		}
+		return nil
+	} else {
+		ext := "png"
+		if task.TaskType == models.TaskTypeLLM {
+			ext = "json"
+		}
+
+		var wg sync.WaitGroup
+		errCh := make(chan error, int(task.TaskSize))
+		for i := uint64(0); i < task.TaskSize; i++ {
+			filename := path.Join(taskFolder, fmt.Sprintf("%d.%s", i, ext))
+			wg.Add(1)
+			go func(ctx context.Context, taskIDCommitment string, index uint64, filename string) {
+				defer wg.Done()
+				errCh <- doDownloadTaskResult(ctx, taskIDCommitment, index, filename)
+			}(ctx1, task.TaskIDCommitment, i, filename)
+		}
+		wg.Wait()
+		for i := 0; i < int(task.TaskSize); i++ {
+			err := <-errCh
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	}
-	return nil
+
 }
 
 func processOneTask(ctx context.Context, task *models.InferenceTask) error {

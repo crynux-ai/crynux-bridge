@@ -83,6 +83,37 @@ func ProcessSDTask(ctx context.Context, db *gorm.DB, in *TaskInput) ([]string, *
 	return results, resultDownloadedTask, nil
 }
 
+func ProcessSDFTLoraTask(ctx context.Context, db *gorm.DB, in *TaskInput) (string, *models.InferenceTask, error) {
+	/* 1. Create SD task by function CreateTask */
+	taskResponse, err := DoCreateTask(ctx, in)
+	if err != nil {
+		return "", nil, err
+	}
+
+	/* 2. Get tasks, wait until they are finished and the taks result is downloaded  */
+	tasks := taskResponse.Data.InferenceTasks
+	if len(tasks) == 0 {
+		err := errors.New("no task created")
+		return "", nil, response.NewExceptionResponse(err)
+	}
+	taskGroups, err := waitAllTaskGroup(ctx, db, tasks)
+	if err != nil {
+		return "", nil, response.NewExceptionResponse(err)
+	}
+	resultDownloadedTask, err := waitResultTask(ctx, db, taskGroups)
+	if err != nil {
+		return "", nil, response.NewExceptionResponse(err)
+	}
+
+	/* 3. Read task result and return */
+	results, err := readSDFTLoraTaskResults(resultDownloadedTask)
+	if err != nil {
+		return "", nil, response.NewExceptionResponse(err)
+	}
+
+	return results, resultDownloadedTask, nil
+}
+
 func waitTaskGroup(ctx context.Context, db *gorm.DB, task *models.InferenceTask) ([]models.InferenceTask, error) {
 	for {
 		err := task.Sync(ctx, db)
@@ -296,3 +327,15 @@ func readSDTaskResults(task *models.InferenceTask) ([]string, error) {
 	return results, nil
 }
 
+func readSDFTLoraTaskResults(task *models.InferenceTask) (string, error) {
+	if task.TaskType != models.TaskTypeSDFTLora {
+		err := errors.New("unsupported task type")
+		return "", err
+	}
+
+	appConfig := config.GetConfig()
+	taskFolder := path.Join(appConfig.DataDir.InferenceTasks, task.TaskIDCommitment)
+	filename := path.Join(taskFolder, "checkpoint.zip")
+
+	return filename, nil
+}
