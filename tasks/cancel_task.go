@@ -5,6 +5,8 @@ import (
 	"crynux_bridge/config"
 	"crynux_bridge/models"
 	"crynux_bridge/relay"
+	"errors"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -28,6 +30,19 @@ func cancelTask(ctx context.Context, task *models.InferenceTask) error {
 
 	chainTask, err := relay.GetTaskByCommitment(ctx, taskIDCommitment)
 	if err != nil {
+		var relayErr relay.RelayError
+		if errors.As(err, &relayErr) && strings.Contains(relayErr.ErrorMessage, "Task not found") {
+			log.Infof("CancelTasks: task %d not found", task.ID)
+			newTask.Status = models.InferenceTaskEndAborted
+			newTask.AbortReason = models.TaskAbortTimeout
+			if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
+				log.Errorf("CancelTasks: cannot save task %d status: %v", task.ID, err)
+				return err
+			}
+			log.Infof("CancelTasks: task %d canceled successfully", task.ID)
+			return nil
+		}
+
 		log.Errorf("CancelTasks: cannot get task %d : %v", task.ID, err)
 		return err
 	}

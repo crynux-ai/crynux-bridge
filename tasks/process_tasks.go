@@ -576,10 +576,7 @@ func ProcessTasks(ctx context.Context) {
 							log.Errorf("ProcessTasks: process task %d timeout %v, finish", task.ID, err)
 							if err == context.DeadlineExceeded {
 								newTask := &models.InferenceTask{}
-								if task.Status == models.InferenceTaskPending {
-									newTask.Status = models.InferenceTaskEndAborted
-									newTask.AbortReason = models.TaskAbortTimeout
-								} else if task.Status != models.InferenceTaskEndAborted &&
+								if task.Status != models.InferenceTaskEndAborted &&
 									task.Status != models.InferenceTaskEndInvalidated &&
 									task.Status != models.InferenceTaskEndGroupRefund &&
 									task.Status != models.InferenceTaskEndSuccess &&
