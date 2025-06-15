@@ -12,6 +12,7 @@ import (
 	mrand "math/rand"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -93,12 +94,16 @@ func syncTask(ctx context.Context, task *models.InferenceTask) (*models.RelayTas
 	if len(task.TaskIDCommitment) == 0 {
 		return nil, nil
 	}
-	if task.Status == models.InferenceTaskPending {
-		return nil, nil
-	}
 
 	chainTask, err := getTask(ctx, task.TaskIDCommitment)
 	if err != nil {
+		if task.Status == models.InferenceTaskPending {
+			var relayErr relay.RelayError
+			if errors.As(err, &relayErr) && strings.Contains(relayErr.ErrorMessage, "Task not found") {
+				return nil, nil
+			}
+			return nil, err
+		}
 		return nil, err
 	}
 
@@ -107,6 +112,11 @@ func syncTask(ctx context.Context, task *models.InferenceTask) (*models.RelayTas
 	chainTaskStatus := models.ChainTaskStatus(chainTask.Status)
 	abortReason := models.TaskAbortReason(chainTask.AbortReason)
 	taskError := models.TaskError(chainTask.TaskError)
+
+	if task.Status == models.InferenceTaskPending {
+		newTask.Status = models.InferenceTaskCreated
+		changed = true
+	}
 
 	if abortReason != task.AbortReason {
 		newTask.AbortReason = abortReason
