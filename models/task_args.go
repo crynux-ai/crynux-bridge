@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
+	"os"
 	"reflect"
 
 	"github.com/santhosh-tekuri/jsonschema/v5"
@@ -318,6 +319,28 @@ func GetTaskConfigModelIDs(taskArgs string, taskType ChainTaskType) ([]string, e
 	} else {
 		return getSDFTTaskConfigModelIDs(taskArgs)
 	}
+}
+
+func GetSDFTTaskConfigCheckpoint(taskArgs string) (string, error) {
+	var taskArgsMap map[string]interface{}
+
+	err := json.Unmarshal([]byte(taskArgs), &taskArgsMap)
+	if err != nil {
+		return "", err
+	}
+
+	checkpointValue, ok := taskArgsMap["checkpoint"]
+	if !ok || IsNil(checkpointValue) {
+		return "", nil
+	}
+	checkpoint, ok := checkpointValue.(string)
+	if !ok {
+		return "", errors.New("checkpoint is not a string")
+	}
+	if _, err := os.Stat(checkpoint); os.IsNotExist(err) {
+		return "", errors.New("checkpoint does not exist")
+	}
+	return checkpoint, nil
 }
 
 func isValidUrl(toTest string) bool {

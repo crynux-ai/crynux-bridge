@@ -11,8 +11,11 @@ import (
 	"fmt"
 	"io"
 	"math/big"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -191,22 +194,85 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 		return err
 	}
 
-	form := url.Values{}
-	form.Add("min_vram", strconv.FormatUint(task.MinVram, 10))
-	form.Add("nonce", task.Nonce)
-	form.Add("required_gpu", task.RequiredGPU)
-	form.Add("required_gpu_vram", strconv.FormatUint(task.RequiredGPUVram, 10))
-	form.Add("task_args", task.TaskArgs)
-	form.Add("task_size", strconv.FormatUint(task.TaskSize, 10))
-	form.Add("task_type", strconv.Itoa(int(task.TaskType)))
-	form.Add("task_version", task.TaskVersion)
-	form.Add("task_fee", taskFee.String())
-	form.Add("timestamp", strconv.FormatInt(timestamp, 10))
-	form.Add("signature", signature)
-	for _, modelID := range task.TaskModelIDs {
-		form.Add("task_model_ids", modelID)
+	var checkpointFilePath string
+	if task.TaskType == models.TaskTypeSDFTLora {
+		checkpoint, err := models.GetSDFTTaskConfigCheckpoint(task.TaskArgs)
+		if err != nil {
+			return err
+		}
+		if checkpoint != "" {
+			checkpointFilePath = checkpoint
+		}
 	}
-	body := strings.NewReader(form.Encode())
+
+	var body io.Reader
+	var contentType string
+	var multipartWriter *multipart.Writer
+
+	if checkpointFilePath == "" {
+		form := url.Values{}
+		form.Add("min_vram", strconv.FormatUint(task.MinVram, 10))
+		form.Add("nonce", task.Nonce)
+		form.Add("required_gpu", task.RequiredGPU)
+		form.Add("required_gpu_vram", strconv.FormatUint(task.RequiredGPUVram, 10))
+		form.Add("task_args", task.TaskArgs)
+		form.Add("task_size", strconv.FormatUint(task.TaskSize, 10))
+		form.Add("task_type", strconv.Itoa(int(task.TaskType)))
+		form.Add("task_version", task.TaskVersion)
+		form.Add("task_fee", taskFee.String())
+		form.Add("timestamp", strconv.FormatInt(timestamp, 10))
+		form.Add("signature", signature)
+		for _, modelID := range task.TaskModelIDs {
+			form.Add("task_model_ids", modelID)
+		}
+		body = strings.NewReader(form.Encode())
+		contentType = "application/x-www-form-urlencoded"
+	} else {
+		pr, pw := io.Pipe()
+		multipartWriter = multipart.NewWriter(pw)
+
+		go func() {
+			defer pw.Close()
+			defer multipartWriter.Close()
+
+			multipartWriter.WriteField("min_vram", strconv.FormatUint(task.MinVram, 10))
+			multipartWriter.WriteField("nonce", task.Nonce)
+			multipartWriter.WriteField("required_gpu", task.RequiredGPU)
+			multipartWriter.WriteField("required_gpu_vram", strconv.FormatUint(task.RequiredGPUVram, 10))
+			multipartWriter.WriteField("task_args", task.TaskArgs)
+			multipartWriter.WriteField("task_size", strconv.FormatUint(task.TaskSize, 10))
+			multipartWriter.WriteField("task_type", strconv.Itoa(int(task.TaskType)))
+			multipartWriter.WriteField("task_version", task.TaskVersion)
+			multipartWriter.WriteField("task_fee", taskFee.String())
+			multipartWriter.WriteField("timestamp", strconv.FormatInt(timestamp, 10))
+			multipartWriter.WriteField("signature", signature)
+			for _, modelID := range task.TaskModelIDs {
+				multipartWriter.WriteField("task_model_ids", modelID)
+			}
+
+			file, err := os.Open(checkpointFilePath)
+			if err != nil {
+				pw.CloseWithError(fmt.Errorf("failed to open checkpoint file %s: %v", checkpointFilePath, err))
+				return
+			}
+			defer file.Close()
+
+			part, err := multipartWriter.CreateFormFile("checkpoint", filepath.Base(checkpointFilePath))
+			if err != nil {
+				pw.CloseWithError(fmt.Errorf("failed to create form file: %v", err))
+				return
+			}
+
+			_, err = io.Copy(part, file)
+			if err != nil {
+				pw.CloseWithError(fmt.Errorf("failed to copy file content: %v", err))
+				return
+			}
+		}()
+
+		body = pr
+		contentType = multipartWriter.FormDataContentType()
+	}
 
 	taskIDCommitment := task.TaskIDCommitment
 	reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/" + taskIDCommitment
@@ -214,7 +280,7 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	req, _ := http.NewRequestWithContext(timeoutCtx, "POST", reqUrl, body)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Type", contentType)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
@@ -229,8 +295,7 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 	return nil
 }
 
-// No matter single task or task group
-// func ValidateSingleTask() and ValidateTaskGroup()
+// ValidateTask validates tasks (single task or task group)
 func ValidateTask(ctx context.Context, tasks []*models.InferenceTask) error {
 	appConfig := config.GetConfig()
 
