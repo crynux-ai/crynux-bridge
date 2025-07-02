@@ -22,9 +22,9 @@ type AdamOptimizerArgs struct {
 
 // LoraArgs represents the LoRA configuration
 type LoraArgs struct {
-	Rank            int      `json:"rank"`
-	InitLoraWeights string   `json:"init_lora_weights"` // "true", "false", "gaussian", "loftq"
-	TargetModules   []string `json:"target_modules"`
+	Rank            int         `json:"rank"`
+	InitLoraWeights interface{} `json:"init_lora_weights"` // "true", "false", "gaussian", "loftq" or true, false
+	TargetModules   interface{} `json:"target_modules"`    // []string or string or nil
 }
 
 // ModelArgs represents the model configuration
@@ -36,7 +36,8 @@ type ModelArgs struct {
 
 // DatasetArgs represents the dataset configuration
 type DatasetArgs struct {
-	Name          string `json:"name"`
+	Url           string `json:"url,omitempty"`
+	Name          string `json:"name,omitempty"`
 	ConfigName    string `json:"config_name,omitempty"`
 	ImageColumn   string `json:"image_column"`
 	CaptionColumn string `json:"caption_column"`
@@ -53,7 +54,7 @@ type TrainArgs struct {
 	LearningRate              float64           `json:"learning_rate"`
 	BatchSize                 int               `json:"batch_size"`
 	GradientAccumulationSteps int               `json:"gradient_accumulation_steps"`
-	PredictionType            string            `json:"prediction_type,omitempty"` // "epsilon", "v_prediction"
+	PredictionType            *string            `json:"prediction_type,omitempty"` // "epsilon", "v_prediction"
 	MaxGradNorm               float64           `json:"max_grad_norm"`
 	NumTrainEpochs            int               `json:"num_train_epochs"`
 	NumTrainSteps             *int              `json:"num_train_steps,omitempty"`
