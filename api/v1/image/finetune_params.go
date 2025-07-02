@@ -1,4 +1,4 @@
-package sdftlora
+package image
 
 import "math/rand"
 

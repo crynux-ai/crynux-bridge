@@ -47,6 +47,7 @@ func main() {
 	go tasks.ProcessTasks(context.Background())
 	go tasks.AutoCreateTasks(context.Background())
 	go tasks.CancelTasks(context.Background())
+	go tasks.ProcessSDFTTasks(context.Background())
 
 	startServer()
 }

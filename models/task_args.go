@@ -343,6 +343,24 @@ func GetSDFTTaskConfigCheckpoint(taskArgs string) (string, error) {
 	return checkpoint, nil
 }
 
+func ChangeSDFTTaskArgsCheckpoint(taskArgs string, checkpoint string) (string, error) {
+	var taskArgsMap map[string]interface{}
+
+	err := json.Unmarshal([]byte(taskArgs), &taskArgsMap)
+	if err != nil {
+		return "", err
+	}
+
+	taskArgsMap["checkpoint"] = checkpoint
+
+	jsonBytes, err := json.Marshal(taskArgsMap)
+	if err != nil {
+		return "", err
+	}
+
+	return string(jsonBytes), nil
+}
+
 func isValidUrl(toTest string) bool {
 	_, err := url.ParseRequestURI(toTest)
 	if err != nil {
