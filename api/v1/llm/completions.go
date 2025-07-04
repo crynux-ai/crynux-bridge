@@ -21,6 +21,7 @@ import (
 type CompletionsRequest struct {
 	structs.CompletionsRequest
 	Authorization string `header:"Authorization" validate:"required" description:"API key"`
+	Timeout       *uint64 `json:"timeout,omitempty" description:"Task timeout" validate:"omitempty"`
 }
 
 // build TaskInput from CompletionsRequest, create task, wait for task to finish, get task result, then return CompletionsResponse
@@ -109,6 +110,7 @@ func Completions(c *gin.Context, in *CompletionsRequest) (*structs.CompletionsRe
 		RequiredGPUVram: 0,
 		RepeatNum:       nil,
 		TaskFee:         &taskFee,
+		Timeout:         in.Timeout,
 	}
 
 	/* 2. Create task, wait until task finish and get task result. Implemented by function ProcessGPTTask */

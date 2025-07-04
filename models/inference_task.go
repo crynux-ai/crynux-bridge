@@ -122,6 +122,7 @@ type InferenceTask struct {
 	RequiredGPU     string        `json:"required_gpu"`
 	RequiredGPUVram uint64        `json:"required_gpu_vram"`
 	TaskSize        uint64        `json:"task_size"`
+	Timeout         uint64        `json:"timeout"`
 
 	Status           TaskStatus `json:"status"`
 	TaskID           string     `json:"task_id"`

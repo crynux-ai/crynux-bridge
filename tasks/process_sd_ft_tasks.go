@@ -77,7 +77,8 @@ func ProcessSDFTTasks(ctx context.Context) {
 
 		for _, task := range tasks {
 			go func(ctx context.Context, task *models.InferenceTask) {
-				ctx, cancel := context.WithTimeout(ctx, 30*time.Minute)
+				duration := time.Duration(task.Timeout) * time.Second
+				ctx, cancel := context.WithTimeout(ctx, duration)
 				defer cancel()
 				err := processSDFTTaskWithRetry(ctx, task)
 				if err != nil {
@@ -138,6 +139,11 @@ func processSDFTTask(ctx context.Context, task *models.InferenceTask) error {
 func processResultDownloadedSDFTTask(ctx context.Context, task *models.InferenceTask) error {
 	appConfig := config.GetConfig()
 
+	resultFilePath := filepath.Join(appConfig.DataDir.InferenceTasks, task.TaskIDCommitment, "result.zip")
+	if _, err := os.Stat(resultFilePath); !os.IsNotExist(err) {
+		return nil
+	}
+
 	checkpointFilePath := filepath.Join(appConfig.DataDir.InferenceTasks, task.TaskIDCommitment, "checkpoint.zip")
 	if _, err := os.Stat(checkpointFilePath); os.IsNotExist(err) {
 		log.Errorf("processSDFTTasks: checkpoint file of task %s not found", task.TaskIDCommitment)
@@ -194,6 +200,7 @@ func processResultDownloadedSDFTTask(ctx context.Context, task *models.Inference
 			RequiredGPUVram: task.RequiredGPUVram,
 			TaskSize:        task.TaskSize,
 			TaskID:          newTaskID,
+			Timeout:         task.Timeout,
 		}
 
 		err = newTask.Save(ctx, config.GetDB())
@@ -224,6 +231,7 @@ func processFailedSDFTTask(ctx context.Context, task *models.InferenceTask) erro
 		RequiredGPUVram: task.RequiredGPUVram,
 		TaskSize:        task.TaskSize,
 		TaskID:          newTaskID,
+		Timeout:         task.Timeout,
 	}
 
 	err := newTask.Save(ctx, config.GetDB())

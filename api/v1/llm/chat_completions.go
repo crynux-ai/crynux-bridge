@@ -29,6 +29,7 @@ type parsedLlmToolCallArgs struct {
 type ChatCompletionsRequest struct {
 	structs.ChatCompletionsRequest
 	Authorization string `header:"Authorization" validate:"required" description:"API key"`
+	Timeout       *uint64 `json:"timeout,omitempty" description:"Task timeout" validate:"omitempty"`
 }
 
 // build TaskInput from ChatCompletionsRequest, create task, wait for task to finish, get task result, then return ChatCompletionsResponse
@@ -116,6 +117,7 @@ func ChatCompletions(c *gin.Context, in *ChatCompletionsRequest) (*structs.ChatC
 		RequiredGPUVram: 0,
 		RepeatNum:       nil,
 		TaskFee:         &taskFee,
+		Timeout:         in.Timeout,
 	}
 
 	/* 2. Create task, wait until task finish and get task result. Implemented by function ProcessGPTTask */

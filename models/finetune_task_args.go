@@ -29,23 +29,23 @@ type LoraArgs struct {
 
 // ModelArgs represents the model configuration
 type ModelArgs struct {
-	Name     string `json:"name"`
-	Variant  string `json:"variant,omitempty"`
-	Revision string `json:"revision"`
+	Name     string  `json:"name"`
+	Variant  *string `json:"variant,omitempty"`
+	Revision string  `json:"revision"`
 }
 
 // DatasetArgs represents the dataset configuration
 type DatasetArgs struct {
-	Url           string `json:"url,omitempty"`
-	Name          string `json:"name,omitempty"`
-	ConfigName    string `json:"config_name,omitempty"`
-	ImageColumn   string `json:"image_column"`
-	CaptionColumn string `json:"caption_column"`
+	Url           *string `json:"url,omitempty"`
+	Name          *string `json:"name,omitempty"`
+	ConfigName    *string `json:"config_name,omitempty"`
+	ImageColumn   string  `json:"image_column"`
+	CaptionColumn string  `json:"caption_column"`
 }
 
 // ValidationArgs represents the validation configuration
 type ValidationArgs struct {
-	Prompt    string `json:"prompt,omitempty"`
+	Prompt    *string `json:"prompt,omitempty"`
 	NumImages int    `json:"num_images"`
 }
 
@@ -54,7 +54,7 @@ type TrainArgs struct {
 	LearningRate              float64           `json:"learning_rate"`
 	BatchSize                 int               `json:"batch_size"`
 	GradientAccumulationSteps int               `json:"gradient_accumulation_steps"`
-	PredictionType            *string            `json:"prediction_type,omitempty"` // "epsilon", "v_prediction"
+	PredictionType            *string           `json:"prediction_type,omitempty"` // "epsilon", "v_prediction"
 	MaxGradNorm               float64           `json:"max_grad_norm"`
 	NumTrainEpochs            int               `json:"num_train_epochs"`
 	NumTrainSteps             *int              `json:"num_train_steps,omitempty"`
@@ -80,5 +80,5 @@ type FinetuneLoraTaskArgs struct {
 	MixedPrecision       string         `json:"mixed_precision"` // "no", "fp16", "bf16"
 	Seed                 int            `json:"seed"`
 	Checkpoint           string         `json:"checkpoint,omitempty"`
-	Version              string         `json:"version"`
+	Version              string         `json:"version,omitempty"`
 }

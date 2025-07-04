@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -20,6 +21,7 @@ import (
 type SDFinetuneLoraRequest struct {
 	SDFinetuneLoraTaskParams
 	Authorization string `header:"Authorization" validate:"required" description:"API key"`
+	Timeout       *uint64 `json:"timeout,omitempty" description:"Task timeout" validate:"omitempty"`
 }
 
 type SDFinetuneLoraTaskResponse struct {
@@ -50,18 +52,18 @@ func CreateSDFinetuneLoraTask(c *gin.Context, in *SDFinetuneLoraRequest) (*SDFin
 	taskArgs := &models.FinetuneLoraTaskArgs{
 		Model: models.ModelArgs{
 			Name:     in.ModelName,
-			Variant:  *in.ModelVariant,
+			Variant:  in.ModelVariant,
 			Revision: in.ModelRevision,
 		},
 		Dataset: models.DatasetArgs{
-			Url:           *in.DatasetUrl,
-			Name:          *in.DatasetName,
-			ConfigName:    *in.DatasetConfigName,
+			Url:           in.DatasetUrl,
+			Name:          in.DatasetName,
+			ConfigName:    in.DatasetConfigName,
 			ImageColumn:   in.DatasetImageColumn,
 			CaptionColumn: in.DatasetCaptionColumn,
 		},
 		Validation: models.ValidationArgs{
-			Prompt:    *in.ValidationPrompt,
+			Prompt:    in.ValidationPrompt,
 			NumImages: in.ValidationNumImages,
 		},
 		TrainArgs: models.TrainArgs{
@@ -74,7 +76,7 @@ func CreateSDFinetuneLoraTask(c *gin.Context, in *SDFinetuneLoraRequest) (*SDFin
 			NumTrainSteps:             in.NumTrainSteps,
 			MaxTrainEpochs:            in.MaxTrainEpochs,
 			MaxTrainSteps:             in.MaxTrainSteps,
-			ScaleLR:                   *in.ScaleLR,
+			ScaleLR:                   in.ScaleLR,
 			Resolution:                in.Resolution,
 			NoiseOffset:               in.NoiseOffset,
 			SNRGamma:                  in.SNRGamma,
@@ -102,31 +104,34 @@ func CreateSDFinetuneLoraTask(c *gin.Context, in *SDFinetuneLoraRequest) (*SDFin
 		Seed:           in.Seed,
 	}
 
-	form, err := c.MultipartForm()
-	if err != nil {
-		return nil, response.NewExceptionResponse(err)
-	}
-
-	if files, ok := form.File["checkpoint"]; ok {
-		if len(files) != 1 {
-			return nil, response.NewValidationErrorResponse("checkpoint", "More than one checkpoint file uploaded")
-		}
-
-		checkpoint := files[0]
-		appConfig := config.GetConfig()
-
-		uuid := uuid.New().String()
-		checkpointFilename := filepath.Join(appConfig.DataDir.InferenceTasks, fmt.Sprintf("%s_checkpoint.zip", uuid))
-		if err = c.SaveUploadedFile(checkpoint, checkpointFilename); err != nil {
+	if c.ContentType() == "multipart/form-data" {
+		form, err := c.MultipartForm()
+		if err != nil {
 			return nil, response.NewExceptionResponse(err)
 		}
-		taskArgs.Checkpoint = checkpointFilename
+	
+		if files, ok := form.File["checkpoint"]; ok {
+			if len(files) != 1 {
+				return nil, response.NewValidationErrorResponse("checkpoint", "More than one checkpoint file uploaded")
+			}
+	
+			checkpoint := files[0]
+			appConfig := config.GetConfig()
+	
+			uuid := uuid.New().String()
+			checkpointFilename := filepath.Join(appConfig.DataDir.InferenceTasks, fmt.Sprintf("%s_checkpoint.zip", uuid))
+			if err = c.SaveUploadedFile(checkpoint, checkpointFilename); err != nil {
+				return nil, response.NewExceptionResponse(err)
+			}
+			taskArgs.Checkpoint = checkpointFilename
+		}
 	}
 
 	taskArgsStr, err := json.Marshal(taskArgs)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
 	}
+	log.Infof("finetune taskArgs: %s", string(taskArgsStr))
 
 	taskType := models.TaskTypeSDFTLora
 	minVram := uint64(24)
@@ -139,6 +144,7 @@ func CreateSDFinetuneLoraTask(c *gin.Context, in *SDFinetuneLoraRequest) (*SDFin
 		MinVram:   &minVram,
 		TaskFee:   &taskFee,
 		RepeatNum: &repeatNum,
+		Timeout:   in.Timeout,
 	}
 
 	taskResponse, err := inference_tasks.DoCreateTask(ctx, task)
@@ -171,7 +177,7 @@ type GetSDFinetuneLoraTaskResult struct {
 
 type GetSDFinetuneLoraTaskResponse struct {
 	response.Response
-	Data *GetSDFinetuneLoraTaskResult
+	Data *GetSDFinetuneLoraTaskResult `json:"data"`
 }
 
 func GetSDFinetuneLoraTaskStatus(c *gin.Context, in *GetSDFinetuneLoraTaskRequest) (*GetSDFinetuneLoraTaskResponse, error) {

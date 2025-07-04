@@ -39,8 +39,8 @@ type CreateTaskInput struct {
 	TaskSize         uint64   `json:"task_size"`
 	TaskType         int      `json:"task_type"`
 	TaskVersion      string   `json:"task_version"`
-
-	TaskFee string `json:"task_fee"`
+	Timeout          uint64   `json:"timeout"`
+	TaskFee          string   `json:"task_fee"`
 }
 
 type ValidateTaskInput struct {
@@ -187,6 +187,7 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 		TaskType:         int(task.TaskType),
 		TaskVersion:      task.TaskVersion,
 		TaskFee:          taskFee.String(),
+		Timeout:          task.Timeout,
 	}
 
 	timestamp, signature, err := SignData(params, appConfig.Blockchain.Account.PrivateKey)
@@ -222,6 +223,7 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 		form.Add("task_fee", taskFee.String())
 		form.Add("timestamp", strconv.FormatInt(timestamp, 10))
 		form.Add("signature", signature)
+		form.Add("timeout", strconv.FormatUint(task.Timeout, 10))
 		for _, modelID := range task.TaskModelIDs {
 			form.Add("task_model_ids", modelID)
 		}
@@ -246,6 +248,7 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 			multipartWriter.WriteField("task_fee", taskFee.String())
 			multipartWriter.WriteField("timestamp", strconv.FormatInt(timestamp, 10))
 			multipartWriter.WriteField("signature", signature)
+			multipartWriter.WriteField("timeout", strconv.FormatUint(task.Timeout, 10))
 			for _, modelID := range task.TaskModelIDs {
 				multipartWriter.WriteField("task_model_ids", modelID)
 			}

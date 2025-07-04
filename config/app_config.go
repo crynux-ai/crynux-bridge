@@ -72,7 +72,8 @@ type AppConfig struct {
 		RepeatNum             int    `mapstructure:"repeat_num"`
 		PendingAutoTasksLimit uint64 `mapstructure:"pending_auto_tasks_limit"`
 		AutoTasksBatchSize    uint64 `mapstructure:"auto_tasks_batch_size"`
-		Timeout               uint64 `mapstructure:"timeout"`
+		DefaultTimeout        uint64 `mapstructure:"default_timeout"`
+		SDFinetuneTimeout     uint64 `mapstructure:"sd_finetune_timeout"`
 	} `mapstructure:"task"`
 
 	TaskSchema struct {
