@@ -161,18 +161,9 @@ type GetSDFinetuneLoraTaskRequest struct {
 	ID uint `path:"id" json:"id" description:"Task id" validate:"required"`
 }
 
-type SDFinetuneLoraTaskStatus string
-
-const (
-	SDFinetuneLoraTaskStatusRunning SDFinetuneLoraTaskStatus = "running"
-	SDFinetuneLoraTaskStatusSuccess SDFinetuneLoraTaskStatus = "success"
-	SDFinetuneLoraTaskStatusFailed  SDFinetuneLoraTaskStatus = "failed"
-)
-
 type GetSDFinetuneLoraTaskResult struct {
 	ID uint `json:"id"`
-	Status SDFinetuneLoraTaskStatus `json:"status"`
-	
+	Status models.ClientTaskStatus `json:"status"`
 }
 
 type GetSDFinetuneLoraTaskResponse struct {
@@ -183,49 +174,16 @@ type GetSDFinetuneLoraTaskResponse struct {
 func GetSDFinetuneLoraTaskStatus(c *gin.Context, in *GetSDFinetuneLoraTaskRequest) (*GetSDFinetuneLoraTaskResponse, error) {
 	ctx := c.Request.Context()
 	db := config.GetDB()
-	
-	failedCount, err := models.GetSDFTTaskFailedCount(ctx, db, in.ID)
+
+	clientTask, err := models.GetClientTaskByID(ctx, db, in.ID)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
-	}
-
-	if failedCount > 3 {
-		return &GetSDFinetuneLoraTaskResponse{
-			Data: &GetSDFinetuneLoraTaskResult{
-				ID: in.ID,
-				Status: SDFinetuneLoraTaskStatusFailed,
-			},
-		}, nil
-	}
-
-	task, err := models.GetSDFTTaskFinalTask(ctx, db, in.ID)
-	if err != nil {
-		return nil, response.NewExceptionResponse(err)
-	}
-	if task == nil {
-		return &GetSDFinetuneLoraTaskResponse{
-			Data: &GetSDFinetuneLoraTaskResult{
-				ID: in.ID,
-				Status: SDFinetuneLoraTaskStatusRunning,
-			},
-		}, nil
-	}
-
-	appConfig := config.GetConfig()
-	taskResultFilePath := filepath.Join(appConfig.DataDir.InferenceTasks, task.TaskIDCommitment, "result.zip")
-	if _, err := os.Stat(taskResultFilePath); os.IsNotExist(err) {
-		return &GetSDFinetuneLoraTaskResponse{
-			Data: &GetSDFinetuneLoraTaskResult{
-				ID: in.ID,
-				Status: SDFinetuneLoraTaskStatusRunning,
-			},
-		}, nil
 	}
 
 	return &GetSDFinetuneLoraTaskResponse{
 		Data: &GetSDFinetuneLoraTaskResult{
-			ID: in.ID,
-			Status: SDFinetuneLoraTaskStatusSuccess,
+			ID: clientTask.ID,	
+			Status: clientTask.Status,
 		},
 	}, nil
 }
@@ -260,7 +218,7 @@ func DownloadSDFinetuneLoraTaskResult(c *gin.Context, in *DownloadSDFinetuneLora
 	}
 
 	if client.ID != task.ClientID {
-		return response.NewValidationErrorResponse("id", "Task not found")
+		return response.NewValidationErrorResponse("api_key", "invalid api key")
 	}
 
 	appConfig := config.GetConfig()

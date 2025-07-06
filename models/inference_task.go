@@ -143,6 +143,14 @@ func (t *InferenceTask) BeforeCreate(*gorm.DB) error {
 	return nil
 }
 
+func (task *InferenceTask) Finished() bool {
+	return task.Status == InferenceTaskEndAborted || task.Status == InferenceTaskEndGroupRefund || task.Status == InferenceTaskEndInvalidated || task.Status == InferenceTaskResultDownloaded || task.Status == InferenceTaskNeedCancel
+}
+
+func (task *InferenceTask) Success() bool {
+	return task.Status == InferenceTaskResultDownloaded
+}
+
 func (task *InferenceTask) Save(ctx context.Context, db *gorm.DB) error {
 	dbCtx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
@@ -216,8 +224,6 @@ func byteArrayToByte32Array(input []byte) *[32]byte {
 	copy(output[:], input)
 	return &output
 }
-
-
 
 func WaitTaskGroup(ctx context.Context, db *gorm.DB, task *InferenceTask) ([]InferenceTask, error) {
 	for {

@@ -540,6 +540,66 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 		}
 		log.Infof("ProcessTasks: download results of task %d", task.ID)
 	}
+
+	// update client task status
+	if err := processClientTask(ctx, task); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func processClientTask(ctx context.Context, task *models.InferenceTask) error {
+	if task.TaskType == models.TaskTypeSDFTLora {
+		return nil
+	}
+
+	clientTask, err := models.GetClientTaskByID(ctx, config.GetDB(), task.ClientTaskID)
+	if err != nil {
+		return err
+	}
+	if clientTask.Status == models.ClientTaskStatusRunning && task.Finished() {
+		if task.Success() {
+			clientTask.Status = models.ClientTaskStatusSuccess
+			if err := clientTask.Update(ctx, config.GetDB(), clientTask); err != nil {
+				return err
+			}
+		} else {
+			taskGroup, err := models.GetTaskGroup(ctx, config.GetDB(), task.TaskID)
+			if err != nil {
+				return err
+			}
+			if len(taskGroup) == 1 {
+				clientTask.FailedCount += 1
+				clientTask.Status = models.ClientTaskStatusFailed
+				if err := clientTask.Update(ctx, config.GetDB(), clientTask); err != nil {
+					return err
+				}
+			} else {
+				allFinished := true
+				success := false
+				for _, subTask := range taskGroup {
+					if !subTask.Finished() {
+						allFinished = false
+					}
+					if subTask.Success() {
+						success = true
+					}
+				}
+				if allFinished {
+					if success {
+						clientTask.Status = models.ClientTaskStatusSuccess
+					} else {
+						clientTask.FailedCount += 1
+						clientTask.Status = models.ClientTaskStatusFailed
+					}
+					if err := clientTask.Update(ctx, config.GetDB(), clientTask); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
 	return nil
 }
 
@@ -586,7 +646,17 @@ func ProcessTasks(ctx context.Context) {
 					log.Infof("ProcessTasks: start processing task %d", task.ID)
 					var ctx1 context.Context
 					var cancel context.CancelFunc
-					duration := time.Duration(task.Timeout) * time.Second + 3 * time.Minute // additional 3 minutes for waiting task to start
+					// if timeout is 0, use default timeout
+					timeout := task.Timeout
+					if timeout == 0 {
+						appConfig := config.GetConfig()
+						timeout = appConfig.Task.DefaultTimeout
+						if task.TaskType == models.TaskTypeSDFTLora {
+							timeout = appConfig.Task.SDFinetuneTimeout
+						}
+						timeout *= 60
+					}
+					duration := time.Duration(timeout) * time.Second + 3 * time.Minute // additional 3 minutes for waiting task to start
 					deadline := task.CreatedAt.Add(duration)
 					ctx1, cancel = context.WithDeadline(ctx, deadline)
 					defer cancel()
@@ -625,6 +695,12 @@ func ProcessTasks(ctx context.Context) {
 									for {
 										if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
 											log.Errorf("ProcessTasks: save task %d error %v", task.ID, err)
+											time.Sleep(2 * time.Second)
+										} else {
+											break
+										}
+										if err := processClientTask(ctx, &task); err != nil {
+											log.Errorf("ProcessTasks: process client task %d error %v", task.ID, err)
 											time.Sleep(2 * time.Second)
 										} else {
 											break

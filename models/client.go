@@ -16,11 +16,58 @@ type Client struct {
 	ClientId string `json:"client_id"`
 }
 
+type ClientTaskStatus string
+
+const (
+	ClientTaskStatusRunning ClientTaskStatus = "running"
+	ClientTaskStatusSuccess ClientTaskStatus = "success"
+	ClientTaskStatusFailed  ClientTaskStatus = "failed"
+)
+
 type ClientTask struct {
 	RootModel
-	ClientID       uint            `json:"client_id"`
-	Client         Client          `json:"-"`
-	InferenceTasks []InferenceTask `json:"-"`
+	ClientID       uint             `json:"client_id"`
+	Status         ClientTaskStatus `json:"status"`
+	FailedCount    int              `json:"failed_count"`
+	Client         Client           `json:"-"`
+	InferenceTasks []InferenceTask  `json:"-"`
+}
+
+func (task *ClientTask) BeforeCreate(*gorm.DB) error {
+	task.Status = ClientTaskStatusRunning
+	return nil
+}
+
+func GetClientTaskByID(ctx context.Context, db *gorm.DB, clientTaskID uint) (*ClientTask, error) {
+	dbCtx, cancel := context.WithTimeout(ctx, 3 * time.Second)
+	defer cancel()
+	clientTask := ClientTask{
+		RootModel: RootModel{
+			ID: clientTaskID,
+		},
+	}
+	err := db.WithContext(dbCtx).Model(clientTask).Where(&clientTask).First(&clientTask).Error
+	if err != nil {
+		return nil, err
+	}
+	return &clientTask, nil
+}
+
+func (task *ClientTask) Update(ctx context.Context, db *gorm.DB, newTask *ClientTask) error {
+	if task.ID == 0 {
+		return errors.New("ClientTask.ID cannot be 0 when update")
+	}
+	dbCtx, cancel := context.WithTimeout(ctx, 3 * time.Second)
+	defer cancel()
+	return db.WithContext(dbCtx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(task).Updates(newTask).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(task).First(task).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 type Role string

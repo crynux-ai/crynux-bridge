@@ -13,37 +13,38 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 func ProcessSDFTTasks(ctx context.Context) {
 	type result struct {
-		ClientTaskID uint `json:"client_task_id"`
-		ID           uint `json:"id"`
+		ID uint `json:"id"`
 	}
 
 	lastID := uint(0)
 	limit := 100
 
 	for {
-		tasks, err := func(ctx context.Context) ([]*models.InferenceTask, error) {
+		tasks, err := func(ctx context.Context) ([]*models.ClientTask, error) {
 			var results []result
 
 			dbCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 			defer cancel()
-			err := config.GetDB().WithContext(dbCtx).Model(&models.InferenceTask{}).
-				Select("client_task_id,max(id) as id").
-				Where("task_type = ?", models.TaskTypeSDFTLora).
-				Where("id > ?", lastID).
-				Group("client_task_id").
-				Order("id ASC").
+			err := config.GetDB().WithContext(dbCtx).Table("client_tasks").
+				Select("distinct client_tasks.id").
+				Joins("LEFT JOIN inference_tasks ON inference_tasks.client_task_id = client_tasks.id").
+				Where("client_tasks.status = ?", models.ClientTaskStatusRunning).
+				Where("inference_tasks.task_type = ?", models.TaskTypeSDFTLora).
+				Where("client_tasks.id > ?", lastID).
+				Order("client_tasks.id ASC").
 				Limit(limit).
-				Find(&results).
+				Scan(&results).
 				Error
 			if err != nil {
 				return nil, err
 			}
 
-			var tasks []*models.InferenceTask
+			var tasks []*models.ClientTask
 			var ids []uint
 			for _, result := range results {
 				ids = append(ids, result.ID)
@@ -52,7 +53,7 @@ func ProcessSDFTTasks(ctx context.Context) {
 			if len(ids) > 0 {
 				dbCtx1, cancel1 := context.WithTimeout(ctx, 10*time.Second)
 				defer cancel1()
-				err := config.GetDB().WithContext(dbCtx1).Model(&models.InferenceTask{}).
+				err := config.GetDB().WithContext(dbCtx1).Model(&models.ClientTask{}).
 					Where("id IN (?)", ids).
 					Order("id ASC").
 					Find(&tasks).
@@ -76,13 +77,31 @@ func ProcessSDFTTasks(ctx context.Context) {
 		}
 
 		for _, task := range tasks {
-			go func(ctx context.Context, task *models.InferenceTask) {
-				duration := time.Duration(task.Timeout) * time.Second
-				ctx, cancel := context.WithTimeout(ctx, duration)
-				defer cancel()
-				err := processSDFTTaskWithRetry(ctx, task)
-				if err != nil {
-					log.Errorf("ProcessSDFTTasks: cannot process task %d: %v", task.ID, err)
+			go func(ctx context.Context, task *models.ClientTask) {
+				var inferenceTaskID uint
+				for task.Status == models.ClientTaskStatusRunning {
+					inferenceTask, err := getRunningSDFTInferenceTask(ctx, task.ID)
+					if err != nil {
+						log.Errorf("ProcessSDFTTasks: cannot get running inference task of client task %d: %v", task.ID, err)
+						return
+					}
+					if inferenceTask == nil {
+						log.Errorf("ProcessSDFTTasks: no running inference task of client task %d", task.ID)
+						return
+					}
+					if inferenceTaskID == inferenceTask.ID {
+						log.Errorf("ProcessSDFTTasks: get the same inference task of client task %d", task.ID)
+					}
+					inferenceTaskID = inferenceTask.ID
+					func() {
+						duration := time.Duration(inferenceTask.Timeout) * time.Second
+						ctx, cancel := context.WithTimeout(ctx, duration)
+						defer cancel()
+						err = processSDFTTaskWithRetry(ctx, task, inferenceTask)
+						if err != nil {
+							log.Errorf("ProcessSDFTTasks: cannot process task %d: %v", task.ID, err)
+						}	
+					}()
 				}
 			}(ctx, task)
 		}
@@ -91,24 +110,53 @@ func ProcessSDFTTasks(ctx context.Context) {
 	}
 }
 
-func processSDFTTaskWithRetry(ctx context.Context, task *models.InferenceTask) error {
+func getRunningSDFTInferenceTask(ctx context.Context, clientTaskID uint) (*models.InferenceTask, error) {
+	dbCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	var inferenceTask models.InferenceTask
+	err := config.GetDB().WithContext(dbCtx).Transaction(func(tx *gorm.DB) error {
+		type result struct {
+			ID uint `json:"id"`
+		}
+		r := result{}
+		err := tx.Table("inference_tasks").
+			Select("max(id) as id").
+			Where("client_task_id = ?", clientTaskID).
+			Where("task_type = ?", models.TaskTypeSDFTLora).
+			First(&r).Error
+		if err != nil {
+			return err
+		}
+		if r.ID == 0 {
+			return nil
+		}
+		return tx.Model(&models.InferenceTask{}).Where("id = ?", r.ID).First(&inferenceTask).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &inferenceTask, nil
+}
+
+func processSDFTTaskWithRetry(ctx context.Context, clientTask *models.ClientTask, inferenceTask *models.InferenceTask) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			err := processSDFTTask(ctx, task)
+			err := processSDFTTask(ctx, clientTask, inferenceTask)
 			if err != nil {
 				time.Sleep(3 * time.Second)
 			} else {
 				return nil
 			}
 		}
-	}	
+	}
 }
 
-func processSDFTTask(ctx context.Context, task *models.InferenceTask) error {
-	taskGroup, err := models.WaitTaskGroup(ctx, config.GetDB(), task)
+func processSDFTTask(ctx context.Context, clientTask *models.ClientTask, inferenceTask *models.InferenceTask) error {
+	log.Infof("processSDFTTask: process client task %d inference task %d", clientTask.ID, inferenceTask.ID)
+	taskGroup, err := models.WaitTaskGroup(ctx, config.GetDB(), inferenceTask)
 	if err != nil {
 		return err
 	}
@@ -116,31 +164,32 @@ func processSDFTTask(ctx context.Context, task *models.InferenceTask) error {
 	resultDownloadedTask, err := models.WaitResultTask(ctx, config.GetDB(), taskGroup)
 
 	if err == models.ErrTaskEndWithoutResult {
-		taskFailedCount, err := models.GetSDFTTaskFailedCount(ctx, config.GetDB(), task.ClientTaskID)
-		if err != nil {
-			return err
-		}
-		if taskFailedCount <= 3 {
-			return processFailedSDFTTask(ctx, task)
-		}
-		return nil
+		return processFailedSDFTTask(ctx, clientTask, inferenceTask)
 	}
 	if err != nil {
 		return err
 	}
 
 	if resultDownloadedTask != nil {
-		return processResultDownloadedSDFTTask(ctx, resultDownloadedTask)
+		return processResultDownloadedSDFTTask(ctx, clientTask, resultDownloadedTask)
 	}
 
 	return nil
 }
 
-func processResultDownloadedSDFTTask(ctx context.Context, task *models.InferenceTask) error {
+func processResultDownloadedSDFTTask(ctx context.Context, clientTask *models.ClientTask, task *models.InferenceTask) error {
 	appConfig := config.GetConfig()
 
 	resultFilePath := filepath.Join(appConfig.DataDir.InferenceTasks, task.TaskIDCommitment, "result.zip")
 	if _, err := os.Stat(resultFilePath); !os.IsNotExist(err) {
+		log.Infof("processSDFTTasks: client task %d inference task %d result file already exists", clientTask.ID, task.ID)
+
+		if clientTask.Status != models.ClientTaskStatusSuccess {
+			clientTask.Status = models.ClientTaskStatusSuccess
+			if err := clientTask.Update(ctx, config.GetDB(), clientTask); err != nil {
+				return err
+			}
+		}
 		return nil
 	}
 
@@ -173,9 +222,19 @@ func processResultDownloadedSDFTTask(ctx context.Context, task *models.Inference
 	}
 
 	if finished {
-		log.Infof("processSDFTTasks: task %s is finished", task.TaskIDCommitment)
+		log.Infof("processSDFTTasks: client task %d inference task %d is finished", clientTask.ID, task.ID)
 		// rename the checkpoint file to result.zip
-		return os.Rename(checkpointFilePath, filepath.Join(appConfig.DataDir.InferenceTasks, task.TaskIDCommitment, "result.zip"))
+		err = os.Rename(checkpointFilePath, filepath.Join(appConfig.DataDir.InferenceTasks, task.TaskIDCommitment, "result.zip"))
+		if err != nil {
+			log.Errorf("processSDFTTasks: cannot rename checkpoint file of task %s: %v", task.TaskIDCommitment, err)
+			return err
+		}
+		// update client task status
+		clientTask.Status = models.ClientTaskStatusSuccess
+		if err := clientTask.Update(ctx, config.GetDB(), clientTask); err != nil {
+			return err
+		}
+		return nil
 	} else {
 		// sd ft task is not finished, create a new task with the same client task id and task args, except the checkpoint file
 		newTaskArgs, err := models.ChangeSDFTTaskArgsCheckpoint(task.TaskArgs, checkpointFilePath)
@@ -213,7 +272,18 @@ func processResultDownloadedSDFTTask(ctx context.Context, task *models.Inference
 	}
 }
 
-func processFailedSDFTTask(ctx context.Context, task *models.InferenceTask) error {
+func processFailedSDFTTask(ctx context.Context, clientTask *models.ClientTask, task *models.InferenceTask) error {
+	clientTask.FailedCount += 1
+	if clientTask.FailedCount > 3 {
+		clientTask.Status = models.ClientTaskStatusFailed
+	}
+	if err := clientTask.Update(ctx, config.GetDB(), clientTask); err != nil {
+		return err
+	}
+	if clientTask.Status == models.ClientTaskStatusFailed {
+		return nil
+	}
+
 	taskIDBytes := make([]byte, 32)
 	rand.Read(taskIDBytes)
 	newTaskID := hexutil.Encode(taskIDBytes)
