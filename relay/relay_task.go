@@ -196,7 +196,7 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 		TaskType:         int(task.TaskType),
 		TaskVersion:      task.TaskVersion,
 		TaskFee:          taskFee.String(),
-		Timeout:          task.Timeout,
+		Timeout:          timeout,
 	}
 
 	timestamp, signature, err := SignData(params, appConfig.Blockchain.Account.PrivateKey)
