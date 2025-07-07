@@ -174,6 +174,15 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 	appConfig := config.GetConfig()
 
 	taskFee := utils.GweiToWei(big.NewInt(int64(task.TaskFee)))
+	
+	var timeout uint64
+	if task.Timeout != 0 {
+		timeout = task.Timeout
+	} else if task.TaskType == models.TaskTypeSDFTLora {
+		timeout = appConfig.Task.SDFinetuneTimeout * 60
+	} else {
+		timeout = appConfig.Task.DefaultTimeout * 60
+	}
 
 	params := &CreateTaskInput{
 		TaskIDCommitment: task.TaskIDCommitment,
@@ -223,7 +232,7 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 		form.Add("task_fee", taskFee.String())
 		form.Add("timestamp", strconv.FormatInt(timestamp, 10))
 		form.Add("signature", signature)
-		form.Add("timeout", strconv.FormatUint(task.Timeout, 10))
+		form.Add("timeout", strconv.FormatUint(timeout, 10))
 		for _, modelID := range task.TaskModelIDs {
 			form.Add("task_model_ids", modelID)
 		}
@@ -248,7 +257,7 @@ func CreateTask(ctx context.Context, task *models.InferenceTask) error {
 			multipartWriter.WriteField("task_fee", taskFee.String())
 			multipartWriter.WriteField("timestamp", strconv.FormatInt(timestamp, 10))
 			multipartWriter.WriteField("signature", signature)
-			multipartWriter.WriteField("timeout", strconv.FormatUint(task.Timeout, 10))
+			multipartWriter.WriteField("timeout", strconv.FormatUint(timeout, 10))
 			for _, modelID := range task.TaskModelIDs {
 				multipartWriter.WriteField("task_model_ids", modelID)
 			}
