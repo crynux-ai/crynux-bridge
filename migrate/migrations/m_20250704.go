@@ -17,9 +17,6 @@ func M20250704(db *gorm.DB) *gormigrate.Gormigrate {
 				if err := tx.Migrator().AddColumn(&InferenceTask{}, "Timeout"); err != nil {
 					return err
 				}
-				if err := tx.Model(&InferenceTask{}).Where("id > ?", 0).Update("timeout", 180).Error; err != nil {
-					return err
-				}
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
