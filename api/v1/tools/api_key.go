@@ -77,7 +77,7 @@ func ValidateAPIKey(ctx context.Context, db *gorm.DB, apiKeyStr string) (*models
 	apiKey, err := models.GetAPIKeyByKeyPrefix(ctx, db, keyPrefix)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrAPIKeyInvalid
+			return nil, ErrAPIKeyInvalid 
 		}
 		return nil, err
 	}

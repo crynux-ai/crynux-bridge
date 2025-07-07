@@ -4,12 +4,12 @@ import (
 	apikey "crynux_bridge/api/v1/api_key"
 	"crynux_bridge/api/v1/application"
 	"crynux_bridge/api/v1/count"
+	"crynux_bridge/api/v1/image"
 	"crynux_bridge/api/v1/inference_tasks"
 	"crynux_bridge/api/v1/llm"
 	"crynux_bridge/api/v1/models"
 	"crynux_bridge/api/v1/network"
 	"crynux_bridge/api/v1/response"
-	"crynux_bridge/api/v1/sd"
 
 	"github.com/loopfz/gadgeto/tonic"
 	"github.com/wI2L/fizz"
@@ -102,13 +102,29 @@ func InitRoutes(r *fizz.Fizz) {
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
 	}, tonic.Handler(llm.ChatCompletions, 200))
 
-	sdGroup := v1g.Group("sd", "Stable Diffusion", "Stable Diffusion related APIs")
-	sdGroup.POST("/images/generations", []fizz.OperationOption{
-		fizz.ID("sd_images_generations"),
-		fizz.Summary("Api for sd image generations, /images/generations"),
+	imagesGroup := v1g.Group("images", "Images", "Images related APIs")
+	imagesGroup.POST("", []fizz.OperationOption{
+		fizz.ID("images_generations"),
+		fizz.Summary("Api for image generations"),
 		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
 		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
-	}, tonic.Handler(sd.CreateImage, 200))
+	}, tonic.Handler(image.CreateImage, 200))
+	imagesGroup.POST("/models", []fizz.OperationOption{
+		fizz.ID("images_models"),
+		fizz.Summary("Api for finetune lora model for image generations"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(image.CreateSDFinetuneLoraTask, 200))
+	imagesGroup.GET("/models/:id/status", []fizz.OperationOption{
+		fizz.Summary("Get the status of a finetuning image lora model task"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(image.GetSDFinetuneLoraTaskStatus, 200))
+	imagesGroup.GET("/models/:id/result", []fizz.OperationOption{
+		fizz.Summary("Get the result of a finetuning image lora model task"),
+		fizz.Response("400", "validation errors", response.ValidationErrorResponse{}, nil, nil),
+		fizz.Response("500", "exception", response.ExceptionResponse{}, nil, nil),
+	}, tonic.Handler(image.DownloadSDFinetuneLoraTaskResult, 200))
 
 	apiKeyGroup := v1g.Group("api_key", "API Key", "API Key related APIs")
 	apiKeyGroup.POST("", []fizz.OperationOption{

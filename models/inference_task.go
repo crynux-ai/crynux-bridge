@@ -2,13 +2,16 @@ package models
 
 import (
 	"context"
+	"crynux_bridge/utils"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"gorm.io/gorm"
 )
@@ -119,6 +122,7 @@ type InferenceTask struct {
 	RequiredGPU     string        `json:"required_gpu"`
 	RequiredGPUVram uint64        `json:"required_gpu_vram"`
 	TaskSize        uint64        `json:"task_size"`
+	Timeout         uint64        `json:"timeout"`
 
 	Status           TaskStatus `json:"status"`
 	TaskID           string     `json:"task_id"`
@@ -137,6 +141,14 @@ type InferenceTask struct {
 func (t *InferenceTask) BeforeCreate(*gorm.DB) error {
 	t.Status = InferenceTaskPending
 	return nil
+}
+
+func (task *InferenceTask) Finished() bool {
+	return task.Status == InferenceTaskEndAborted || task.Status == InferenceTaskEndGroupRefund || task.Status == InferenceTaskEndInvalidated || task.Status == InferenceTaskResultDownloaded || task.Status == InferenceTaskNeedCancel
+}
+
+func (task *InferenceTask) Success() bool {
+	return task.Status == InferenceTaskResultDownloaded
 }
 
 func (task *InferenceTask) Save(ctx context.Context, db *gorm.DB) error {
@@ -211,4 +223,186 @@ func byteArrayToByte32Array(input []byte) *[32]byte {
 	var output [32]byte
 	copy(output[:], input)
 	return &output
+}
+
+func WaitTaskGroup(ctx context.Context, db *gorm.DB, task *InferenceTask) ([]InferenceTask, error) {
+	for {
+		err := task.Sync(ctx, db)
+		if err != nil {
+			return nil, err
+		}
+		if len(task.VRFNumber) > 0 {
+			break
+		}
+		time.Sleep(time.Second)
+	}
+	vrfNumber, _ := hexutil.Decode(task.VRFNumber)
+	if utils.VrfNeedValidation(vrfNumber) {
+		taskGroup, err := GetTaskGroup(ctx, db, task.TaskID)
+		if err != nil {
+			return nil, err
+		}
+		return taskGroup, nil
+	} else {
+		return []InferenceTask{*task}, nil
+	}
+}
+
+var ErrTaskEndWithoutResult = errors.New("task end without result downloaded")
+
+func WaitAllTaskGroup(ctx context.Context, db *gorm.DB, tasks []InferenceTask) ([]InferenceTask, error) {
+	var waitGroup sync.WaitGroup
+	taskGroupChan := make(chan []InferenceTask, len(tasks))
+	for _, task := range tasks {
+		waitGroup.Add(1)
+		go func(task InferenceTask) {
+			defer waitGroup.Done()
+			taskGroup, err := WaitTaskGroup(ctx, db, &task)
+			if err != nil {
+				return
+			}
+			taskGroupChan <- taskGroup
+		}(task)
+	}
+	go func() {
+		waitGroup.Wait()
+		close(taskGroupChan)
+	}()
+
+	taskGroups := make([]InferenceTask, 0)
+	for taskGroup := range taskGroupChan {
+		taskGroups = append(taskGroups, taskGroup...)
+	}
+	return taskGroups, nil
+}
+
+func WaitForTaskFinish(ctx context.Context, db *gorm.DB, task *InferenceTask) (TaskStatus, error) {
+	for {
+		// 1. get task by id
+		err := task.Sync(ctx, db)
+		if err != nil {
+			return task.Status, err
+		}
+
+		// 2. check task status
+		taskStatus := task.Status
+		// task end without result downloaded
+		if taskStatus == InferenceTaskEndInvalidated || taskStatus == InferenceTaskEndGroupRefund || taskStatus == InferenceTaskEndAborted {
+			return taskStatus, nil
+		}
+		// task end with result downloaded
+		if taskStatus == InferenceTaskResultDownloaded {
+			return taskStatus, nil
+		}
+		// task not end, then sleep and continue looping
+		time.Sleep(time.Second)
+	}
+}
+
+func WaitResultTask(ctx context.Context, db *gorm.DB, tasks []InferenceTask) (*InferenceTask, error) {
+	resultChan := make(chan *InferenceTask, len(tasks))
+	errChan := make(chan error, len(tasks))
+	doneChan := make(chan struct{})
+
+	var wg sync.WaitGroup
+	wg.Add(len(tasks))
+
+	for _, t := range tasks {
+		task := t
+		go func(ctx context.Context, t *InferenceTask) {
+			defer wg.Done()
+
+			select {
+			case <-doneChan:
+				return
+			default:
+				status, err := WaitForTaskFinish(ctx, db, t)
+				if err != nil {
+					select {
+					case errChan <- err:
+					case <-doneChan:
+					}
+					return
+				}
+				if status == InferenceTaskResultDownloaded {
+					select {
+					case resultChan <- t:
+						close(doneChan)
+					case <-doneChan:
+					}
+					return
+				}
+				select {
+				case errChan <- nil:
+				case <-doneChan:
+				}
+			}
+		}(ctx, &task)
+	}
+
+	var errs []error
+	for i := 0; i < len(tasks); i++ {
+		select {
+		case err := <-errChan:
+			if err != nil {
+				errs = append(errs, err)
+			}
+		case result := <-resultChan:
+			go func() {
+				wg.Wait()
+				close(errChan)
+				close(resultChan)
+			}()
+			return result, nil
+		case <-ctx.Done():
+			close(doneChan)
+			wg.Wait()
+			return nil, fmt.Errorf("timeout after 3 minutes: %w", ctx.Err())
+		}
+	}
+
+	if len(errs) > 0 {
+		return nil, fmt.Errorf("all tasks failed: %v", errs)
+	}
+	return nil, ErrTaskEndWithoutResult
+}
+
+func GetSDFTTaskFinalTask(ctx context.Context, db *gorm.DB, clientTaskID uint) (*InferenceTask, error) {
+	dbCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	task := InferenceTask{}
+	err := db.WithContext(dbCtx).Model(&InferenceTask{}).
+		Where("client_task_id = ?", clientTaskID).
+		Where("status = ?", InferenceTaskResultDownloaded).
+		Order("id DESC").First(&task).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &task, nil
+}
+
+func GetSDFTTaskFailedCount(ctx context.Context, db *gorm.DB, clientTaskID uint) (uint, error) {
+	dbCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	totalCount := int64(0)
+	err := db.WithContext(dbCtx).Model(&InferenceTask{}).
+		Where("client_task_id = ?", clientTaskID).
+		Group("task_id").
+		Count(&totalCount).Error
+	if err != nil {
+		return 0, err
+	}
+	successCount := int64(0)
+	err = db.WithContext(dbCtx).Model(&InferenceTask{}).
+		Where("client_task_id = ?", clientTaskID).
+		Where("status = ?", InferenceTaskResultDownloaded).
+		Count(&successCount).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return uint(totalCount - successCount), nil
 }

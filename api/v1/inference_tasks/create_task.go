@@ -27,6 +27,7 @@ type TaskInput struct {
 	RequiredGPUVram uint64                `json:"required_gpu_vram,omitempty" description:"Task required GPU Vram" validate:"omitempty"`
 	RepeatNum       *int                  `json:"repeat_num,omitempty" description:"Task repeat number" validate:"omitempty"`
 	TaskFee         *uint64               `json:"task_fee,omitempty" description:"Task fee" validate:"omitempty"`
+	Timeout         *uint64               `json:"timeout,omitempty" description:"Task timeout" validate:"omitempty"`
 }
 
 type TaskResponse struct {
@@ -122,6 +123,15 @@ func buildTasks(in *TaskInput, client *models.Client, clientTask *models.ClientT
 	rand.Read(taskIDBytes)
 	taskID := hexutil.Encode(taskIDBytes)
 
+	var timeout uint64
+	if in.Timeout != nil {
+		timeout = *in.Timeout
+	} else if taskType == models.TaskTypeSDFTLora {
+		timeout = appConfig.Task.SDFinetuneTimeout * 60
+	} else {
+		timeout = appConfig.Task.DefaultTimeout * 60
+	}
+
 	tasks := make([]*models.InferenceTask, 0)
 	for i := 0; i < repeatNum; i++ {
 		task := &models.InferenceTask{
@@ -137,6 +147,7 @@ func buildTasks(in *TaskInput, client *models.Client, clientTask *models.ClientT
 			RequiredGPUVram: in.RequiredGPUVram,
 			TaskSize:        taskSize,
 			TaskID:          taskID,
+			Timeout:         timeout,
 		}
 		tasks = append(tasks, task)
 	}

@@ -1,4 +1,4 @@
-package sd
+package image
 
 import (
 	"bufio"
@@ -36,6 +36,7 @@ type CreateImageRequest struct {
 	Size              string `json:"size,omitempty" default:"512x512" enum:"256x256,512x512,1024x1024" description:"The size of the output image(s). Default is '512x512'"`
 	Style             string `json:"style,omitempty" enum:"vivid,natural" description:"No use for now. For compatibility with Openai."`
 	User              string `json:"user,omitempty" description:"No use for now. For compatibility with Openai."`
+	Timeout           *uint64 `json:"timeout,omitempty" description:"Task timeout" validate:"omitempty"`
 }
 
 func (in *CreateImageRequest) SetDefaultValues() {

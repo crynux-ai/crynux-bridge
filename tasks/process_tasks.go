@@ -211,6 +211,36 @@ func doDownloadTaskResult(ctx context.Context, taskIDCommitment string, index ui
 	}
 }
 
+func doDownloadTaskResultCheckpoint(ctx context.Context, taskIDCommitment string, filename string) error {
+	for {
+		err := func() error {
+			file, err := os.Create(filename)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			if err := relay.DownloadTaskResultCheckpoint(ctx, taskIDCommitment, file); err != nil {
+				return err
+			}
+			return nil
+		}()
+		if err != nil {
+			var relayErr relay.RelayError
+			if errors.As(err, &relayErr) && relayErr.StatusCode == 400 {
+				log.Errorf("ProcessTasks: cannot get result checkpoint of %s, error %v, retry", taskIDCommitment, err)
+				time.Sleep(time.Second)
+				continue
+			} else {
+				log.Errorf("ProcessTasks: cannot get result checkpoint of %s, error %v", taskIDCommitment, err)
+				return err
+			}
+		}
+		return nil
+	}
+
+}
+
 func downloadTaskResult(ctx context.Context, task *models.InferenceTask) error {
 	appConfig := config.GetConfig()
 
@@ -224,31 +254,41 @@ func downloadTaskResult(ctx context.Context, task *models.InferenceTask) error {
 		return err
 	}
 
-	ext := "png"
-	if task.TaskType == models.TaskTypeLLM {
-		ext = "json"
-	}
-
 	ctx1, cancel := context.WithCancel(ctx)
 	defer cancel()
-	var wg sync.WaitGroup
-	errCh := make(chan error, int(task.TaskSize))
-	for i := uint64(0); i < task.TaskSize; i++ {
-		filename := path.Join(taskFolder, fmt.Sprintf("%d.%s", i, ext))
-		wg.Add(1)
-		go func(ctx context.Context, taskIDCommitment string, index uint64, filename string) {
-			defer wg.Done()
-			errCh <- doDownloadTaskResult(ctx, taskIDCommitment, index, filename)
-		}(ctx1, task.TaskIDCommitment, i, filename)
-	}
-	wg.Wait()
-	for i := 0; i < int(task.TaskSize); i++ {
-		err := <-errCh
-		if err != nil {
+
+	if task.TaskType == models.TaskTypeSDFTLora {
+		filename := path.Join(taskFolder, "checkpoint.zip")
+		if err := doDownloadTaskResultCheckpoint(ctx1, task.TaskIDCommitment, filename); err != nil {
 			return err
 		}
+		return nil
+	} else {
+		ext := "png"
+		if task.TaskType == models.TaskTypeLLM {
+			ext = "json"
+		}
+
+		var wg sync.WaitGroup
+		errCh := make(chan error, int(task.TaskSize))
+		for i := uint64(0); i < task.TaskSize; i++ {
+			filename := path.Join(taskFolder, fmt.Sprintf("%d.%s", i, ext))
+			wg.Add(1)
+			go func(ctx context.Context, taskIDCommitment string, index uint64, filename string) {
+				defer wg.Done()
+				errCh <- doDownloadTaskResult(ctx, taskIDCommitment, index, filename)
+			}(ctx1, task.TaskIDCommitment, i, filename)
+		}
+		wg.Wait()
+		for i := 0; i < int(task.TaskSize); i++ {
+			err := <-errCh
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	}
-	return nil
+
 }
 
 func processOneTask(ctx context.Context, task *models.InferenceTask) error {
@@ -500,6 +540,66 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 		}
 		log.Infof("ProcessTasks: download results of task %d", task.ID)
 	}
+
+	// update client task status
+	if err := processClientTask(ctx, task); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func processClientTask(ctx context.Context, task *models.InferenceTask) error {
+	if task.TaskType == models.TaskTypeSDFTLora {
+		return nil
+	}
+
+	clientTask, err := models.GetClientTaskByID(ctx, config.GetDB(), task.ClientTaskID)
+	if err != nil {
+		return err
+	}
+	if clientTask.Status == models.ClientTaskStatusRunning && task.Finished() {
+		if task.Success() {
+			clientTask.Status = models.ClientTaskStatusSuccess
+			if err := clientTask.Update(ctx, config.GetDB(), clientTask); err != nil {
+				return err
+			}
+		} else {
+			taskGroup, err := models.GetTaskGroup(ctx, config.GetDB(), task.TaskID)
+			if err != nil {
+				return err
+			}
+			if len(taskGroup) == 1 {
+				clientTask.FailedCount += 1
+				clientTask.Status = models.ClientTaskStatusFailed
+				if err := clientTask.Update(ctx, config.GetDB(), clientTask); err != nil {
+					return err
+				}
+			} else {
+				allFinished := true
+				success := false
+				for _, subTask := range taskGroup {
+					if !subTask.Finished() {
+						allFinished = false
+					}
+					if subTask.Success() {
+						success = true
+					}
+				}
+				if allFinished {
+					if success {
+						clientTask.Status = models.ClientTaskStatusSuccess
+					} else {
+						clientTask.FailedCount += 1
+						clientTask.Status = models.ClientTaskStatusFailed
+					}
+					if err := clientTask.Update(ctx, config.GetDB(), clientTask); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
 	return nil
 }
 
@@ -507,8 +607,6 @@ func processOneTask(ctx context.Context, task *models.InferenceTask) error {
 func ProcessTasks(ctx context.Context) {
 	limit := 100
 	lastID := uint(0)
-
-	appConfig := config.GetConfig()
 
 	for {
 		// get unprocessed tasks from database
@@ -548,7 +646,17 @@ func ProcessTasks(ctx context.Context) {
 					log.Infof("ProcessTasks: start processing task %d", task.ID)
 					var ctx1 context.Context
 					var cancel context.CancelFunc
-					duration := time.Duration(appConfig.Task.Timeout) * time.Minute
+					// if timeout is 0, use default timeout
+					timeout := task.Timeout
+					if timeout == 0 {
+						appConfig := config.GetConfig()
+						timeout = appConfig.Task.DefaultTimeout
+						if task.TaskType == models.TaskTypeSDFTLora {
+							timeout = appConfig.Task.SDFinetuneTimeout
+						}
+						timeout *= 60
+					}
+					duration := time.Duration(timeout) * time.Second + 3 * time.Minute // additional 3 minutes for waiting task to start
 					deadline := task.CreatedAt.Add(duration)
 					ctx1, cancel = context.WithDeadline(ctx, deadline)
 					defer cancel()
@@ -587,6 +695,12 @@ func ProcessTasks(ctx context.Context) {
 									for {
 										if err := task.Update(ctx, config.GetDB(), newTask); err != nil {
 											log.Errorf("ProcessTasks: save task %d error %v", task.ID, err)
+											time.Sleep(2 * time.Second)
+										} else {
+											break
+										}
+										if err := processClientTask(ctx, &task); err != nil {
+											log.Errorf("ProcessTasks: process client task %d error %v", task.ID, err)
 											time.Sleep(2 * time.Second)
 										} else {
 											break

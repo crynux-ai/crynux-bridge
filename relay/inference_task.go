@@ -22,6 +22,10 @@ type GetTaskResultInput struct {
 	TaskIDCommitment string `json:"task_id_commitment"`
 }
 
+type GetTaskResultCheckpointInput struct {
+	TaskIDCommitment string `json:"task_id_commitment"`
+}
+
 type UploadTaskParamsInput struct {
 	TaskArgs         string `json:"task_args"`
 	TaskIDCommitment string `json:"task_id_commitment"`
@@ -132,6 +136,47 @@ func DownloadTaskResult(ctx context.Context, taskIDCommitment string, index uint
 		return err
 	}
 	log.Infof("Relay: get result %d of task %s", index, taskIDCommitment)
+
+	return nil
+}
+
+func DownloadTaskResultCheckpoint(ctx context.Context, taskIDCommitment string, dst io.Writer) error {
+	appConfig := config.GetConfig()
+	getResultInput := &GetTaskResultCheckpointInput{
+		TaskIDCommitment: taskIDCommitment,
+	}
+
+	timestamp, signature, err := SignData(getResultInput, appConfig.Blockchain.Account.PrivateKey)
+	if err != nil {
+		return err
+	}
+
+	ctx1, cancel := context.WithTimeout(ctx, time.Minute)
+	defer cancel()
+	reqUrl := appConfig.Relay.BaseURL + "/v1/inference_tasks/" + taskIDCommitment + "/results/checkpoint"
+	req, _ := http.NewRequestWithContext(ctx1, "GET", reqUrl, nil)
+	query := req.URL.Query()
+	query.Add("timestamp", strconv.FormatInt(timestamp, 10))
+	query.Add("signature", signature)
+	req.URL.RawQuery = query.Encode()
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if err := processRelayResponse(resp); err != nil {
+		log.Errorf("Relay, get checkpoint of %s error: %v", taskIDCommitment, err)
+		return err
+	}
+
+	_, err = io.Copy(dst, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	log.Infof("Relay: get checkpoint of task %s", taskIDCommitment)
 
 	return nil
 }
