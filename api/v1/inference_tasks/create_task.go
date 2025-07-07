@@ -127,11 +127,10 @@ func buildTasks(in *TaskInput, client *models.Client, clientTask *models.ClientT
 	if in.Timeout != nil {
 		timeout = *in.Timeout
 	} else if taskType == models.TaskTypeSDFTLora {
-		timeout = appConfig.Task.SDFinetuneTimeout
+		timeout = appConfig.Task.SDFinetuneTimeout * 60
 	} else {
-		timeout = appConfig.Task.DefaultTimeout
+		timeout = appConfig.Task.DefaultTimeout * 60
 	}
-	timeout = timeout * 60
 
 	tasks := make([]*models.InferenceTask, 0)
 	for i := 0; i < repeatNum; i++ {
