@@ -7,7 +7,7 @@ import (
 
 func M20250706(db *gorm.DB) *gormigrate.Gormigrate {
 	type ClientTask struct {
-		Status      string `json:"status" gorm:"default:running;index"`
+		Status      string `json:"status" gorm:"index"`
 		FailedCount int    `json:"failed_count" gorm:"default:0"`
 	}
 	return gormigrate.New(db, gormigrate.DefaultOptions, []*gormigrate.Migration{
@@ -18,9 +18,6 @@ func M20250706(db *gorm.DB) *gormigrate.Gormigrate {
 					return err
 				}
 				if err := tx.Migrator().AddColumn(&ClientTask{}, "FailedCount"); err != nil {
-					return err
-				}
-				if err := tx.Model(&ClientTask{}).Where("id > ?", 0).Update("status", "").Error; err != nil {
 					return err
 				}
 				return nil
