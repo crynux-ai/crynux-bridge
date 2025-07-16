@@ -56,13 +56,19 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	crand.Read(taskIDBytes)
 	taskID := hexutil.Encode(taskIDBytes)
 
+	taskVersion := "2.5.0"
+	versionRand := rand.Float64()
+	if versionRand < 0.5 {
+		taskVersion = "3.0.0"
+	}
+
 	task := &models.InferenceTask{
 		Client:          client,
 		ClientTask:      clientTask,
 		TaskArgs:        taskArgs,
 		TaskType:        taskType,
 		TaskModelIDs:    taskModelIDs,
-		TaskVersion:     "2.5.0",
+		TaskVersion:     taskVersion,
 		MinVram:         minVram,
 		RequiredGPU:     requiredGPU,
 		RequiredGPUVram: requiredGPUVram,
