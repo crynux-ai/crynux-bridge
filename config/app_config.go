@@ -74,6 +74,7 @@ type AppConfig struct {
 		AutoTasksBatchSize    uint64 `mapstructure:"auto_tasks_batch_size"`
 		DefaultTimeout        uint64 `mapstructure:"default_timeout"`
 		SDFinetuneTimeout     uint64 `mapstructure:"sd_finetune_timeout"`
+		DefaultTaskVersion    string `mapstructure:"default_task_version"`
 	} `mapstructure:"task"`
 
 	TaskSchema struct {
