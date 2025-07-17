@@ -292,7 +292,12 @@ func downloadTaskResult(ctx context.Context, task *models.InferenceTask) error {
 }
 
 func processOneTask(ctx context.Context, task *models.InferenceTask) error {
-	// sync task
+	// sync task from database
+	if err := task.Sync(ctx, config.GetDB()); err != nil {
+		return err
+	}
+
+	// sync task from relay
 	_, err := syncTask(ctx, task)
 	if err != nil {
 		return err
