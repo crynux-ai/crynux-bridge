@@ -56,10 +56,10 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	crand.Read(taskIDBytes)
 	taskID := hexutil.Encode(taskIDBytes)
 
-	taskVersion := "2.5.0"
+	taskVersion := appConfig.Task.DefaultTaskVersion
 	versionRand := rand.Float64()
 	if versionRand < 0.5 {
-		taskVersion = "3.0.0"
+		taskVersion = "2.5.0"
 	}
 
 	task := &models.InferenceTask{
