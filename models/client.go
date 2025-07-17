@@ -59,15 +59,7 @@ func (task *ClientTask) Update(ctx context.Context, db *gorm.DB, newTask *Client
 	}
 	dbCtx, cancel := context.WithTimeout(ctx, 3 * time.Second)
 	defer cancel()
-	return db.WithContext(dbCtx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(task).Updates(newTask).Error; err != nil {
-			return err
-		}
-		if err := tx.Model(task).First(task).Error; err != nil {
-			return err
-		}
-		return nil
-	})
+	return db.WithContext(dbCtx).Model(task).Updates(newTask).Error
 }
 
 type Role string
@@ -137,15 +129,7 @@ func (key *ClientAPIKey) Update(ctx context.Context, db *gorm.DB, newKey *Client
 	}
 	dbCtx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	return db.WithContext(dbCtx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(key).Updates(newKey).Error; err != nil {
-			return err
-		}
-		if err := tx.Model(key).First(key).Error; err != nil {
-			return err
-		}
-		return nil
-	})
+	return db.WithContext(dbCtx).Model(key).Updates(newKey).Error
 }
 
 func (key *ClientAPIKey) Use(ctx context.Context, db *gorm.DB) error {

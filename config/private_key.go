@@ -12,7 +12,3 @@ func GetPrivateKey(file string) string {
 	}
 	return strings.TrimSpace(string(b))
 }
-
-func GetTestPrivateKey() string {
-	return ""
-}
