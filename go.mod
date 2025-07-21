@@ -1,6 +1,6 @@
 module crynux_bridge
 
-go 1.23.0
+go 1.22
 
 toolchain go1.23.6
 
@@ -18,6 +18,7 @@ require (
 	github.com/toorop/gin-logrus v0.0.0-20210225092905-2c785434f26f
 	github.com/wI2L/fizz v0.22.0
 	golang.org/x/time v0.1.0
+	gonum.org/v1/gonum v0.15.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/driver/postgres v1.5.2
@@ -25,7 +26,10 @@ require (
 	gorm.io/gorm v1.25.2
 )
 
-require github.com/gofrs/uuid v3.2.0+incompatible // indirect
+require (
+	github.com/gofrs/uuid v3.2.0+incompatible // indirect
+	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
+)
 
 require (
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
@@ -78,9 +82,8 @@ require (
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/crypto v0.9.0
 	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
-	gonum.org/v1/gonum v0.16.0
+	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
