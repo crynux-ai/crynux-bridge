@@ -13,6 +13,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	log "github.com/sirupsen/logrus"
+	"gonum.org/v1/gonum/stat/sampleuv"
 	"gorm.io/gorm"
 )
 
@@ -27,15 +28,19 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	var taskFee uint64
 	var requiredGPU string
 	var requiredGPUVram uint64
-	r := rand.Float64()
-	if r < 0.5 {
+
+	taskTypeSampler := sampleuv.NewWeighted(appConfig.Task.AutoTaskTypeRatio, nil)
+	taskTypeIdx, _ := taskTypeSampler.Take()
+
+	switch taskTypeIdx {
+	case 0:
 		prompt := "Self-portrait oil painting,a beautiful cyborg with golden hair,8k"
 		seed := rand.Intn(100000000)
 		taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/sdxl-turbo", "variant": "fp16"},"prompt":"%s","negative_prompt":"","scheduler":{"method":"EulerAncestralDiscreteScheduler","args":{"timestep_spacing":"trailing"}},"task_config":{"num_images":1,"seed":%d,"steps":1,"cfg":0}}`, prompt, seed)
 		minVram = 14
 		taskType = models.TaskTypeSD
 		taskFee = appConfig.Task.SDXLTaskFee
-	} else if r < 0.9 {
+	case 1:
 		prompt := "best quality, ultra high res, photorealistic++++, 1girl, off-shoulder sweater, smiling, faded ash gray messy bun hair+, border light, depth of field, looking at viewer, closeup"
 		negativePrompt := "paintings, sketches, worst quality+++++, low quality+++++, normal quality+++++, lowres, normal quality, monochrome++, grayscale++, skin spots, acnes, skin blemishes, age spot, glans"
 		seed := rand.Intn(100000000)
@@ -43,7 +48,7 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 		minVram = 4
 		taskType = models.TaskTypeSD
 		taskFee = appConfig.Task.SDTaskFee
-	} else {
+	default:
 		minVram = 24
 		seed := rand.Intn(100000000)
 		taskArgs = fmt.Sprintf(`{"model":"Qwen/Qwen2.5-7B","messages":[{"role":"user","content":"I want to create an AI agent. Any suggestions?"}],"tools":null,"generation_config":{"max_new_tokens":250,"do_sample":true,"temperature":0.8,"repetition_penalty":1.1},"seed":%d,"dtype":"bfloat16"}`, seed)
@@ -56,11 +61,9 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	crand.Read(taskIDBytes)
 	taskID := hexutil.Encode(taskIDBytes)
 
-	taskVersion := appConfig.Task.DefaultTaskVersion
-	versionRand := rand.Float64()
-	if versionRand < 0.5 {
-		taskVersion = "2.5.0"
-	}
+	taskVersionSampler := sampleuv.NewWeighted(appConfig.Task.AutoTaskVersionRatio, nil)
+	taskVersionIdx, _ := taskVersionSampler.Take()
+	taskVersion := appConfig.Task.TaskVersions[taskVersionIdx]
 
 	task := &models.InferenceTask{
 		Client:          client,
@@ -141,7 +144,7 @@ func autoCreateTasks(ctx context.Context) error {
 				time.Sleep(30 * time.Second)
 				continue
 			}
-	
+
 			for i := 0; i < batchSize; i++ {
 				task := generateRandomTask(client)
 				tasks[i] = task
