@@ -65,16 +65,18 @@ type AppConfig struct {
 	} `mapstructure:"relay"`
 
 	Task struct {
-		SDTaskFee             uint64 `mapstructure:"sd_task_fee"`
-		SDXLTaskFee           uint64 `mapstructure:"sd_xl_task_fee"`
-		LLMTaskFee            uint64 `mapstructure:"llm_task_fee"`
-		LLMQuantTaskFee       uint64 `mapstructure:"llm_quant_task_fee"`
-		RepeatNum             int    `mapstructure:"repeat_num"`
-		PendingAutoTasksLimit uint64 `mapstructure:"pending_auto_tasks_limit"`
-		AutoTasksBatchSize    uint64 `mapstructure:"auto_tasks_batch_size"`
-		DefaultTimeout        uint64 `mapstructure:"default_timeout"`
-		SDFinetuneTimeout     uint64 `mapstructure:"sd_finetune_timeout"`
-		DefaultTaskVersion    string `mapstructure:"default_task_version"`
+		SDTaskFee             uint64   `mapstructure:"sd_task_fee"`
+		SDXLTaskFee           uint64   `mapstructure:"sd_xl_task_fee"`
+		LLMTaskFee            uint64   `mapstructure:"llm_task_fee"`
+		LLMQuantTaskFee       uint64   `mapstructure:"llm_quant_task_fee"`
+		RepeatNum             int      `mapstructure:"repeat_num"`
+		PendingAutoTasksLimit uint64   `mapstructure:"pending_auto_tasks_limit"`
+		AutoTasksBatchSize    uint64   `mapstructure:"auto_tasks_batch_size"`
+		DefaultTimeout        uint64   `mapstructure:"default_timeout"`
+		SDFinetuneTimeout     uint64   `mapstructure:"sd_finetune_timeout"`
+		TaskVersions          []string `mapstructure:"task_versions"`
+		AutoTaskVersionRatio  []float64 `mapstructure:"auto_task_version_ratio"`
+		AutoTaskTypeRatio     []float64 `mapstructure:"auto_task_type_ratio"`
 	} `mapstructure:"task"`
 
 	TaskSchema struct {

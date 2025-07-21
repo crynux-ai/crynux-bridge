@@ -94,7 +94,7 @@ func buildTasks(in *TaskInput, client *models.Client, clientTask *models.ClientT
 		minVram = *in.MinVram
 	}
 
-	var taskVersion = appConfig.Task.DefaultTaskVersion
+	var taskVersion = appConfig.Task.TaskVersions[0]
 	if in.TaskVersion != nil {
 		taskVersion = *in.TaskVersion
 	}
