@@ -10,6 +10,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -41,11 +42,12 @@ func getDefaultMinVram(taskType models.ChainTaskType, taskArgs string) (uint64, 
 		if err != nil {
 			return 0, err
 		}
-		if baseModel == "crynux-ai/stable-diffusion-v1-5" {
+		switch baseModel {
+		case "crynux-ai/stable-diffusion-v1-5", "crynux-network/stable-diffusion-v1-5":
 			return 8, nil
-		} else if baseModel == "crynux-ai/sdxl-turbo" || baseModel == "crynux-ai/stable-diffusion-xl-base-1.0" {
+		case "crynux-ai/sdxl-turbo", "crynux-network/sdxl-turbo", "crynux-ai/stable-diffusion-xl-base-1.0":
 			return 14, nil
-		} else {
+		default:
 			return 10, nil
 		}
 	} else {
@@ -76,6 +78,20 @@ func getTaskFee(taskType models.ChainTaskType, baseTaskFee, cap uint64) uint64 {
 func buildTasks(in *TaskInput, client *models.Client, clientTask *models.ClientTask, appConfig *config.AppConfig) ([]*models.InferenceTask, error) {
 	taskType := *in.TaskType
 
+	var taskVersion = appConfig.Task.TaskVersions[0]
+	if in.TaskVersion != nil {
+		taskVersion = *in.TaskVersion
+	}
+
+	if taskType == models.TaskTypeSD || taskType == models.TaskTypeSDFTLora {
+		if taskVersion == "2.5.0" {
+			in.TaskArgs = strings.ReplaceAll(in.TaskArgs, "crynux-network/", "crynux-ai/")
+		} else {
+			in.TaskArgs = strings.ReplaceAll(in.TaskArgs, "crynux-ai/", "crynux-network/")
+		}
+	}
+
+
 	result, err := models.ValidateTaskArgsJsonStr(in.TaskArgs, taskType)
 	if err != nil {
 		return nil, response.NewExceptionResponse(err)
@@ -92,11 +108,6 @@ func buildTasks(in *TaskInput, client *models.Client, clientTask *models.ClientT
 		minVram, _ = getDefaultMinVram(taskType, in.TaskArgs)
 	} else {
 		minVram = *in.MinVram
-	}
-
-	var taskVersion = appConfig.Task.TaskVersions[0]
-	if in.TaskVersion != nil {
-		taskVersion = *in.TaskVersion
 	}
 
 	// task args has been validated, so there should be no error

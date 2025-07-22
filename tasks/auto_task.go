@@ -29,6 +29,10 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	var requiredGPU string
 	var requiredGPUVram uint64
 
+	taskVersionSampler := sampleuv.NewWeighted(appConfig.Task.AutoTaskVersionRatio, nil)
+	taskVersionIdx, _ := taskVersionSampler.Take()
+	taskVersion := appConfig.Task.TaskVersions[taskVersionIdx]
+
 	taskTypeSampler := sampleuv.NewWeighted(appConfig.Task.AutoTaskTypeRatio, nil)
 	taskTypeIdx, _ := taskTypeSampler.Take()
 
@@ -36,7 +40,11 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	case 0:
 		prompt := "Self-portrait oil painting,a beautiful cyborg with golden hair,8k"
 		seed := rand.Intn(100000000)
-		taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/sdxl-turbo", "variant": "fp16"},"prompt":"%s","negative_prompt":"","scheduler":{"method":"EulerAncestralDiscreteScheduler","args":{"timestep_spacing":"trailing"}},"task_config":{"num_images":1,"seed":%d,"steps":1,"cfg":0}}`, prompt, seed)
+		if taskVersion == "2.5.0" {
+			taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/sdxl-turbo", "variant": "fp16"},"prompt":"%s","negative_prompt":"","scheduler":{"method":"EulerAncestralDiscreteScheduler","args":{"timestep_spacing":"trailing"}},"task_config":{"num_images":1,"seed":%d,"steps":1,"cfg":0}}`, prompt, seed)
+		} else {
+			taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-network/sdxl-turbo", "variant": "fp16"},"prompt":"%s","negative_prompt":"","scheduler":{"method":"EulerAncestralDiscreteScheduler","args":{"timestep_spacing":"trailing"}},"task_config":{"num_images":1,"seed":%d,"steps":1,"cfg":0}}`, prompt, seed)
+		}
 		minVram = 14
 		taskType = models.TaskTypeSD
 		taskFee = appConfig.Task.SDXLTaskFee
@@ -44,7 +52,11 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 		prompt := "best quality, ultra high res, photorealistic++++, 1girl, off-shoulder sweater, smiling, faded ash gray messy bun hair+, border light, depth of field, looking at viewer, closeup"
 		negativePrompt := "paintings, sketches, worst quality+++++, low quality+++++, normal quality+++++, lowres, normal quality, monochrome++, grayscale++, skin spots, acnes, skin blemishes, age spot, glans"
 		seed := rand.Intn(100000000)
-		taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/stable-diffusion-v1-5", "variant": "fp16"},"prompt":"%s","negative_prompt":"%s","task_config":{"num_images":1,"seed":%d,"steps":25,"cfg":0,"safety_checker":false}}`, prompt, negativePrompt, seed)
+		if taskVersion == "2.5.0" {
+			taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-ai/stable-diffusion-v1-5", "variant": "fp16"},"prompt":"%s","negative_prompt":"%s","task_config":{"num_images":1,"seed":%d,"steps":25,"cfg":0,"safety_checker":false}}`, prompt, negativePrompt, seed)
+		} else {
+			taskArgs = fmt.Sprintf(`{"base_model":{"name":"crynux-network/stable-diffusion-v1-5", "variant": "fp16"},"prompt":"%s","negative_prompt":"%s","task_config":{"num_images":1,"seed":%d,"steps":25,"cfg":0,"safety_checker":false}}`, prompt, negativePrompt, seed)
+		}
 		minVram = 4
 		taskType = models.TaskTypeSD
 		taskFee = appConfig.Task.SDTaskFee
@@ -60,10 +72,6 @@ func generateRandomTask(client models.Client) *models.InferenceTask {
 	taskIDBytes := make([]byte, 32)
 	crand.Read(taskIDBytes)
 	taskID := hexutil.Encode(taskIDBytes)
-
-	taskVersionSampler := sampleuv.NewWeighted(appConfig.Task.AutoTaskVersionRatio, nil)
-	taskVersionIdx, _ := taskVersionSampler.Take()
-	taskVersion := appConfig.Task.TaskVersions[taskVersionIdx]
 
 	task := &models.InferenceTask{
 		Client:          client,
